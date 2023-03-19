@@ -63,15 +63,15 @@ class MMPBSA_App(object):
     # The command line parser and input file objects are class attributes here
     input_file = _input_file
 
-    def __init__(self, MPI, prog, stdout=None, stderr=None, size=None):
+    def __init__(self, MPI, stdout=None, stderr=None, size=None):
         """
         Sets up the main gmx_MMPBSA driver class. All we set up here is the output
         and error streams (unbuffered by default) and the prefix for the
         intermediate files. Also set up empty INPUT dict
         """
+        self.md_prog = None
         global _rank, _stdout, _stderr, _mpi_size, _MPI
         _MPI = self.MPI = MPI
-        self.md_prog = prog
         self.pre = '_GMXMMPBSA_'
         self.INPUT = {}
         if stdout is None:
@@ -90,9 +90,6 @@ class MMPBSA_App(object):
         _mpi_size = self.mpi_size = self.MPI.COMM_WORLD.Get_size()
         if not self.master:
             self.stdout = open(os.devnull, 'w')
-        if self.master:
-            logging.info(f'Starting gmx_MMPBSA {__version__}')
-            misc.get_sys_info()
 
         # Set up timers
         timers = [Timer() for _ in range(self.mpi_size)]
@@ -856,33 +853,9 @@ class MMPBSA_App(object):
 
         # self.stdout.write('\n')
 
-    def get_cl_args(self, args=None):
-        """
-        Gets the command-line arguments to load the INPUT array. Also determines
-        if we are doing a stability calculation or not
-        """
-        if args is None:
-            args = sys.argv
+    def get_parser(self, parser):
         if self.master:
-            text_args = ' '.join(args)
-            _mpi = True
-            # remove mpi arg before passed it to app
-            if 'mpi' in args:
-                args.remove('mpi')
-            elif 'MPI' in args:
-                args.remove('MPI')
-            elif self.mpi_size > 1:
-                pass
-            else:
-                _mpi = False
-            mpi_cl = f'  mpirun -np {self.mpi_size} ' if _mpi else '  '
-            # save args in gmx_MMPBSA.log
-            logging.info('Command-line\n' + mpi_cl +
-                         self.md_prog + '_MMPBSA ' + text_args + '\n')
-            # check if any arg is duplicated
-            misc._get_dup_args(args)
-            self.FILES = self.clparser.parse_args(args)
-            print(self.FILES)
+            self.FILES = parser
         else:
             self.FILES = object()
         # Broadcast the FILES
@@ -895,6 +868,19 @@ class MMPBSA_App(object):
             self.traj_protocol = 'STP'  # single traj protocol
         # change by explicit argument
         self.stability = self.FILES.stability
+
+        # define md_prog to identify file type and workflow
+        if 'gmx' in self.FILES.subparser:
+            self.md_prog = 'gmx'
+        elif 'amber' in self.FILES.subparser:
+            self.md_prog = 'amber'
+        elif 'namd' in self.FILES.subparser:
+            self.md_prog = 'namd'
+        elif 'charmm' in self.FILES.subparser:
+            self.md_prog = 'charmm'
+        else:
+            GMXMMPBSA_ERROR('Unknown MD program!')
+
 
     def read_input_file(self, infile=None):
         """ Reads the input file, pull it from FILES if not provided here """
