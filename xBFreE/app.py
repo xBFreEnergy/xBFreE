@@ -18,26 +18,16 @@ import logging
 from pathlib import Path
 import signal
 
-try:
-    from xBFreE.exceptions import GMXMMPBSA_ERROR, InputError, CommandlineError,MMPBSA_Error
-    from xBFreE.mmpbsa.infofile import InfoFile
-    from xBFreE.mmpbsa import main
-    from xBFreE.mmpbsa.tester import run_test
-    # from xBFreE.mmpbsa.commandlineparser import anaparser, testparser
-    from xBFreE.mmpbsa.utils.misc import create_input_args
-except ImportError:
-    import os
-    amberhome = os.getenv('AMBERHOME') or '$AMBERHOME'
-    raise ImportError('Could not import Amber Python modules. Please make sure '
-                      'you have sourced %s/amber.sh (if you are using sh/ksh/'
-                      'bash/zsh) or %s/amber.csh (if you are using csh/tcsh)' %
-                      (amberhome, amberhome))
+from xBFreE.main import xBFreE_App
+from xBFreE.mmpbsa.app import mmpbsa
+from xBFreE.utils.misc import create_input_args
+import os
 
 
 # Local methods
 from mpi4py import MPI
 if MPI.COMM_WORLD.size == 1:
-    from xBFreE.mmpbsa.fake_mpi import MPI
+    from xBFreE.fake_mpi import MPI
 
 _rank = MPI.COMM_WORLD.Get_rank()
 _mpi_size = MPI.COMM_WORLD.Get_size()
@@ -79,15 +69,9 @@ def setup_run():
     sys.excepthook = excepthook
     signal.signal(signal.SIGINT, interrupt_handler)
 
+setup_run()
 
-def gmxmmpbsa():
-    mmpbsa('gmx')
-def ambermmpbsa():
-    mmpbsa('amber')
-def namdmmpbsa():
-    mmpbsa('namd')
-
-def mmpbsa(prog):
+def run_xbfree():
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.INFO)
     formatter = logging.Formatter("[%(levelname)-7s] %(message)s")
@@ -96,69 +80,32 @@ def mmpbsa(prog):
         level=logging.DEBUG,
         format="[%(levelname)-7s] %(message)s",
         handlers=[
-            logging.FileHandler("gmx_MMPBSA.log", 'w'),
+            logging.FileHandler("xBFreE.log", 'w'),
             stream_handler])
-    # Just for compatibility as mpi4py works as serial when run without mpirun
-    # (since v1.4.2)
-    # from mpi4py import MPI
-    # if MPI.COMM_WORLD.size == 1:
-    #     from xBFreE.mmpbsa.fake_mpi import MPI
-    # Set up error/signal handlers
-    # main.setup_run()
 
-    # Instantiate the main MMPBSA_App
-    app = main.MMPBSA_App(MPI, prog)
+    xbfree_app = xBFreE_App(MPI)
+    files = xbfree_app.get_cmd_args(sys.argv[1:])
 
-    # Read the command-line arguments
-    try:
-        app.get_cl_args(sys.argv[1:])
-    except CommandlineError as e:
-        sys.stderr.write('%s: %s' % (type(e).__name__, e) + '\n')
-        sys.exit(1)
+    method = "mmpbsa" if "mmpbsa" in xbfree_app.FILES.subparser.lower() else None
 
-    if app.FILES.createinput is not None:
-        args_list = create_input_args(app.FILES.createinput)
-        app.input_file.print_contents('mmpbsa.in', args_list)
-        logging.info(f'Input file creation successful. Path: {Path("mmpbsa.in").absolute()}')
-        sys.exit(0)
-
-    # Perform our MMPBSA --clean now
-    if app.FILES.clean:
+    # Remove all generated files in the directory
+    if xbfree_app.FILES.clean:
         logging.info('Cleaning temporary files and quitting.\n')
-        app.remove(-1)
+        xbfree_app.remove(-1)
         sys.exit(0)
 
-    # See if we wanted to print out our input file options
-    if app.FILES.infilehelp:
-        app.input_file.print_contents(sys.stdout)
+    if xbfree_app.FILES.createinput is not None:
+        if method == "mmpbsa":
+            args_list = create_input_args(xbfree_app.FILES.createinput, 'mmpbsa')
+            from xBFreE.input.mmpbsa import input_file
+            input_file.print_contents('mmpbsa.in', args_list)
+            logging.info(f'Input file creation successful. Path: {Path("mmpbsa.in").absolute()}')
+        # TODO: LIE method -- not implemented yet
+
         sys.exit(0)
 
-    # If we're not rewriting output do whole shebang, otherwise load info and parms
-    # Throw up a barrier before and after running the actual calcs
-    if not app.FILES.rewrite_output:
-        try:
-            app.read_input_file()
-        except InputError as e:
-            sys.stderr.write('%s: %s' % (type(e).__name__, e) + '\n')
-            sys.stderr.write('  Enter `%s --help` for help\n' %
-                             (split(sys.argv[0])[1]))
-            sys.exit(1)
-        app.process_input()
-        app.check_for_bad_input()
-        app.make_prmtops()
-        app.loadcheck_prmtops()
-        app.file_setup()
-        app.run_mmpbsa()
-    # If we are rewriting output, load the info and check prmtops
-    else:
-        info = InfoFile(app, True)
-        info.read_info()
-        app.loadcheck_prmtops()
-
-    # Now we parse the output, print, and finish
-    app.parse_output_files()
-    app.write_final_outputs()
-    app.finalize()
+    if method == 'mmpbsa':
+        mmpbsa(files)
 
 
 def gmxmmpbsa_ana():
