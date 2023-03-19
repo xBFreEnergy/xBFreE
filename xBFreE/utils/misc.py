@@ -1,5 +1,5 @@
 # ##############################################################################
-#                            GPLv3 LICENSE INFO                                #
+#                           GPLv3 LICENSE INFO                                 #
 #  Copyright (c) 2023.  Mario S. Valdes-Tresanco and Mario E. Valdes-Tresanco  #
 #                                                                              #
 #  This program is free software; you can redistribute it and/or modify it     #
@@ -24,22 +24,25 @@ import re
 from string import ascii_letters
 import logging
 from xBFreE.exceptions import GMXMMPBSA_ERROR
+import subprocess
 
 
-def create_input_args(args: list):
-    if not args or 'all' in args:
-        return 'general', 'gb', 'gbnsr6', 'pb', 'ala', 'nmode', 'decomp', 'rism'
-    elif 'gb' not in args and 'pb' not in args and 'rism' not in args and 'nmode' not in args and 'gbnsr6' not in args:
-        GMXMMPBSA_ERROR('You did not specify any type of calculation!')
-    elif 'gb' not in args and 'pb' not in args and 'decomp' in args: # FIXME: gbnsr6?
-        logging.warning('&decomp calculation is only compatible with &gb and &pb calculations. Will be ignored!')
-        args.remove('decomp')
-        return ['general'] + args
+def create_input_args(args: list, method):
+    if method == 'mmpbsa':
+        if not args or 'all' in args:
+            return 'general', 'gb', 'gbnsr6', 'pb', 'ala', 'nmode', 'decomp', 'rism'
+        elif 'gb' not in args and 'pb' not in args and 'rism' not in args and 'nmode' not in args and 'gbnsr6' not in args:
+            GMXMMPBSA_ERROR('You did not specify any type of calculation!')
+        elif 'gb' not in args and 'pb' not in args and 'decomp' in args: # FIXME: gbnsr6?
+            logging.warning('&decomp calculation is only compatible with &gb and &pb calculations. Will be ignored!')
+            args.remove('decomp')
+            return ['general'] + args
+        else:
+            return ['general'] + args
     else:
-        return ['general'] + args
+        print('Not implemented')
 
-
-def remove(flag, fnpre='_GMXMMPBSA_'):
+def remove(flag, fnpre='_xBFreE_'):
     """ Removes temporary files. Allows for different levels of cleanliness """
     # Collect all of the temporary files (those starting with _GMXMMPBSA_)
     allfiles = os.listdir(os.getcwd())
@@ -73,8 +76,6 @@ def find_progs(INPUT, mpi_size=0):
     # List all of the used programs with the conditions that they are needed
     logging.info('Checking external programs...')
     used_progs = {'cpptraj': True,
-                  'tleap': True,
-                  'parmchk2': True,
                   'sander': True,
                   'sander.APBS': INPUT['pb']['sander_apbs'] == 1,
                   'mmpbsa_py_nabnmode': INPUT['nmode']['nmoderun'],
@@ -82,13 +83,9 @@ def find_progs(INPUT, mpi_size=0):
                   'elsize': INPUT['gb']['alpb'],
                   'gbnsr6': INPUT['gbnsr6']['gbnsr6run']
                   }
-    gro_exe = {
-        'gmx5': [
-            # look for any available gromacs executable
-            'gmx', 'gmx_mpi', 'gmx_d', 'gmx_mpi_d'],
-        'gmx4': [
-            # look for gromacs 4.x
-            'make_ndx', 'trjconv', 'editconf']}
+    # look for any available gromacs executable
+    # FIXME: We should use gmx_mpi? It seems to have problem with mpi4py
+    gro_exe = ['gmx', 'gmx_mpi', 'gmx_d', 'gmx_mpi_d']
 
     # The returned dictionary:
     my_progs = {}
@@ -102,30 +99,24 @@ def find_progs(INPUT, mpi_size=0):
 
     search_parth = INPUT['general']['gmx_path'] or os.environ['PATH']
     g5 = False
-    for gv, g_exes in gro_exe.items():
-        if gv == 'gmx5':
-            for prog in g_exes:
-                if exe := shutil.which(prog, path=search_parth):
-                    logging.info('Using GROMACS version > 5.x.x!')
-                    my_progs['make_ndx'] = [exe, 'make_ndx']
-                    my_progs['editconf'] = [exe, 'editconf']
-                    my_progs['trjconv'] = [exe, 'trjconv']
-                    g5 = True
-                    if prog in ['gmx_mpi', 'gmx_mpi_d'] and mpi_size > 1:
-                        GMXMMPBSA_ERROR('gmx_mpi and gmx_mpi_d are not supported when running gmx_MMPBSA in parallel '
-                                        'due to incompatibility between the mpi libraries used to compile GROMACS and '
-                                        'mpi4py respectively. You can still use gmx_mpi or gmx_mpi_d to run gmx_MMPBSA '
-                                        'serial. For parallel calculations use gmx instead')
-                    logging.info(f'{prog} found! Using {exe}')
-                    break
-            if g5:
-                break
-        else:
-            logging.info('Using GROMACS version 4.x.x!')
-            for prog in g_exes:
-                if exe := shutil.which(prog, path=search_parth):
-                    my_progs[prog] = [exe]
-                    logging.info(f'{prog} found! Using {str(my_progs[prog])}')
+    for prog in gro_exe:
+        if exe := shutil.which(prog, path=search_parth):
+            # execute gromacs to get version
+            gmx_ouput = subprocess.check_output([exe, '-version']).decode().split('\n')
+            gmx_version = [l.split()[-1].strip('\n') for l in gmx_ouput if 'GROMACS version:' in l][0]
+            my_progs['make_ndx'] = [exe, 'make_ndx']
+            my_progs['editconf'] = [exe, 'editconf']
+            my_progs['trjconv'] = [exe, 'trjconv']
+            g5 = True
+            if prog in ['gmx_mpi', 'gmx_mpi_d'] and mpi_size > 1:
+                GMXMMPBSA_ERROR('gmx_mpi and gmx_mpi_d are not supported when running gmx_MMPBSA in parallel '
+                                'due to incompatibility between the mpi libraries used to compile GROMACS and '
+                                'mpi4py respectively. You can still use gmx_mpi or gmx_mpi_d to run gmx_MMPBSA '
+                                'serial. For parallel calculations use gmx instead')
+            logging.info(f'{prog} {gmx_version} found! Using {exe}')
+            break
+        if g5:
+            break
 
     if 'make_ndx' not in my_progs or 'editconf' not in my_progs or 'trjconv' not in my_progs:
         GMXMMPBSA_ERROR('Could not find necessary program [ GROMACS ]')
@@ -137,7 +128,7 @@ def get_sys_info():
     """
     Print relevant system info for debugging proposes in the gmx_MMPBSA.log file
     """
-    logging.debug(f"WDIR          : {Path('.').absolute().as_posix()}")
+    logging.debug(f"WDIR          : {Path('../mmpbsa/utils').absolute().as_posix()}")
     logging.debug(f"AMBERHOME     : {os.environ['AMBERHOME'] if 'AMBERHOME' in os.environ else ''}")
     logging.debug(f"PYTHON EXE    : {shutil.which('python')}")
     logging.debug("PYTHON VERSION: " + ''.join(sys.version.split('\n')))
@@ -151,7 +142,7 @@ def get_sys_info():
 
 def get_warnings():
     info = {'warning': 0, 'error': 0}
-    with open('gmx_MMPBSA.log') as logfile:
+    with open('xBFreE.log') as logfile:
         for line in logfile:
             if line.startswith('[ERROR  ]'):
                 info['error'] += 1
@@ -213,35 +204,36 @@ def log_subprocess_output(process):
         logging.debug(output.strip('\n'))
 
 
-def _get_dup_args(args):
-    flags_values_list = []
-    cv = []
-    current_flag = None
-    for o in args:
+def check4dup_args(args):
+    flag_index = []
+    flags = []
+
+    for i, o in enumerate(args):
         if o.startswith('-'):
-            if current_flag:
-                flags_values_list.append([current_flag, cv])
-            current_flag = o
-            cv = []
-        else:
-            cv.append(o)
+            flag_index.append(i)
+            flags.append(o)
 
     opt_duplicates = []
-    args_duplicates = []
-    flags = [a[0] for a in flags_values_list]
-
-    for x in flags:
-        if flags.count(x) > 1 and x not in opt_duplicates:
-            opt_duplicates.append(x)
+    flags_values = {}
+    for i, f in enumerate(flags):
+        if flags.count(f) > 1 and f not in opt_duplicates:
+            opt_duplicates.append(f)
+        if i == len(flags) - 1:
+            flags_values[f] = [args[x] for x in range(flag_index[i] + 1, len(args))]
+        elif flag_index[i] - flag_index[i+1]:
+            flags_values[f] = [args[x] for x in range(flag_index[i]+1, flag_index[i+1])]
+        else:
+            flags_values[f] = []
 
     if opt_duplicates:
         GMXMMPBSA_ERROR('Several options are duplicated in the command-line...\n'
                         f"Duplicated options:\n\t{', '.join(opt_duplicates)}")
 
-    flags_values_dict = dict(flags_values_list)
+    args_duplicates = []
     unique_args = []
     inverted_args_dict = {}
-    for k, v in flags_values_dict.items():
+    for k, v in flags_values.items():
+        # skip this options since they can share the same group number/name
         if k in ['-cg', '-rg', '-lg']:
             continue
         for a in v:
@@ -251,8 +243,8 @@ def _get_dup_args(args):
             else:
                 args_duplicates.append([k, a])
 
-    text_out = '\n'.join([f"\t{inverted_args_dict[a]} {' '.join(flags_values_dict[inverted_args_dict[a]])} <---> "
-                          f"{k} {' '.join(flags_values_dict[k])}"
+    text_out = '\n'.join([f"\t{inverted_args_dict[a]} {' '.join(flags_values[inverted_args_dict[a]])} <---> "
+                          f"{k} {' '.join(flags_values[k])}"
                           for k, a in args_duplicates])
     if args_duplicates:
         GMXMMPBSA_ERROR('Several args are duplicated in the command-line...\n'
