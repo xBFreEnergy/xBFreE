@@ -27,8 +27,7 @@ import os
 import sys
 import logging
 from pathlib import Path
-from xBFreE import __version__
-from xBFreE.mmpbsa.utils import misc
+from xBFreE.utils import misc
 from xBFreE.mmpbsa.output.amber import (QHout, NMODEout, QMMMout, GBout, PBout, PolarRISM_std_Out, RISM_std_Out,
                                      PolarRISM_gf_Out, RISM_gf_Out, PolarRISM_pcplus_Out, RISM_pcplus_Out,
                                      BindingStatistics, IEout, C2out, DeltaDeltaStatistics, DeltaIEC2Statistic,
@@ -36,16 +35,15 @@ from xBFreE.mmpbsa.output.amber import (QHout, NMODEout, QMMMout, GBout, PBout, 
 from xBFreE.mmpbsa.calculation import (CalculationList, EnergyCalculation, PBEnergyCalculation,
                                    NmodeCalc, QuasiHarmCalc, CopyCalc, PrintCalc, LcpoCalc, MolsurfCalc,
                                    InteractionEntropyCalc, C2EntropyCalc, MergeOut, ListEnergyCalculation)
-from xBFreE.commandlineparser import parser
 from xBFreE.mmpbsa.createinput import create_inputs
 from xBFreE.exceptions import (MMPBSA_Error, InternalError, InputError, GMXMMPBSA_ERROR)
 from xBFreE.mmpbsa.infofile import InfoFile
-from xBFreE.mmpbsa.fake_mpi import MPI as FakeMPI
-from xBFreE.mmpbsa.input_parser import input_file as _input_file
+from xBFreE.fake_mpi import MPI as FakeMPI
+from xBFreE.input.mmpbsa import input_file as _input_file
 from xBFreE.mmpbsa.make_trajs import make_trajectories, make_mutant_trajectories
 from xBFreE.mmpbsa.output.output_file import (write_outputs, write_decomp_output, data2pkl)
 from xBFreE.mmpbsa.parm_setup import MMPBSA_System
-from xBFreE.mmpbsa.utils.timer import Timer
+from xBFreE.utils.timer import Timer
 
 # Global variables for the excepthook replacement at the bottom. Override these
 # in the MMPBSA_App constructor and input file reading
@@ -63,7 +61,6 @@ _MPI = FakeMPI()
 class MMPBSA_App(object):
     """ Main MM/PBSA application for driving the entire calculation """
     # The command line parser and input file objects are class attributes here
-    clparser = parser
     input_file = _input_file
 
     def __init__(self, MPI, prog, stdout=None, stderr=None, size=None):
@@ -1270,7 +1267,7 @@ class MMPBSA_App(object):
             self.get_iec2entropy(from_calc)
 
         if not hasattr(self, 'resl'):
-            from xBFreE.mmpbsa.utils.molecule import mask2list
+            from xBFreE.utils.molecule import mask2list
             self.resl = mask2list(FILES.complex_fixed, INPUT['general']['receptor_mask'], INPUT['general']['ligand_mask'])
             if INPUT['ala']['alarun']:
                 self.resl[self.mutant_index].set_mut(INPUT['ala']['mutant'])

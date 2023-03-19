@@ -17,8 +17,8 @@ import textwrap
 
 import parmed
 from xBFreE.exceptions import *
-from xBFreE.mmpbsa.utils.molecule import (list2range, res2map, get_indexes, check_str, eq_strs, get_index_groups)
-from xBFreE.mmpbsa.utils.misc import log_subprocess_output
+from xBFreE.utils.molecule import (list2range, res2map, get_indexes, check_str, eq_strs, get_index_groups)
+from xBFreE.utils.misc import log_subprocess_output
 from xBFreE.mmpbsa.alamdcrd import _scaledistance
 import subprocess
 import logging

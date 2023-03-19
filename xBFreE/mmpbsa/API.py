@@ -35,7 +35,7 @@ from xBFreE.mmpbsa.calculation import InteractionEntropyCalc, C2EntropyCalc
 
 from xBFreE.mmpbsa import infofile, main
 from xBFreE.exceptions import NoFileExists
-from xBFreE.mmpbsa.fake_mpi import MPI
+from xBFreE.fake_mpi import MPI
 from xBFreE.mmpbsa.output.amber import IEout, C2out
 import pandas as pd
 from pathlib import Path
@@ -43,7 +43,7 @@ import os
 from types import SimpleNamespace
 
 from xBFreE.mmpbsa.utils.energy import emapping, flatten, get_std
-from xBFreE.mmpbsa.utils.molecule import mask2list
+from xBFreE.utils.molecule import mask2list
 
 
 def _remove_empty_charts(data):

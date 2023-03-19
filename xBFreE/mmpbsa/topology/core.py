@@ -14,8 +14,8 @@
 
 import parmed
 from xBFreE.exceptions import *
-from xBFreE.mmpbsa.utils.molecule import check_str, get_dist
-from xBFreE.mmpbsa.utils.misc import selector
+from xBFreE.utils.molecule import check_str, get_dist
+from xBFreE.utils.misc import selector
 from xBFreE.mmpbsa.alamdcrd import _scaledistance
 import logging
 import string
