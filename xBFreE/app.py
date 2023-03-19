@@ -105,7 +105,7 @@ def run_xbfree():
         sys.exit(0)
 
     if method == 'mmpbsa':
-        mmpbsa(files)
+        mmpbsa(files, MPI)
 
 
 def gmxmmpbsa_ana():
