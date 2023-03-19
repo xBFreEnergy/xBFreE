@@ -14,6 +14,7 @@
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawTextHelpFormatter
 from xBFreE.exceptions import GMXMMPBSA_ERROR
+from xBFreE import __version__
 import sys
 import os
 from pathlib import Path
@@ -39,18 +40,16 @@ class GMXMMPBSA_ArgParser(ArgumentParser):
         sys.exit(status)
 
 
-parser = GMXMMPBSA_ArgParser(
+cmdparser = GMXMMPBSA_ArgParser(
     epilog='''xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE''',
     description='''This is the core of gmx_MMPBSA and it will do all the calculations''',
     formatter_class=ArgumentDefaultsHelpFormatter
 )
-parser.add_argument('-v', '--version', action='version',
-                    version='''%%(prog)s %s based on MMPBSA version %s and AmberTools %s''')
+cmdparser.add_argument('-v', '--version', action='version',
+                    version='''%%(prog)s %s''' % __version__)
 
 
-
-
-subparsers = parser.add_subparsers(help='Methods to compute BFE')
+subparsers = cmdparser.add_subparsers(help='Methods to compute BFE', dest='subparser')
 gmxmmpbsa_parser = subparsers.add_parser(
     name='gmx_MMPBSA', parents=[gmx_parser],
     epilog='''xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE''',

@@ -1,67 +1,16 @@
 from xBFreE.mmpbsa.commandlineparser.parsers import (mmpbsa_parser,
-                                                 gmx_topology, gmx_structure, index, gmx_trajectory, pdb, mol2,
-                                                 complex_group_des, receptor_group_des, ligand_group_des,
-                                                 add_miscellaneous_actions)
-from xBFreE.exceptions import GMXMMPBSA_ERROR
-from argparse import ArgumentParser
-import sys
+                                                     gmx_topology, gmx_structure, index, gmx_trajectory, pdb, mol2,
+                                                     complex_group_des, receptor_group_des, ligand_group_des,
+                                                     add_miscellaneous_actions)
+from xBFreE import __version__
+import argcomplete
 
-
-class GMXMMPBSA_ArgParser(ArgumentParser):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def exit(self, status=0, message=None):
-        if message:
-            GMXMMPBSA_ERROR(message)
-        sys.exit(status)
-
-gmx_parser = GMXMMPBSA_ArgParser(
+gmx_parser = mmpbsa_parser(
     epilog='''xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE''',
-    description='''This is the core of gmx_MMPBSA and it will do all the calculations''',
-    add_help=False
-    # formatter_class=ArgumentDefaultsHelpFormatter
-)
+    description='''This is the core of gmx_MMPBSA and it will do all the calculations''')
 
-gmx_parser.add_argument('-O', '--overwrite', default=False, action='store_true',
-                   help='Allow output files to be overwritten', dest='overwrite')
-
-gmx_parser.add_argument('--create_input', dest='createinput', choices=['gb', 'pb', 'rism', 'ala', 'decomp', 'nmode',
-                                                                   'gbnsr6', 'all'],
-                    nargs='*', help='Create an new input file with selected calculation type.')
-gmx_parser.add_argument('--rewrite-output', dest='rewrite_output', default=False,
-                   action='store_true', help='''Do not re-run any calculations,
-                  just parse the output files from the previous calculation and
-                  rewrite the output files.''')
-gmx_parser.add_argument('-s', '--stability', dest='stability', action='store_true', default=False,
-                   help='''Perform stability calculation. Only the complex parameters are required. If
-                         ligand is non-Protein (small molecule) type, then ligand *.mol2 file is 
-                         required. In any other case receptor and ligand parameters will be ignored.
-                         See description bellow''')
-gmx_parser.add_argument('-nogui', dest='gui', action='store_false', default=True,
-                   help='No open gmx_MMPBSA_ana after all calculations finished')
-
-group = gmx_parser.add_argument_group('Input and Output Files', '''These options specify the input files and optional 
-output files.''')
-group.add_argument('-i', dest='input_file', metavar='FILE', help='MM/PBSA input file.')
-group.add_argument('-xvvfile', dest='xvvfile', help='XVV file for 3D-RISM.',
-                   # default=rism_xvv
-                   )
-group.add_argument('-o', dest='output_file', default='FINAL_RESULTS.dat', metavar='FILE',
-                   help='Output file with selected method (MMPBSA or LIE) statistics.')
-group.add_argument('-do', dest='decompout', metavar='FILE', default='FINAL_DECOMP.dat',
-                   help='Output file for decomposition statistics summary.')
-group.add_argument('-eo', dest='energyout', metavar='FILE',
-                   help='''CSV-format output of all energy terms for every frame
-                  in every calculation. File name forced to end in [.csv].
-                  This file is only written when specified on the
-                  command-line.''')
-group.add_argument('-deo', dest='dec_energies', metavar='FILE',
-                   help='''CSV-format output of all energy terms for each printed
-                  residue in decomposition calculations. File name forced to end
-                  in [.csv]. This file is only written when specified on the
-                  command-line.''')
-
+gmx_parser.add_argument('-v', '--version', action='version',
+                    version='''%%(prog)s %s''' % __version__)
 
 group = gmx_parser.add_argument_group('Complex', complex_group_des)
 group.add_argument('-cs', dest='complex_tpr', metavar='<Structure File>', default=None, type=gmx_structure,
@@ -116,15 +65,7 @@ group.add_argument('-lt', dest='ligand_trajs', nargs='*', metavar='TRJ', type=gm
 group.add_argument('-lp', dest='ligand_top', metavar='<Topology>', default=None, type=gmx_topology,
                    help='''Topology file of the ligand.''')
 
-group = gmx_parser.add_argument_group('Miscellaneous Options')
-group.add_argument('-prefix', dest='prefix', default='_GMXMMPBSA_',
-                   metavar='<file prefix>',
-                   help='Prefix for intermediate files.')
-group.add_argument('--input-file-help', dest='infilehelp', action='store_true',
-                    help='Print all available options in the input file.',
-                    default=False)
-group.add_argument('--clean', dest='clean', action='store_true', default=False,
-                   help='''Clean temporary files and quit.''')
+add_miscellaneous_actions(gmx_parser)
 
 # add actions to parser
 # add_miscellaneous_actions(gmx_parser)
