@@ -23,36 +23,26 @@ import sys
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
 
-if sys.version_info[:2] < (3, 8):
-    raise RuntimeError("seaborn requires python >= 3.8.")
-
 setup(
-    name='BFEnergy',
+    name='xBFreE',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     packages=find_packages(),
-    package_data={"BFEnergy": ["data/*", 'data/gmxMMPBSA/*', 'data/xvv_files/*', 'analyzer/style/*', 'GMXMMPBSA.sh']},
+    package_data={"BFEnergy": ["data/*", 'data/radii/*', 'data/xvv_files/*']},
     license='GPLv3',
     author='Mario S. Valdes-Tresanco and Mario E. Valdes-Tresanco ',
     author_email='mariosergiovaldes145@gmail.com',
     maintainer='Mario S. Valdes-Tresanco',
     maintainer_email='mariosergiovaldes145@gmail.com',
-    url='https://github.com/Valdes-Tresanco-MS/gmx_MMPBSA',
-    description="gmx_MMPBSA is a new tool based on AMBER's MMPBSA.py aiming to perform end-state free energy  "
-                "calculations with GROMACS files",
+    url='https://github.com/xBFreEnergy/xBFreE',
+    description="xBFreE",
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
-    keywords=['BFEnergy', 'MMPBSA', 'MMGBSA', 'LIE', 'GROMACS', 'AMBER', 'NAMD', 'AmberTools'],
-    install_requires=['pandas>=1.2.2', 'seaborn>=0.11.2', 'mpi4py>=3.1.3', 'scipy>=1.6.1', 'matplotlib>=3.5.1',
-                      'h5py'],
+    python_requires='>=3.8, <3.11',
+    keywords=['xBFreE', 'xBFreEnergy', 'MMPBSA', 'MMGBSA', 'LIE', 'GROMACS', 'AMBER', 'NAMD', 'CHARMM', 'AmberTools'],
+    install_requires=['pandas>=1.2.2', 'seaborn>=0.11.2', 'mpi4py>=3.1.3', 'scipy>=1.6.1', 'matplotlib>=3.5.1'],
     entry_points={
         "console_scripts": [
-            "xbfree=GMXMMPBSA.app:gmxmmpbsa",
-            "xBFreE=GMXMMPBSA.app:gmxmmpbsa",
-            "namd_MMPBSA=GMXMMPBSA.app:gmxmmpbsa",
-            "gmx_LIE=GMXMMPBSA.app:gmxmmpbsa",
-            "amber_LIE=GMXMMPBSA.app:gmxmmpbsa",
-            "namd_LIE=GMXMMPBSA.app:gmxmmpbsa",
-            "BFEnergyAna=GMXMMPBSA.app:gmxmmpbsa_ana",
-            "BFEnergyTest=GMXMMPBSA.app:gmxmmpbsa_test"]}
+            "xbfree=xBFreE.app:run_xbfreex",
+            ]}
 )
