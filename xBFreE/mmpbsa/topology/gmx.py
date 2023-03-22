@@ -38,12 +38,6 @@ negative_aa = ['GLU', 'ASP']
 nonpolar_aa = ['PHE', 'TRP', 'VAL', 'ILE', 'LEU', 'MET', 'PRO', 'CYX', 'ALA', 'GLY']
 polar_aa = ['TYR', 'SER', 'THR', 'CYM', 'CYS', 'HIE', 'HID', 'GLN', 'ASN', 'ASH', 'GLH', 'LYN']
 
-PBRadii = {1: 'bondi', 2: 'mbondi', 3: 'mbondi2', 4: 'mbondi3', 5: 'mbondi_pb2', 6: 'mbondi_pb3', 7: 'charmm_radii'}
-
-ions = ["AG", "AL", "Ag", "BA", "BR", "Be", "CA", "CD", "CE", "CL", "CO", "CR", "CS", "CU", "CU1", "Ce", "Cl-", "Cr",
-        "Dy", "EU", "EU3", "Er", "F", "FE", "FE2", "GD3", "H3O+", "HE+", "HG", "HZ+", "Hf", "IN", "IOD", "K", "K+",
-        "LA", "LI", "LU", "MG", "MN", "NA", "NH4", "NI", "Na+", "Nd", "PB", "PD", "PR", "PT", "Pu", "RB", "Ra", "SM",
-        "SR", "Sm", "Sn", "TB", "TL", "Th", "Tl", "Tm", "U4+", "V2+", "Y", "YB2", "ZN", "Zr"]
 
 
 class BuildTopGromacs(BuildTop):
@@ -161,7 +155,6 @@ class BuildTopGromacs(BuildTop):
                             'needed...')
         # wt receptor
         if self.FILES.receptor_tpr:
-            logging.info('A receptor structure file was defined. Using MT approach...')
             num_rec_group, str_rec_group = get_index_groups(self.FILES.receptor_index, self.FILES.receptor_group)
 
             logging.info('Making gmx_MMPBSA index for receptor...')
@@ -203,8 +196,6 @@ class BuildTopGromacs(BuildTop):
             if cp2.wait():  # if it quits with return code != 0
                 GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(prog), self.FILES.receptor_trajs[0]))
         else:
-            logging.info('No receptor structure file was defined. Using ST approach...')
-            logging.info('Using receptor structure from complex to generate AMBER topology')
             logging.info(f'Normal Receptor: Saving group {str_com_rec_group} ({num_com_rec_group}) in '
                          f'{self.FILES.complex_index} file as {self.receptor_str_file}')
             pdbrec_echo_args = echo_command + ['{}'.format(num_com_rec_group)]
@@ -269,8 +260,6 @@ class BuildTopGromacs(BuildTop):
                 GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(prog), self.FILES.ligand_trajs[0]))
         else:
             # wt complex ligand
-            logging.info('No ligand structure file was defined. Using ST approach...')
-            logging.info('Using ligand structure from complex to generate AMBER topology')
             logging.info(f'Normal Ligand: Saving group {str_com_lig_group} ({num_com_lig_group}) in '
                          f'{self.FILES.complex_index} file as {self.ligand_str_file}')
             pdblig_echo_args = echo_command + ['{}'.format(num_com_lig_group)]
@@ -317,13 +306,8 @@ class BuildTopGromacs(BuildTop):
 
     def gmxtop2prmtop(self):
         # FIXME: use Tan&Luo radii to avoid using radiopt variable (end in error when its not amber protein)
-        logging.info('Using topology conversion. Setting radiopt = 0...')
         self.INPUT['pb']['radiopt'] = 0
-        logging.info('Building Normal Complex Amber topology...')
-
-
-
-        com_top = self.cleantop(self.FILES.complex_top, self.indexes['COM']['COM'])
+        logging.info('Building Amber topologies...')
 
         gmx_com_top = self.cleantop(self.FILES.complex_top, self.indexes['COM']['COM'])
 
@@ -649,4 +633,123 @@ class BuildTopGromacs(BuildTop):
                     GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.ligand_trajs[i]))
                 new_trajs.append('LIG_traj_{}.xtc'.format(i))
             self.FILES.ligand_trajs = new_trajs
+
+    def check_structures(self, com_str, rec_str=None, lig_str=None):
+        logging.info('Checking the structures consistency...')
+        check_str(com_str)
+        check_str(rec_str, skip=True)
+        check_str(lig_str, skip=True)
+
+        if self.FILES.reference_structure:
+            logging.info('Assigning chain ID to structures files according to the reference structure...')
+            ref_str = check_str(self.FILES.reference_structure)
+            if len(ref_str.residues) != len(com_str.residues):
+                GMXMMPBSA_ERROR(f'The number of residues of the complex ({len(com_str.residues)}) and of the '
+                                f'reference structure ({len(ref_str.residues)}) are different. Please check that the '
+                                f'reference structure is correct')
+            for c, res in enumerate(ref_str.residues):
+                if com_str.residues[c].number != res.number or com_str.residues[c].name != res.name:
+                    GMXMMPBSA_ERROR('There is no match between the complex and the reference structure used. An '
+                                    f'attempt was made to assign the chain ID to "{com_str.residues[c].name}'
+                                    f':{com_str.residues[c].number}:{com_str.residues[c].insertion_code}" in the '
+                                    f'complex, but "{res.name}:{res.number}:{res.insertion_code}" was expected '
+                                    'based on the reference structure. Please check that the reference structure is '
+                                    'correct')
+                com_str.residues[c].chain = res.chain
+                i = self.resl[c].id_index - 1
+                if self.resl[c].is_receptor():
+                    rec_str.residues[i].chain = res.chain
+                else:
+                    lig_str.residues[i].chain = res.chain
+        else:
+            assign = False
+            if self.INPUT['general']['assign_chainID'] == 1:
+                assign = not com_str.residues[0].chain  # pretty simple
+                if assign:
+                    logging.info('Chains ID not found. Assigning chains IDs...')
+                else:
+                    logging.info('Chains ID found. Ignoring chains ID assignation...')
+            elif self.INPUT['general']['assign_chainID'] == 2:
+                assign = True
+                if com_str.residues[0].chain:
+                    logging.warning('Assigning chains ID...')
+                else:
+                    logging.warning('Already have chain ID. Re-assigning ID...')
+            elif self.INPUT['general']['assign_chainID'] == 0 and not com_str.residues[0].chain:
+                assign = True
+                logging.warning('No reference structure was found and the complex structure not contain any chain ID. '
+                                'Assigning chains ID automatically...')
+            if assign:
+                self._assign_chains_IDs(com_str, rec_str, lig_str)
+        # Save fixed complex structure for analysis and set it in FILES to save in info file
+        com_str.save(f'{self.FILES.prefix}COM_FIXED.pdb', 'pdb', True, renumber=False)
+        logging.info('')
+
+    def _assign_chains_IDs(self, com_str, rec_str, lig_str):
+        chains_ids = []
+        chain_by_num = False
+        chain_by_ter = False
+        previous_res_number = 0
+        curr_chain_id = 'A'
+        has_nucl = 0
+        for c, res in enumerate(com_str.residues):
+            if res.chain:
+                if res.chain != curr_chain_id:
+                    res.chain = curr_chain_id
+                    i = self.resl[c].id_index - 1
+                    if self.resl[c].is_receptor():
+                        rec_str.residues[i].chain = res.chain
+                    else:
+                        lig_str.residues[i].chain = res.chain
+                if res.chain not in chains_ids:
+                    chains_ids.append(res.chain)
+            else:
+                res.chain = curr_chain_id
+
+                i = self.resl[c].id_index - 1
+                if self.resl[c].is_receptor():
+                    rec_str.residues[i].chain = res.chain
+                else:
+                    lig_str.residues[i].chain = res.chain
+                if curr_chain_id not in chains_ids:
+                    chains_ids.append(curr_chain_id)
+                    # see if it is the end of chain
+            if res.number != previous_res_number + 1 and previous_res_number != 0:
+                chain_by_num = True
+            if chain_by_num and chain_by_ter:
+                chain_by_num = False
+                chain_by_ter = False
+                curr_chain_id = chains_letters[chains_letters.index(chains_ids[-1]) + 1]
+                res.chain = curr_chain_id
+
+                i = self.resl[c].id_index - 1
+                if self.resl[c].is_receptor():
+                    rec_str.residues[i].chain = res.chain
+                else:
+                    lig_str.residues[i].chain = res.chain
+                if res.chain not in chains_ids:
+                    chains_ids.append(res.chain)
+            elif chain_by_ter:
+                chain_by_ter = False
+            elif chain_by_num:
+                chain_by_num = False
+                curr_chain_id = chains_letters[chains_letters.index(chains_ids[-1]) + 1]
+                res.chain = curr_chain_id
+                i = self.resl[c].id_index - 1
+                if self.resl[c + 1].is_receptor():
+                    rec_str.residues[i].chain = res.chain
+                else:
+                    lig_str.residues[i].chain = res.chain
+                if res.chain not in chains_ids:
+                    chains_ids.append(res.chain)
+            for atm in res.atoms:
+                if atm.name == 'OXT':  # only for protein
+                    res.ter = True
+                    chain_by_ter = True
+            if parmed.residue.RNAResidue.has(res.name) or parmed.residue.DNAResidue.has(res.name):
+                has_nucl += 1
+
+            previous_res_number = res.number
+        if has_nucl == 1:
+            logging.warning('This structure contains nucleotides. We recommend that you use the reference structure')
 
