@@ -1,0 +1,24 @@
+{
+  "name": "bondi",
+  "forcefield": ["all"],
+  "implementation": "xBFreE Team",
+  "reviews": [],
+  "reference": "",
+  "notes": "",
+  "type": "atom_number",
+  "radii": [
+    {"atom_number": 1, "atom_type": null, "mass": null, "radii": 1.2},
+    {"atom_number": 6, "atom_type": "^C1", "mass": ">13.0", "radii": 2.2},
+    {"atom_number": 6, "atom_type": "^C2", "mass": ">14.0", "radii": 2.2},
+    {"atom_number": 6, "atom_type": "^C3", "mass": ">15.0", "radii": 2.2},
+    {"atom_number": 6, "atom_type": null, "mass": null, "radii": 1.7},
+    {"atom_number": 7, "atom_type": null, "mass": null, "radii": 1.55},
+    {"atom_number": 8, "atom_type": null, "mass": null, "radii": 1.5},
+    {"atom_number": 9, "atom_type": null, "mass": null, "radii": 1.5},
+    {"atom_number": 14, "atom_type": null, "mass": null, "radii": 2.1},
+    {"atom_number": 15, "atom_type": null, "mass": null, "radii": 1.85},
+    {"atom_number": 16, "atom_type": null, "mass": null, "radii": 1.8},
+    {"atom_number": 17, "atom_type": null, "mass": null, "radii": 1.7},
+    {"atom_number": "*", "atom_type": null, "mass": null, "radii": 1.5}
+  ]
+}

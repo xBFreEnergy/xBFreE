@@ -1,0 +1,27 @@
+{
+  "name": "amber6",
+  "forcefield": ["all"],
+  "implementation": "xBFreE Team",
+  "reviews": [],
+  "reference": "",
+  "notes": "",
+  "type": "atom_number+bonded_atom_number",
+  "radii": [
+    {"atom_number": 1 , "atom_type": null, "bonded_atom_number": 6 , "mass": null, "radii": 1.3 },
+    {"atom_number": 1 , "atom_type": null, "bonded_atom_number": 8 , "mass": null, "radii": 0.8 },
+    {"atom_number": 1 , "atom_type": null, "bonded_atom_number": 16, "mass": null, "radii": 0.8 },
+    {"atom_number": 1 , "atom_type": null, "bonded_atom_number": null , "mass": null, "radii": 1.2 },
+    {"atom_number": 6 , "atom_type": "^C1", "bonded_atom_number": null, "mass": ">13.0", "radii": 2.2 },
+    {"atom_number": 6 , "atom_type": "^C2", "bonded_atom_number": null, "mass": ">14.0", "radii": 2.2},
+    {"atom_number": 6 , "atom_type": "^C3", "bonded_atom_number": null, "mass": ">15.0", "radii": 2.2 },
+    {"atom_number": 6 , "atom_type": null  , "bonded_atom_number": null, "mass": null, "radii": 1.7 },
+    {"atom_number": 7 , "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 1.55},
+    {"atom_number": 8 , "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 1.5},
+    {"atom_number": 9 , "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 1.5 },
+    {"atom_number": 14, "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 2.1 },
+    {"atom_number": 15, "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 1.85},
+    {"atom_number": 16, "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 1.8 },
+    {"atom_number": 17, "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 1.7 },
+    {"atom_number": "*", "atom_type": null, "bonded_atom_number": null, "mass": null, "radii": 1.5 }
+  ]
+}
