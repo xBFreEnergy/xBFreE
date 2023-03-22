@@ -68,7 +68,7 @@ def gmx_topology(arg):
     return arg
 
 
-@check_arg(['.prmtop', '.top'], True)
+@check_arg(['.prmtop', '.top', '.parm7'], True)
 def amber_topology(arg):
     return arg
 
