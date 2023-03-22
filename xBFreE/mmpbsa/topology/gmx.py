@@ -95,7 +95,7 @@ class BuildTopGromacs(BuildTop):
         c1 = subprocess.Popen(make_ndx_echo_args, stdout=subprocess.PIPE)
 
         com_ndx = self.FILES.prefix + 'COM_index.ndx'
-        make_ndx_args = self.make_ndx + ['-n', self.FILES.complex_index, '-o', com_ndx, '-f', self.FILES.complex_tpr]
+        make_ndx_args = self.make_ndx + ['-n', self.FILES.complex_index, '-o', com_ndx, '-f', self.FILES.complex_structure]
         logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                       (' '.join(make_ndx_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' + ' | ' +
                       ' '.join(make_ndx_args))
@@ -112,15 +112,15 @@ class BuildTopGromacs(BuildTop):
         pdbcom_echo_args = echo_command + ['GMXMMPBSA_REC_GMXMMPBSA_LIG']
         c3 = subprocess.Popen(pdbcom_echo_args, stdout=subprocess.PIPE)
 
-        str_format = 'tpr' if self.FILES.complex_tpr[-3:] == 'tpr' else 'pdb'
+        str_format = 'tpr' if self.FILES.complex_structure[-3:] == 'tpr' else 'pdb'
         if str_format == 'tpr':
             comprog = self.trjconv
             # we extract the pdb from the first frame of trajs to make amber topology
-            pdbcom_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_tpr, '-o',
+            pdbcom_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_structure, '-o',
                                           self.complex_str_file, '-n', self.FILES.complex_index, '-dump', '0']
         else:
             comprog = self.editconf
-            pdbcom_args = self.editconf + ['-f', self.FILES.complex_tpr, '-n', self.FILES.complex_index, '-o',
+            pdbcom_args = self.editconf + ['-f', self.FILES.complex_structure, '-n', self.FILES.complex_index, '-o',
                                            self.complex_str_file]
         logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                       (' '.join(pdbcom_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' +
@@ -140,10 +140,10 @@ class BuildTopGromacs(BuildTop):
             cp1 = subprocess.Popen(rec_echo_args, stdout=subprocess.PIPE)
             if str_format == 'tpr':
                 # we extract the pdb from the first frame of trajs to make amber topology
-                pdbrec_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_tpr, '-o',
+                pdbrec_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_structure, '-o',
                                               'rec_temp.pdb', '-n', self.FILES.complex_index, '-dump', '0']
             else:
-                pdbrec_args = self.editconf + ['-f', self.FILES.complex_tpr, '-n', self.FILES.complex_index, '-o',
+                pdbrec_args = self.editconf + ['-f', self.FILES.complex_structure, '-n', self.FILES.complex_index, '-o',
                                                'rec_temp.pdb']
             logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                           (' '.join(rec_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' +
@@ -208,13 +208,13 @@ class BuildTopGromacs(BuildTop):
                          f'{self.FILES.complex_index} file as {self.receptor_str_file}')
             pdbrec_echo_args = echo_command + ['{}'.format(num_com_rec_group)]
             cp1 = subprocess.Popen(pdbrec_echo_args, stdout=subprocess.PIPE)
-            str_format = 'tpr' if self.FILES.complex_tpr[-3:] == 'tpr' else 'pdb'
+            str_format = 'tpr' if self.FILES.complex_structure[-3:] == 'tpr' else 'pdb'
             if str_format == 'tpr':
                 # we extract a pdb from structure file to make amber topology
-                pdbrec_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_tpr, '-o',
+                pdbrec_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_structure, '-o',
                                               self.receptor_str_file, '-n', self.FILES.complex_index, '-dump', '0']
             else:
-                pdbrec_args = self.editconf + ['-f', self.FILES.complex_tpr, '-n', self.FILES.complex_index, '-o',
+                pdbrec_args = self.editconf + ['-f', self.FILES.complex_structure, '-n', self.FILES.complex_index, '-o',
                                                self.receptor_str_file]
             logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                           (' '.join(pdbrec_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' +
@@ -275,13 +275,13 @@ class BuildTopGromacs(BuildTop):
             pdblig_echo_args = echo_command + ['{}'.format(num_com_lig_group)]
             l1 = subprocess.Popen(pdblig_echo_args, stdout=subprocess.PIPE)
 
-            str_format = 'tpr' if self.FILES.complex_tpr[-3:] == 'tpr' else 'pdb'
+            str_format = 'tpr' if self.FILES.complex_structure[-3:] == 'tpr' else 'pdb'
             if str_format == 'tpr':
                 # we extract a pdb from structure file to make amber topology
-                pdblig_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_tpr, '-o',
+                pdblig_args = self.trjconv + ['-f', self.FILES.complex_trajs[0], '-s', self.FILES.complex_structure, '-o',
                                               self.ligand_str_file, '-n', self.FILES.complex_index, '-dump', '0']
             else:
-                pdblig_args = self.editconf + ['-f', self.FILES.complex_tpr, '-n', self.FILES.complex_index, '-o',
+                pdblig_args = self.editconf + ['-f', self.FILES.complex_structure, '-n', self.FILES.complex_index, '-o',
                                                self.ligand_str_file]
 
             # we extract a pdb from structure file to make amber topology
@@ -677,7 +677,7 @@ class BuildTopGromacs(BuildTop):
             trjconv_echo_args = echo_command + ['GMXMMPBSA_REC_GMXMMPBSA_LIG']
             c5 = subprocess.Popen(trjconv_echo_args, stdout=subprocess.PIPE)
             # we get only first trajectory to extract a pdb file and make amber topology for complex
-            trjconv_args = self.trjconv + ['-f', self.FILES.complex_trajs[i], '-s', self.FILES.complex_tpr, '-o',
+            trjconv_args = self.trjconv + ['-f', self.FILES.complex_trajs[i], '-s', self.FILES.complex_structure, '-o',
                                            f'COM_traj_{i}.xtc', '-n', self.FILES.complex_index]
             logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                           (' '.join(trjconv_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' +

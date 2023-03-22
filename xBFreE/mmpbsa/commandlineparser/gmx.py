@@ -13,7 +13,7 @@ gmx_parser.add_argument('-v', '--version', action='version',
                     version='''%%(prog)s %s''' % __version__)
 
 group = gmx_parser.add_argument_group('Complex', complex_group_des)
-group.add_argument('-cs', dest='complex_tpr', metavar='<Structure File>', default=None, type=gmx_structure,
+group.add_argument('-cs', dest='complex_structure', metavar='<Structure File>', default=None, type=gmx_structure,
                    help='''Structure file of the complex. Allowed formats: *.tpr (recommended), *.pdb''')
 group.add_argument('-ci', dest='complex_index', metavar='<Index File>', default=None, type=index,
                    help='Index file of the bound complex.')

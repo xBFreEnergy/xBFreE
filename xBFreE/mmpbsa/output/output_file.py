@@ -547,7 +547,7 @@ class OutputFile(object):
         # if FILES.solvated_prmtop:
         #    self.writeline('|Solvated complex topology file:  %s' %
         #               FILES.solvated_prmtop)
-        self.writeline(f'{"|Complex Structure file:":40}{FILES.complex_tpr:>40}')
+        self.writeline(f'{"|Complex Structure file:":40}{FILES.complex_structure:>40}')
         if FILES.complex_top:
             self.writeline(f'{"|Complex (GROMACS) topology file:":40}{FILES.complex_top:>40}')
         self.writeline(f'{"|Complex (AMBER) topology file:":40}{FILES.complex_prmtop:>40}')
