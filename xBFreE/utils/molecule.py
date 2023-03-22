@@ -382,5 +382,13 @@ def get_indexes(com_ndx, rec_ndx=None, lig_ndx=None):
     return {'COM': com_indexes, 'REC': rec_indexes, 'LIG': lig_indexes}
 
 
+def get_amber_indexes(com_ind, rec_ind=None, lig_ind=None):
+    com_indexes = {'COM': [c for c, x in enumerate(com_ind['com'], start=1) if not x],
+                   'REC': [c for c, x in enumerate(com_ind['rec'], start=1) if not x],
+                   'LIG': [c for c, x in enumerate(com_ind['lig'], start=1) if not x]}
+    rec_indexes = [c for c, x in enumerate(rec_ind, start=1) if not x] if rec_ind else {}
+    lig_indexes = [c for c, x in enumerate(lig_ind, start=1) if not x] if lig_ind else {}
+    return {'COM': com_indexes, 'REC': rec_indexes, 'LIG': lig_indexes}
+
 def get_dist(coor1, coor2):
     return sqrt((coor2[0] - coor1[0]) ** 2 + (coor2[1] - coor1[1]) ** 2 + (coor2[2] - coor1[2]) ** 2)
