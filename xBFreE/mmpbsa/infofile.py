@@ -210,9 +210,9 @@ class InfoFile(object):
         # Set app.pre as prefix
         self.app.pre = self.app.FILES.prefix
         if self.app.FILES.receptor_trajs or self.app.FILES.ligand_trajs:
-            self.app.traj_protocol = 'MTP'
+            self.app.traj_protocol = 'MT'
         else:
-            self.app.traj_protocol = 'STP'
+            self.app.traj_protocol = 'ST'
         # Load the input file text
         self.app.input_file_text = input_text
 

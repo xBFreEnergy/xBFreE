@@ -132,7 +132,7 @@ class MMPBSA_App(object):
              lig_frames, self.numframes_nmode) = make_trajectories(INPUT, FILES, self.mpi_size,
                                                                    self.external_progs['cpptraj'],
                                                                    self.pre)
-            if self.traj_protocol == 'MTP' and not self.numframes == rec_frames == lig_frames:
+            if self.traj_protocol == 'MT' and not self.numframes == rec_frames == lig_frames:
                 GMXMMPBSA_ERROR('The complex, receptor, and ligand trajectories must be the same length. Since v1.5.0 '
                                 'we have simplified a few things to make the code easier to maintain. Please check the '
                                 'documentation')
@@ -675,19 +675,19 @@ class MMPBSA_App(object):
         if self.master:
             # Make amber topologies
             if self.md_prog == 'gmx':
-                logging.info('Building AMBER topologies from GROMACS files...')
+                logging.info(f'Building AMBER topologies from GROMACS files using {self.traj_protocol} approach...')
                 from xBFreE.mmpbsa.topology.gmx import BuildTopGromacs
                 top_builder = BuildTopGromacs
             elif self.md_prog == 'amber':
-                logging.info('Building AMBER topologies from AMBER files...')
+                logging.info(f'Building AMBER topologies from AMBER files using {self.traj_protocol} approach...')
                 from xBFreE.mmpbsa.topology.amber import BuildTopAmber
                 top_builder = BuildTopAmber
             elif self.md_prog == 'namd':
-                logging.info('Building AMBER topologies from NAMD files...')
+                logging.info(f'Building AMBER topologies from NAMD files using {self.traj_protocol} approach...')
                 from xBFreE.mmpbsa.topology.namd import BuildTopNAMD
                 top_builder = BuildTopNAMD
             elif self.md_prog == 'charmm':
-                logging.info('Building AMBER topologies from CHARMM files...')
+                logging.info(f'Building AMBER topologies from CHARMM files using {self.traj_protocol} approach...')
                 # from xBFreE.mmpbsa.topology.charmm import BuildTopCHARMM
                 # top_builder = BuildTopGromacs
 
@@ -863,9 +863,9 @@ class MMPBSA_App(object):
         # Hand over the file prefix to the App instance
         self.pre = self.FILES.prefix
         if self.FILES.receptor_trajs or self.FILES.ligand_trajs:
-            self.traj_protocol = 'MTP'  # multiple traj protocol
+            self.traj_protocol = 'MT'  # multiple traj protocol
         else:
-            self.traj_protocol = 'STP'  # single traj protocol
+            self.traj_protocol = 'ST'  # single traj protocol
         # change by explicit argument
         self.stability = self.FILES.stability
 

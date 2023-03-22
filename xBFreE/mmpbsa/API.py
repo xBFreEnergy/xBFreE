@@ -82,7 +82,7 @@ def _itemdata_properties(data, decomp=False):
 def _extracted_from__itemdata_properties_5(data, groups):
     sep_ggas_keys = []
     sep_gsolv_keys = []
-    # remove empty charts? (BOND, ANGLE and DIHEDRAL for STP)
+    # remove empty charts? (BOND, ANGLE and DIHEDRAL for ST)
     # FIXME: NLPBsolver ?
     ggas_keys = ['BOND', 'ANGLE', 'DIHED', 'VDWAALS', 'EEL', '1-4 VDW', '1-4 EEL', 'UB', 'IMP', 'CMAP', 'ESCF']
     gsolv_keys = ['EGB', 'ESURF', 'EPB', 'ENPOLAR', 'EDISPER', 'POLAR SOLV', 'APOLAR SOLV', 'ERISM']
@@ -976,8 +976,8 @@ class MMPBSA_API():
         # See if we are doing stability
         self.stability = self.app_namespace.FILES.stability
         self.mutant_only = self.app_namespace.INPUT['ala']['mutant_only']
-        self.traj_protocol = ('MTP' if self.app_namespace.FILES.receptor_trajs or
-                                       self.app_namespace.FILES.ligand_trajs else 'STP')
+        self.traj_protocol = ('MT' if self.app_namespace.FILES.receptor_trajs or
+                                       self.app_namespace.FILES.ligand_trajs else 'ST')
 
 def load_gmxmmpbsa_info(fname: Union[Path, str]):
     """

@@ -928,7 +928,7 @@ class BindingStatistics(dict):
     """ Base class for compiling the binding statistics """
     st_null = ['BOND', 'ANGLE', 'DIHED', '1-4 VDW', '1-4 EEL']
 
-    def __init__(self, com, rec, lig, chamber=False, traj_protocol='STP', **kwargs):
+    def __init__(self, com, rec, lig, chamber=False, traj_protocol='ST', **kwargs):
         super(BindingStatistics, self).__init__(**kwargs)
         self.com = com
         self.rec = rec
@@ -959,7 +959,7 @@ class BindingStatistics(dict):
         """
         # First thing we do is check to make sure that all of the terms that
         # should *not* be printed actually cancel out (i.e. bonded terms)
-        if not isinstance(self.com, NMODEout) and self.traj_protocol == 'STP':
+        if not isinstance(self.com, NMODEout) and self.traj_protocol == 'ST':
             TINY = 0.005
             for key in self.st_null:
                 diff = self.com[key] - self.rec[key] - self.lig[key]
@@ -970,7 +970,7 @@ class BindingStatistics(dict):
                     break
 
         for key in self.com.data_keys:
-            if self.traj_protocol == 'STP':
+            if self.traj_protocol == 'ST':
                 temp = self.com[key].corr_sub(self.rec[key])
                 self[key] = temp.corr_sub(self.lig[key])
             else:
@@ -979,7 +979,7 @@ class BindingStatistics(dict):
             self[key] = EnergyVector(self.numframes)
             self.composite_keys.append(key)
         for key in self.com.data_keys:
-            if self.traj_protocol == 'STP' and key in self.st_null:
+            if self.traj_protocol == 'ST' and key in self.st_null:
                 continue
             for component in data_key_owner[key]:
                 self[component] = self[key] + self[component]
