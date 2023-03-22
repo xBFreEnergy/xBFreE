@@ -2,6 +2,7 @@
   "name": "charmm_radii",
   "forcefield": ["charmm"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "charmm radii (charmm_radii)",
   "reviews": [],
   "reference": "",
   "notes": "",

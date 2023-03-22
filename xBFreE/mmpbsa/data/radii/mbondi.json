@@ -2,6 +2,7 @@
   "name": "mbondi",
   "forcefield": ["all"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "modified Bondi radii (mbondi)",
   "reviews": [],
   "reference": "",
   "notes": "",

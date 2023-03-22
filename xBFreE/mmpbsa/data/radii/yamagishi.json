@@ -2,6 +2,7 @@
   "name": "yamagishi",
   "forcefield": ["amber", "charmm"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "Yamagishi",
   "reviews": [],
   "reference": "",
   "notes": "",

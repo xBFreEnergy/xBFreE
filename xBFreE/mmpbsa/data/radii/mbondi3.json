@@ -2,6 +2,7 @@
   "name": "mbondi3",
   "forcefield": ["all"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "ArgH and AspGluO modified Bondi2 radii (mbondi3)",
   "reviews": [],
   "reference": "",
   "notes": "Keep definition containing res_name at the end of atom definition list because it has high priority and overwrite previous definitions. OTER = carboxylate O, simply there no way to get this atom only",

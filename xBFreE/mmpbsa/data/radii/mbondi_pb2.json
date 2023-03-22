@@ -2,6 +2,7 @@
   "name": "mbondi_pb2",
   "forcefield": ["all"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "modified Bondi radii with ropt for halogens (mbondi_pb2)",
   "reviews": [],
   "reference": "",
   "notes": "",

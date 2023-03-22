@@ -2,6 +2,7 @@
   "name": "tyl06",
   "forcefield": ["amber", "charmm"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "Tan, Yang & Luo 06 (tyl06)",
   "reviews": [],
   "reference": "",
   "notes": "",

@@ -2,6 +2,7 @@
   "name": "mbondi2",
   "forcefield": ["all"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "H(N)-modified Bondi radii (mbondi2)",
   "reviews": [],
   "reference": "",
   "notes": "",

@@ -2,6 +2,7 @@
   "name": "amber6",
   "forcefield": ["all"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "amber6 modified Bondi radii (amber6)",
   "reviews": [],
   "reference": "",
   "notes": "",

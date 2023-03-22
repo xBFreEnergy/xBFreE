@@ -2,6 +2,7 @@
   "name": "bondi",
   "forcefield": ["all"],
   "implementation": "xBFreE Team",
+  "RADIUS_SET": "Bondi radii (bondi)",
   "reviews": [],
   "reference": "",
   "notes": "",
