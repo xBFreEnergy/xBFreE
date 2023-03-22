@@ -307,7 +307,7 @@ class BuildTopGromacs(BuildTop):
     def gmxtop2prmtop(self):
         # FIXME: use Tan&Luo radii to avoid using radiopt variable (end in error when its not amber protein)
         self.INPUT['pb']['radiopt'] = 0
-        logging.info('Building Amber topologies...')
+        logging.info('Building Normal Amber topologies...')
 
         gmx_com_top = self.cleantop(self.FILES.complex_top, self.indexes['COM']['COM'])
 
@@ -355,7 +355,7 @@ class BuildTopGromacs(BuildTop):
         self.radii.assign_radii(gmx_com_top)
         self.radii.assign_radii(gmx_rec_top)
         self.radii.assign_radii(gmx_lig_top)
-        logging.info(f"Saving Normal Topology files...")
+        logging.info("Saving Normal Topology files...")
 
         com_amb_prm = top_class.from_structure(gmx_com_top)
         self.fixparm2amber(com_amb_prm)
@@ -372,7 +372,7 @@ class BuildTopGromacs(BuildTop):
         lig_amb_prm.write_parm(self.ligand_pmrtop)
 
         if self.INPUT['ala']['alarun']:
-            logging.debug('Building Mutant Complex Topology...')
+            logging.debug('Building Mutant Amber Topology...')
             # get mutation index in complex
             self.com_mut_index, self.part_mut, self.part_index = self.getMutationInfo()
             gmx_mut_com_top = self.makeMutTop(gmx_com_top, self.com_mut_index)
@@ -401,10 +401,7 @@ class BuildTopGromacs(BuildTop):
 
             logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Mutant topologies...")
             self.radii.assign_radii(gmx_mut_com_top)
-            if self.part_mut == 'REC':
-                self.radii.assign_radii(mut_gmx_top)
-            else:
-                self.radii.assign_radii(mut_gmx_top)
+            self.radii.assign_radii(mut_gmx_top)
 
             logging.info(f"Saving Mutant Topology files...")
             mut_com_amb_prm = top_class.from_structure(gmx_mut_com_top)
