@@ -45,6 +45,9 @@ input_file.addNamelist('general', 'general',
                            ['exp_ki', list, [0.0], 'Experimental Ki in nM', float],
                            ['full_traj', int, 0, 'Print a full traj. AND the thread trajectories'],
                            ['gmx_path', str, '', 'Force to use this path to get GROMACS executable'],
+                           ['exe_path', str, '', 'Add a custom path to search executables (i.e, gmx, apbs)'],
+                           ['radii_path', str, '', 'Add a custom path to search radii file'],
+
                            ['keep_files', int, 2, 'How many files to keep after successful completion'],
 
                            ['netcdf', int, 0, 'Use NetCDF intermediate trajectories'],
