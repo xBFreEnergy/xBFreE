@@ -14,8 +14,7 @@
 
 import parmed
 from xBFreE.exceptions import *
-from xBFreE.utils.molecule import check_str, get_dist
-from xBFreE.utils.misc import selector
+from xBFreE.utils.molecule import get_dist, selector
 from xBFreE.mmpbsa.alamdcrd import _scaledistance
 import logging
 import string
@@ -51,7 +50,9 @@ class BuildTop:
         self.receptor_str_file = f'{self.FILES.prefix}REC.pdb'
         self.ligand_str_file = f'{self.FILES.prefix}LIG.pdb'
 
-        self.checkFiles()
+
+        # FIXME: adapt this function to implemnted md programs
+        # self.checkFiles()
 
     def checkFiles(self):
         if (not self.FILES.complex_structure or not self.FILES.complex_index or
@@ -317,124 +318,37 @@ class BuildTop:
                     logging.warning(f"Unclassified mutant residue {mutant_resname}. The default indi will be used")
         return mut_top
 
-    def check_structures(self, com_str, rec_str=None, lig_str=None):
-        logging.info('Checking the structures consistency...')
-        check_str(com_str)
-        check_str(rec_str, skip=True)
-        check_str(lig_str, skip=True)
+    def getMutationInfo(self):
+        if not self.INPUT['ala']['mutant_res']:
+            GMXMMPBSA_ERROR("No residue for mutation was defined")
+        # dict = { resind: [chain, resnum, icode]
+        sele_res_dict = self.get_selected_residues(self.INPUT['ala']['mutant_res'])
+        if len(sele_res_dict) != 1:
+            GMXMMPBSA_ERROR('Only ONE mutant residue is allowed.')
+        r = sele_res_dict[0]
+        res = self.complex_str.residues[r - 1]
+        icode = f':{res.insertion_code}' if res.insertion_code else ''
+        if (not parmed.residue.AminoAcidResidue.has(res.name) or res.name in ['CYX', 'PRO', 'GLY'] or
+                res.name == 'ALA' and self.INPUT['ala']['mutant'] == 'ALA'):
+            GMXMMPBSA_ERROR(f"Selecting residue {res.chain}:{res.name}:{res.number}{icode} can't be mutated. Please, "
+                            f"define a valid residue...")
 
-        if self.FILES.reference_structure:
-            logging.info('Assigning chain ID to structures files according to the reference structure...')
-            ref_str = check_str(self.FILES.reference_structure)
-            if len(ref_str.residues) != len(com_str.residues):
-                GMXMMPBSA_ERROR(f'The number of residues of the complex ({len(com_str.residues)}) and of the '
-                                f'reference structure ({len(ref_str.residues)}) are different. Please check that the '
-                                f'reference structure is correct')
-            for c, res in enumerate(ref_str.residues):
-                if com_str.residues[c].number != res.number or com_str.residues[c].name != res.name:
-                    GMXMMPBSA_ERROR('There is no match between the complex and the reference structure used. An '
-                                    f'attempt was made to assign the chain ID to "{com_str.residues[c].name}'
-                                    f':{com_str.residues[c].number}:{com_str.residues[c].insertion_code}" in the '
-                                    f'complex, but "{res.name}:{res.number}:{res.insertion_code}" was expected '
-                                    'based on the reference structure. Please check that the reference structure is '
-                                    'correct')
-                com_str.residues[c].chain = res.chain
-                i = self.resl[c].id_index - 1
-                if self.resl[c].is_receptor():
-                    rec_str.residues[i].chain = res.chain
-                else:
-                    lig_str.residues[i].chain = res.chain
+        if r.is_receptor():
+            part_index = r.id_index - 1
+            part_mut = 'REC'
+        elif r.is_ligand():
+            part_index = r.id_index - 1
+            part_mut = 'LIG'
         else:
-            assign = False
-            if self.INPUT['general']['assign_chainID'] == 1:
-                assign = not com_str.residues[0].chain  # pretty simple
-                if assign:
-                    logging.info('Chains ID not found. Assigning chains IDs...')
-                else:
-                    logging.info('Chains ID found. Ignoring chains ID assignation...')
-            elif self.INPUT['general']['assign_chainID'] == 2:
-                assign = True
-                if com_str.residues[0].chain:
-                    logging.warning('Assigning chains ID...')
-                else:
-                    logging.warning('Already have chain ID. Re-assigning ID...')
-            elif self.INPUT['general']['assign_chainID'] == 0 and not com_str.residues[0].chain:
-                assign = True
-                logging.warning('No reference structure was found and the complex structure not contain any chain ID. '
-                                'Assigning chains ID automatically...')
-            if assign:
-                self._assign_chains_IDs(com_str, rec_str, lig_str)
-        # Save fixed complex structure for analysis and set it in FILES to save in info file
-        com_str.save(f'{self.FILES.prefix}COM_FIXED.pdb', 'pdb', True, renumber=False)
-        logging.info('')
-
-    def _assign_chains_IDs(self, com_str, rec_str, lig_str):
-        chains_ids = []
-        chain_by_num = False
-        chain_by_ter = False
-        previous_res_number = 0
-        curr_chain_id = 'A'
-        has_nucl = 0
-        for c, res in enumerate(com_str.residues):
-            if res.chain:
-                if res.chain != curr_chain_id:
-                    res.chain = curr_chain_id
-                    i = self.resl[c].id_index - 1
-                    if self.resl[c].is_receptor():
-                        rec_str.residues[i].chain = res.chain
-                    else:
-                        lig_str.residues[i].chain = res.chain
-                if res.chain not in chains_ids:
-                    chains_ids.append(res.chain)
+            part_index = None
+            part_mut = None
+            if icode:
+                GMXMMPBSA_ERROR(f'Residue {res.chain}:{res.number}:{res.insertion_code} not found')
             else:
-                res.chain = curr_chain_id
+                GMXMMPBSA_ERROR(f'Residue {res.chain}:{res.number} not found')
 
-                i = self.resl[c].id_index - 1
-                if self.resl[c].is_receptor():
-                    rec_str.residues[i].chain = res.chain
-                else:
-                    lig_str.residues[i].chain = res.chain
-                if curr_chain_id not in chains_ids:
-                    chains_ids.append(curr_chain_id)
-                    # see if it is the end of chain
-            if res.number != previous_res_number + 1 and previous_res_number != 0:
-                chain_by_num = True
-            if chain_by_num and chain_by_ter:
-                chain_by_num = False
-                chain_by_ter = False
-                curr_chain_id = chains_letters[chains_letters.index(chains_ids[-1]) + 1]
-                res.chain = curr_chain_id
-
-                i = self.resl[c].id_index - 1
-                if self.resl[c].is_receptor():
-                    rec_str.residues[i].chain = res.chain
-                else:
-                    lig_str.residues[i].chain = res.chain
-                if res.chain not in chains_ids:
-                    chains_ids.append(res.chain)
-            elif chain_by_ter:
-                chain_by_ter = False
-            elif chain_by_num:
-                chain_by_num = False
-                curr_chain_id = chains_letters[chains_letters.index(chains_ids[-1]) + 1]
-                res.chain = curr_chain_id
-                i = self.resl[c].id_index - 1
-                if self.resl[c + 1].is_receptor():
-                    rec_str.residues[i].chain = res.chain
-                else:
-                    lig_str.residues[i].chain = res.chain
-                if res.chain not in chains_ids:
-                    chains_ids.append(res.chain)
-            for atm in res.atoms:
-                if atm.name == 'OXT':  # only for protein
-                    res.ter = True
-                    chain_by_ter = True
-            if parmed.residue.RNAResidue.has(res.name) or parmed.residue.DNAResidue.has(res.name):
-                has_nucl += 1
-
-            previous_res_number = res.number
-        if has_nucl == 1:
-            logging.warning('This structure contains nucleotides. We recommend that you use the reference structure')
+        # return r - 1 since r is the complex mutant index from amber selection format. Needed for top mutation only
+        return r - 1, part_mut, part_index
 
     @staticmethod
     def molstr(data):

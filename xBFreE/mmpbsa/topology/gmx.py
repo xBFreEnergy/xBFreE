@@ -23,7 +23,7 @@ import logging
 import string
 from parmed.tools.changeradii import ChRad
 from .core import BuildTop
-
+from ..utils.changeradii import LoadRadii
 
 echo_command = ['echo'] if platform.system() == "Darwin" else ['echo', '-e']
 
@@ -56,6 +56,7 @@ class BuildTopGromacs(BuildTop):
         self.make_ndx = self.external_progs['make_ndx']
         self.trjconv = self.external_progs['trjconv']
         self.editconf = self.external_progs['editconf']
+        self.radii = LoadRadii(self.INPUT['general']['PBRadii'], self.INPUT['general']['radii_path'])
 
     def buildTopology(self):
         """
@@ -297,7 +298,7 @@ class BuildTopGromacs(BuildTop):
         if (self.FILES.receptor_tpr or self.FILES.ligand_tpr) and (
                 self.INPUT['general']['interaction_entropy'] or self.INPUT['general']['c2_entropy']
         ):
-            logging.warning("The IE or C2 entropy method don't support the MTP approach...")
+            logging.warning("The IE or C2 entropy method don't support the MT approach...")
             self.INPUT['general']['interaction_entropy'] = self.INPUT['general']['c2_entropy'] = 0
 
         # initialize receptor and ligand structures. Needed to get residues map
@@ -324,192 +325,112 @@ class BuildTopGromacs(BuildTop):
 
         com_top = self.cleantop(self.FILES.complex_top, self.indexes['COM']['COM'])
 
+        gmx_com_top = self.cleantop(self.FILES.complex_top, self.indexes['COM']['COM'])
 
+        eq_strs(gmx_com_top, self.complex_str, molid='complex')
 
-        if error_info := eq_strs(com_top, self.complex_str):
-            if error_info[0] == 'atoms':
-                GMXMMPBSA_ERROR(f"The number of atoms in the topology ({error_info[1]}) and the complex structure "
-                                f"({error_info[2]}) are different. Please check these files and verify that they are "
-                                f"correct. Otherwise report the error...")
-            else:
-                GMXMMPBSA_ERROR(f"The number of residues in the topology ({error_info[1]}) and the complex structure "
-                                f"({error_info[2]}) are different. Please check these files and verify that they are "
-                                f"correct. Otherwise report the error...")
-
-        com_top.coordinates = self.complex_str.coordinates
-        com_top.save(f"{self.FILES.prefix}COM.inpcrd", format='rst7', overwrite=True)
-
-        if com_top.impropers or com_top.urey_bradleys:
-            com_top_parm = 'charmm'
-            logging.info('Detected CHARMM force field topology format...')
-        else:
-            com_top_parm = 'amber'
-            logging.info('Detected Amber/OPLS force field topology format...')
-
-
-        # FIXME: assign radii since amber top don't conserve the charmm atom type
-        logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Complex...")
-        if com_top_parm == 'amber' and self.INPUT['general']['PBRadii'] == 7:
-            GMXMMPBSA_ERROR(
-                f"The PBRadii {self.INPUT['general']['PBRadii']} is not compatible with Amber/OPLS "
-                f"topologies...")
-        action = ChRad(com_top, self.INPUT['general']['PBRadii'])
-
-        # print(com_top.parm_data['RADIUS_SET'])
-
-        if com_top_parm == 'charmm':
-            com_amb_prm = parmed.amber.ChamberParm.from_structure(com_top)
-        else:
-            com_amb_prm = parmed.amber.AmberParm.from_structure(com_top)
-
+        gmx_com_top.coordinates = self.complex_str.coordinates
+        gmx_com_top.save(f"{self.FILES.prefix}COM.inpcrd", format='rst7', overwrite=True)
         # IMPORTANT: make_trajs ends in error if the box is defined
-        com_amb_prm.box = None
-        com_amb_prm.parm_data['RADIUS_SET'][0] = 'modified Bondi radii (mbondi)'
-        self.fixparm2amber(com_amb_prm)
+        gmx_com_top.box = None
 
-
-        logging.info('Writing Normal Complex AMBER topology...')
-        com_amb_prm.write_parm(self.complex_pmrtop)
+        if gmx_com_top.impropers or gmx_com_top.urey_bradleys:
+            top_class = parmed.amber.ChamberParm
+        else:
+            top_class = parmed.amber.AmberParm
 
         rec_indexes_string = ','.join(self.resi['REC']['string'])
 
-        rec_hastop = True
         if self.FILES.receptor_top:
-            logging.info('A Receptor topology file was defined. Using MT approach...')
-            logging.info('Building AMBER Receptor Topology from GROMACS Receptor Topology...')
-            rec_top = self.cleantop(self.FILES.receptor_top, self.indexes['REC'], 'receptor')
-
-            if error_info := eq_strs(rec_top, self.receptor_str):
-                if error_info[0] == 'atoms':
-                    GMXMMPBSA_ERROR(f"The number of atoms in the topology ({error_info[1]}) and the receptor "
-                                    f"structure ({error_info[2]}) are different. Please check this files and verify "
-                                    f"that they are correct. Otherwise report the error...")
-                else:
-                    GMXMMPBSA_ERROR(f"The number of residues in the topology ({error_info[1]}) and the receptor "
-                                    f"structure ({error_info[2]}) are different. Please check this files and verify "
-                                    f"that they are correct. Otherwise report the error...")
-
-            rec_top.coordinates = self.receptor_str.coordinates
-            # rec_top.save(f"{self.FILES.prefix}REC.inpcrd", format='rst7', overwrite=True)
-            if rec_top.impropers or rec_top.urey_bradleys:
-                if com_top_parm == 'amber':
-                    GMXMMPBSA_ERROR('Inconsistent parameter format. The defined Complex is Amber/OPLS type while the '
-                                    'Receptor is CHAMBER type!')
-                rec_amb_prm = parmed.amber.ChamberParm.from_structure(rec_top)
-            else:
-                if com_top_parm == 'charmm':
-                    GMXMMPBSA_ERROR('Inconsistent parameter format. The defined Complex is CHAMBER type while the '
-                                    'Receptor is Amber/OPLS type!')
-                rec_amb_prm = parmed.amber.AmberParm.from_structure(rec_top)
-            logging.info('Changing the Receptor residues name format from GROMACS to AMBER...')
-
-            # check periodicity
-            rec_amb_prm = self._check_periodicity(rec_amb_prm, 'receptor')
-
-            self.fixparm2amber(rec_amb_prm)
+            gmx_rec_top = self.cleantop(self.FILES.receptor_top, self.indexes['REC'], 'receptor')
+            eq_strs(gmx_rec_top, self.receptor_str, molid='receptor')
+            gmx_rec_top.coordinates = self.receptor_str.coordinates
         else:
-            logging.info('No Receptor topology file was defined. Using ST approach...')
-            logging.info('Building AMBER Receptor topology from Complex...')
             # we make a copy for receptor topology
-            rec_amb_prm = self.molstr(com_amb_prm)
-            rec_amb_prm.strip(f'!:{rec_indexes_string}')
-            rec_hastop = False
+            gmx_rec_top = self.molstr(gmx_com_top)
+            gmx_rec_top.strip(f'!:{rec_indexes_string}')
 
-        # FIXME: no needed for ST since the complex topology already contain the radii
-        logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Receptor...")
-        action = ChRad(rec_amb_prm, self.INPUT['general']['PBRadii'])
-        logging.info('Writing Normal Receptor AMBER topology...')
-        rec_amb_prm.write_parm(self.receptor_pmrtop)
-        rec_amb_prm.save(f"{self.FILES.prefix}REC.inpcrd", format='rst7', overwrite=True)
+        gmx_rec_top.save(f"{self.FILES.prefix}REC.inpcrd", format='rst7', overwrite=True)
+        gmx_rec_top.box = None
 
-        lig_hastop = True
         if self.FILES.ligand_top:
-            logging.info('A Ligand Topology file was defined. Using MT approach...')
-            logging.info('Building AMBER Ligand Topology from GROMACS Ligand Topology...')
-            lig_top = self.cleantop(self.FILES.ligand_top, self.indexes['LIG'], 'ligand')
+            gmx_lig_top = self.cleantop(self.FILES.ligand_top, self.indexes['LIG'], 'ligand')
 
-            if error_info := eq_strs(lig_top, self.ligand_str):
-                if error_info[0] == 'atoms':
-                    GMXMMPBSA_ERROR(f"The number of atoms in the topology ({error_info[1]}) and the ligand "
-                                    f"structure ({error_info[2]}) are different. Please check this files and verify "
-                                    f"that they are correct. Otherwise report the error...")
-                else:
-                    GMXMMPBSA_ERROR(f"The number of residues in the topology ({error_info[1]}) and the ligand "
-                                    f"structure ({error_info[2]}) are different. Please check this files and verify "
-                                    f"that they are correct. Otherwise report the error...")
+            eq_strs(gmx_lig_top, self.ligand_str, molid='ligand')
 
-            lig_top.coordinates = self.ligand_str.coordinates
-            # lig_top.save(f"{self.FILES.prefix}LIG.inpcrd", format='rst7', overwrite=True)
-            if lig_top.impropers or lig_top.urey_bradleys:
-                if com_top_parm == 'amber':
-                    GMXMMPBSA_ERROR('Inconsistent parameter format. The defined Complex is Amber/OPLS type while the '
-                                    'Ligand is CHAMBER type!')
-                lig_amb_prm = parmed.amber.ChamberParm.from_structure(lig_top)
-            else:
-                if com_top_parm == 'charmm':
-                    GMXMMPBSA_ERROR('Inconsistent parameter format. The defined Complex is CHAMBER type while the '
-                                    'Ligand is Amber/OPLS type!')
-                lig_amb_prm = parmed.amber.AmberParm.from_structure(lig_top)
-            logging.info('Changing the Ligand residues name format from GROMACS to AMBER...')
-
-            # check periodicity
-            lig_amb_prm = self._check_periodicity(lig_amb_prm, 'ligand')
-
-            self.fixparm2amber(lig_amb_prm)
+            gmx_lig_top.coordinates = self.ligand_str.coordinates
         else:
-            logging.info('No Ligand topology file was defined. Using ST approach...')
-            logging.info('Building AMBER Ligand topology from Complex...')
             # we make a copy for ligand topology
-            lig_amb_prm = self.molstr(com_amb_prm)
-            lig_amb_prm.strip(f':{rec_indexes_string}')
-            lig_hastop = False
+            gmx_lig_top = self.molstr(gmx_com_top)
+            gmx_lig_top.strip(f':{rec_indexes_string}')
 
-        # FIXME: no needed for ST since the complex topology already contain the radii
-        logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Ligand...")
-        action = ChRad(lig_amb_prm, self.INPUT['general']['PBRadii'])
-        logging.info('Writing Normal Ligand AMBER topology...')
+        gmx_lig_top.save(f"{self.FILES.prefix}LIG.inpcrd", format='rst7', overwrite=True)
+        gmx_lig_top.box = None
+
+        logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Normal topologies...")
+        self.radii.assign_radii(gmx_com_top)
+        self.radii.assign_radii(gmx_rec_top)
+        self.radii.assign_radii(gmx_lig_top)
+        logging.info(f"Saving Normal Topology files...")
+
+        com_amb_prm = top_class.from_structure(gmx_com_top)
+        self.fixparm2amber(com_amb_prm)
+        # IMPORTANT: In this case, we need to assign RADIUS_SET manually since GromacsTopologyFile don't contain it
+        com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
+        com_amb_prm.write_parm(self.complex_pmrtop)
+        rec_amb_prm = top_class.from_structure(gmx_rec_top)
+        rec_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
+        self.fixparm2amber(rec_amb_prm)
+        rec_amb_prm.write_parm(self.receptor_pmrtop)
+        lig_amb_prm = top_class.from_structure(gmx_lig_top)
+        lig_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
+        self.fixparm2amber(lig_amb_prm)
         lig_amb_prm.write_parm(self.ligand_pmrtop)
-        lig_amb_prm.save(f"{self.FILES.prefix}LIG.inpcrd", format='rst7', overwrite=True)
 
         if self.INPUT['ala']['alarun']:
-            logging.info('Building Mutant Complex Topology...')
+            logging.debug('Building Mutant Complex Topology...')
             # get mutation index in complex
-            # FIXME: change to com_top from gromacs
             self.com_mut_index, self.part_mut, self.part_index = self.getMutationInfo()
-            mut_com_amb_prm = self.makeMutTop(com_amb_prm, self.com_mut_index)
-            logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Mutant Complex...")
-            action = ChRad(mut_com_amb_prm, self.INPUT['general']['PBRadii'])
-            logging.info('Writing Mutant Complex AMBER topology...')
-            mut_com_amb_prm.write_parm(self.mutant_complex_pmrtop)
+            gmx_mut_com_top = self.makeMutTop(gmx_com_top, self.com_mut_index)
+            gmx_mut_com_top.save(f"{self.FILES.prefix}MUT_COM.inpcrd", format='rst7', overwrite=True)
 
+            gmx_mut_com_top.box = None
             if self.part_mut == 'REC':
-                logging.info('Detecting mutation in Receptor. Building Mutant Receptor topology...')
+                logging.debug('Detecting mutation in Receptor. Building Mutant Receptor topology...')
                 out_prmtop = self.mutant_receptor_pmrtop
                 self.mutant_ligand_pmrtop = None
-                if rec_hastop:
-                    mtop = self.makeMutTop(rec_amb_prm, self.part_index)
+                if self.FILES.receptor_top:
+                    mut_gmx_top = self.makeMutTop(gmx_rec_top, self.part_index)
                 else:
-                    mut_com_amb_prm.strip(f'!:{rec_indexes_string}')
-                    mtop = mut_com_amb_prm
+                    mut_gmx_top = gmx_com_top.__copy__()
+                    mut_gmx_top.strip(f'!:{rec_indexes_string}')
             else:
-                logging.info('Detecting mutation in Ligand. Building Mutant Ligand topology...')
+                logging.debug('Detecting mutation in Ligand. Building Mutant Ligand topology...')
                 out_prmtop = self.mutant_ligand_pmrtop
                 self.mutant_receptor_pmrtop = None
-                if lig_hastop:
-                    mtop = self.makeMutTop(lig_amb_prm, self.part_index)
+                if self.FILES.ligand_top:
+                    mut_gmx_top = self.makeMutTop(gmx_lig_top, self.part_index)
                 else:
-                    mut_com_amb_prm.strip(f':{rec_indexes_string}')
-                    mtop = mut_com_amb_prm
+                    mut_gmx_top = gmx_com_top.__copy__()
+                    mut_gmx_top.strip(f':{rec_indexes_string}')
+            mut_gmx_top.box = None
 
-            if com_top_parm == 'charmm':
-                mut_prot_amb_prm = parmed.amber.ChamberParm.from_structure(mtop)
+            logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Mutant topologies...")
+            self.radii.assign_radii(gmx_mut_com_top)
+            if self.part_mut == 'REC':
+                self.radii.assign_radii(mut_gmx_top)
             else:
-                mut_prot_amb_prm = parmed.amber.AmberParm.from_structure(mtop)
-            logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Mutant "
-                         f"{'Receptor' if self.part_mut == 'REC' else 'Ligand'}...")
-            action = ChRad(mut_prot_amb_prm, self.INPUT['general']['PBRadii'])
-            logging.info(f"Writing Mutant {'Receptor' if self.part_mut == 'REC' else 'Ligand'} AMBER topology...")
-            mut_prot_amb_prm.write_parm(out_prmtop)
+                self.radii.assign_radii(mut_gmx_top)
+
+            logging.info(f"Saving Mutant Topology files...")
+            mut_com_amb_prm = top_class.from_structure(gmx_mut_com_top)
+            self.fixparm2amber(mut_com_amb_prm)
+            mut_com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
+            mut_com_amb_prm.write_parm(self.mutant_complex_pmrtop)
+            mut_amb_prm = top_class.from_structure(mut_gmx_top)
+            self.fixparm2amber(mut_amb_prm)
+            mut_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
+            mut_amb_prm.write_parm(out_prmtop)
         else:
             self.mutant_complex_pmrtop = None
 
