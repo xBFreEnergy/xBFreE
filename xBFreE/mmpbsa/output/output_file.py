@@ -26,6 +26,7 @@ from xBFreE.mmpbsa.utils.energy import calc_sum, get_std
 from math import sqrt, ceil
 from os import linesep as ls
 import pickle
+from xBFreE import __prog__, __version__
 
 
 def data2pkl(app):
@@ -539,38 +540,22 @@ class OutputFile(object):
 
     def print_file_info(self, FILES, INPUT):
         """ Prints the summary information to a file """
-        from xBFreE import __version__, __mmpbsa_version__
-        stability = not FILES.receptor_prmtop
 
-        self.writeline('|gmx_MMPBSA Version=%s based on MMPBSA.py v.%s' % (__version__, __mmpbsa_version__))
+        stability = FILES.stability
+        self.writeline(f'|{__prog__} Version={__version__}')
 
-        # if FILES.solvated_prmtop:
-        #    self.writeline('|Solvated complex topology file:  %s' %
-        #               FILES.solvated_prmtop)
         self.writeline(f'{"|Complex Structure file:":40}{FILES.complex_structure:>40}')
         if FILES.complex_top:
-            self.writeline(f'{"|Complex (GROMACS) topology file:":40}{FILES.complex_top:>40}')
+            self.writeline(f'{"|Complex (User Input) topology file:":40}{FILES.complex_top:>40}')
         self.writeline(f'{"|Complex (AMBER) topology file:":40}{FILES.complex_prmtop:>40}')
 
         if not stability:
-            # if FILES.receptor_trajs:
-            #    if FILES.solvated_receptor_prmtop:
-            #       self.writeline('|Solvated receptor topology file: %s' %
-            #                  FILES.solvated_receptor_prmtop)
-            if FILES.receptor_tpr:
-                self.writeline(f'{"|Receptor Structure file:":40}{FILES.receptor_tpr:>40}')
             if FILES.receptor_top:
-                self.writeline(f'{"|Receptor (GROMACS) topology file:":40}{FILES.receptor_top:>40}')
+                self.writeline(f'{"|Receptor (User Input) topology file:":40}{FILES.receptor_top:>40}')
             self.writeline(f'{"|Receptor (AMBER) topology file:":40}{FILES.receptor_prmtop:>40}')
 
-            # if FILES.ligand_trajs:
-            # if FILES.solvated_ligand_prmtop:
-            #    self.writeline('|Solvated ligand topology file:   %s' %
-            #               FILES.solvated_ligand_prmtop)
-            if FILES.ligand_tpr:
-                self.writeline(f'{"|Ligand Structure file:":40}{FILES.ligand_tpr:>40}')
             if FILES.ligand_top:
-                self.writeline(f'{"|Ligand (GROMACS) topology file:":40}{FILES.ligand_top:>40}')
+                self.writeline(f'{"|Ligand (User Input) topology file:":40}{FILES.ligand_top:>40}')
             self.writeline(f'{"|Ligand (AMBER) topology file:":40}{FILES.ligand_prmtop:>40}')
 
         if INPUT['ala']['alarun']:
@@ -580,6 +565,8 @@ class OutputFile(object):
                 self.writeline(f'{"|Mutant (AMBER) ligand topology file:":40}{FILES.mutant_ligand_prmtop:>40}')
 
         self.write(f'{"|Initial trajectories:":40}')
+        self.write(f'{"|Complex trajectories:":40}')
+
         for i in range(len(FILES.complex_trajs)):
             if i == 0:
                 self.writeline(f'{FILES.complex_trajs[i]:>40}')
@@ -587,7 +574,7 @@ class OutputFile(object):
                 self.writeline(f'{"|":40}{FILES.complex_trajs[i]:>40}')
 
         if FILES.receptor_trajs:
-            self.write(f'{"|Initial Receptor mdcrd(s):":40}')
+            self.write(f'{"|Receptor trajectories:":40}')
             for i in range(len(FILES.receptor_trajs)):
                 if i == 0:
                     self.writeline(f'{FILES.receptor_trajs[i]:>40}')
@@ -595,7 +582,7 @@ class OutputFile(object):
                     self.writeline(f'{"|":40}{FILES.receptor_trajs[i]:>40}')
 
         if FILES.ligand_trajs:
-            self.write(f'{"|Initial Ligand mdcrd(s):":40}')
+            self.write(f'{"|Ligand trajectories:":40}')
             for i in range(len(FILES.ligand_trajs)):
                 if i == 0:
                     self.writeline(f'{FILES.ligand_trajs[i]:>40}')
