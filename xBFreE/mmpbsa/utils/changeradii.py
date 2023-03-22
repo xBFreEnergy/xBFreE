@@ -326,13 +326,13 @@ class LoadRadii:
 #
 # ChRad(t1, 'charmm_radii')
 #
-t2 = LoadRadii('tyl06')
-# t = parmed.load_file('/home/mario/Documents/gmx_MMPBSA_tests/2.0.x/amber_example/step3_input.parm7')
-t = parmed.load_file('/home/mario/Documents/gmx_MMPBSA_tests/2.0.x/Protein_protein/topol.top')
-t2.assign_radii(t)
-
-for at in t.residues[0].atoms:
-    print(at, at.solvent_radius)
+# t2 = LoadRadii('tyl06')
+# # t = parmed.load_file('/home/mario/Documents/gmx_MMPBSA_tests/2.0.x/amber_example/step3_input.parm7')
+# t = parmed.load_file('/home/mario/Documents/gmx_MMPBSA_tests/2.0.x/Protein_protein/topol.top')
+# t2.assign_radii(t)
+#
+# for at in t.residues[0].atoms:
+#     print(at, at.solvent_radius)
 
 #
 # # # t2.assign_radii()
