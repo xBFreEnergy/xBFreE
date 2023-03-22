@@ -16,6 +16,8 @@ import parmed
 from xBFreE.exceptions import GMXMMPBSA_ERROR
 import logging
 from math import sqrt
+import re
+from string import ascii_letters
 
 
 def _get_restype(resname):
@@ -33,11 +35,21 @@ def _get_restype(resname):
         return resname
 
 
-def eq_strs(struct1, struct2):
+def eq_strs(struct1, struct2, noh=False, molid='complex'):
     if len(struct1.atoms) != len(struct2.atoms):
-        return 'atoms', len(struct1.atoms), len(struct2.atoms)
+        if not noh:
+            return 'atoms', len(struct1.atoms), len(struct2.atoms)
+        na1 = sum(not x.startswith('H') for x in struct1.atoms)
+        na2 = sum(not x.startswith('H') for x in struct2.atoms)
+        if na1 != na2:
+            GMXMMPBSA_ERROR(f"The number of atoms in the topology ({len(struct1.atoms)}) and the {molid} structure "
+                            f"({len(struct2.atoms)}) are different. Please check these files and verify that they are "
+                            f"correct. Otherwise report the error...")
+
     elif len(struct1.residues) != len(struct2.residues):
-        return 'residues', len(struct1.residues), len(struct2.residues)
+        GMXMMPBSA_ERROR(f"The number of residues in the topology ({len(struct1.residues)}) and the {molid} structure "
+                        f"({len(struct2.residues)}) are different. Please check these files and verify that they are "
+                        f"correct. Otherwise report the error...")
     else:
         return
 
@@ -93,6 +105,50 @@ def check_str(structure, ref=False, skip=False):
                         f' {", ".join(duplicates)}')
     return refstr
 
+
+def selector(selection: str):
+    string_list = re.split(r"\s|;\s*", selection)
+    dist = None
+    # exclude = None
+    res_selections = []
+    if selection == 'all':
+        pass
+    elif selection.startswith('within'):
+        try:
+            dist = float(string_list[1])
+        except:
+            GMXMMPBSA_ERROR(f'Invalid dist, we expected a float value but we get "{string_list[1]}"')
+    else:
+        # try to process residue selection
+        for s in string_list:
+            n = re.split(r":\s*|/\s*", s)
+            if len(n) != 2 or n[0] not in ascii_letters:
+                GMXMMPBSA_ERROR(f'We expected something like this: A/2-10,35,41 B/104 but we get {s} instead')
+            chain = n[0]
+            resl = n[1].split(',')
+            for r in resl:
+                rr = r.split('-')
+                if len(rr) == 1:
+                    ri = [chain, int(rr[0]), ''] if rr[0][-1] not in ascii_letters else [chain, int(rr[0][:-1]), rr[0][-1]]
+                    if ri in res_selections:
+                        logging.warning('Found duplicated residue in selection: CHAIN:{} RES_NUM:{} ICODE: '
+                                        '{}'.format(*ri))
+                        continue
+                    res_selections.append(ri)
+                else:
+                    try:
+                        start = int(rr[0])
+                        end = int(rr[1]) + 1
+                    except:
+                        GMXMMPBSA_ERROR(f'When residues range is defined, start and end most be integer but we get'
+                                        f' {rr[0]} and {rr[1]}')
+                    for cr in range(start, end):
+                        if [chain, cr, ''] in res_selections:
+                            logging.warning('Found duplicated residue in selection: CHAIN:{} RES_NUM:{} ICODE: '
+                                            '{}'.format(chain, cr, ''))
+                            continue
+                        res_selections.append([chain, cr, ''])
+    return dist, res_selections
 
 class Residue(object):
     def __init__(self, index, number, chain, mol_id, id_index, name, icode=''):

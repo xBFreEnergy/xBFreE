@@ -13,7 +13,6 @@
 # ##############################################################################
 
 import sys
-from os.path import split
 import logging
 from pathlib import Path
 import signal
@@ -21,17 +20,19 @@ import signal
 from xBFreE.main import xBFreE_App
 from xBFreE.mmpbsa.app import mmpbsa
 from xBFreE.utils.misc import create_input_args
+from xBFreE.exceptions import MMPBSA_Error
 import os
-
 
 # Local methods
 from mpi4py import MPI
+
 if MPI.COMM_WORLD.size == 1:
     from xBFreE.fake_mpi import MPI
 
 _rank = MPI.COMM_WORLD.Get_rank()
 _mpi_size = MPI.COMM_WORLD.Get_size()
-
+_stdout = sys.stdout
+_stderr = sys.stderr
 
 def excepthook(exception_type, exception_value, tb):
     """
@@ -47,7 +48,7 @@ def excepthook(exception_type, exception_value, tb):
     _stderr.write('%s: %s\n' % (exception_type.__name__, exception_value))
     if _mpi_size > 1:
         _stderr.write('Error occurred on rank %d.' % _rank + os.linesep)
-    _stderr.write('Exiting. All files have been retained.' + os.linesep)
+    _stderr.write(f'Exiting. All files have been retained.{os.linesep}')
     MPI.COMM_WORLD.Abort(1)
 
 
@@ -69,9 +70,18 @@ def setup_run():
     sys.excepthook = excepthook
     signal.signal(signal.SIGINT, interrupt_handler)
 
+
 setup_run()
 
+
 def run_xbfree():
+    """
+    Function tu launch xBFreE application
+    - Create the logging handler
+    - Get and process the args
+    - Execute the sub-application according selected subcommand
+    :return:
+    """
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.INFO)
     formatter = logging.Formatter("[%(levelname)-7s] %(message)s")
@@ -155,9 +165,8 @@ def gmxmmpbsa_test():
         sys.exit(1)
     run_test(parser)
 
+
 if __name__ == '__main__':
-
-
     logging.info('Finished')
 
     # gmxmmpbsa()
