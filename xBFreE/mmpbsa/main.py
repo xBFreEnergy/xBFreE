@@ -668,7 +668,7 @@ class MMPBSA_App(object):
             self.remove(-1)
 
         # Find external programs IFF we are doing a calc
-        external_progs = misc.find_progs(self.INPUT, self.mpi_size) if self.master else {}
+        external_progs = misc.find_progs(self.INPUT, self.md_prog, self.mpi_size) if self.master else {}
         external_progs = self.MPI.COMM_WORLD.bcast(external_progs, root=0)
         # Make external_progs an instance attribute
         self.external_progs = external_progs

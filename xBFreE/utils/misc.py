@@ -71,12 +71,14 @@ def remove(flag, fnpre='_xBFreE_'):
                 os.remove(fil)
 
 
-def find_progs(INPUT, mpi_size=0):
+def find_progs(INPUT, md_prog, mpi_size=0):
     """ Find the necessary programs based in the user INPUT """
     # List all of the used programs with the conditions that they are needed
     logging.info('Checking external programs...')
     used_progs = {'cpptraj': True,
                   'sander': True,
+                  'gromacs': md_prog == 'gmx',
+                  # 'namd': md_prog == 'namd',
                   'sander.APBS': INPUT['pb']['sander_apbs'] == 1,
                   'mmpbsa_py_nabnmode': INPUT['nmode']['nmoderun'],
                   # 'rism3d.snglpnt': INPUT['rism']['rismrun']
@@ -90,36 +92,32 @@ def find_progs(INPUT, mpi_size=0):
     # The returned dictionary:
     my_progs = {}
 
-    for prog, needed in used_progs.items():
-        my_progs[prog] = shutil.which(prog, path=os.environ['PATH'])
-        if needed:
-            if not my_progs[prog]:
-                GMXMMPBSA_ERROR(f'Could not find necessary program [{prog}]')
-            logging.info(f'{prog} found! Using {str(my_progs[prog])}')
-
     search_parth = INPUT['general']['gmx_path'] or os.environ['PATH']
-    g5 = False
-    for prog in gro_exe:
-        if exe := shutil.which(prog, path=search_parth):
-            # execute gromacs to get version
-            gmx_ouput = subprocess.check_output([exe, '-version']).decode().split('\n')
-            gmx_version = [l.split()[-1].strip('\n') for l in gmx_ouput if 'GROMACS version:' in l][0]
-            my_progs['make_ndx'] = [exe, 'make_ndx']
-            my_progs['editconf'] = [exe, 'editconf']
-            my_progs['trjconv'] = [exe, 'trjconv']
-            g5 = True
-            if prog in ['gmx_mpi', 'gmx_mpi_d'] and mpi_size > 1:
-                GMXMMPBSA_ERROR('gmx_mpi and gmx_mpi_d are not supported when running gmx_MMPBSA in parallel '
-                                'due to incompatibility between the mpi libraries used to compile GROMACS and '
-                                'mpi4py respectively. You can still use gmx_mpi or gmx_mpi_d to run gmx_MMPBSA '
-                                'serial. For parallel calculations use gmx instead')
-            logging.info(f'{prog} {gmx_version} found! Using {exe}')
-            break
-        if g5:
-            break
+    for prog, needed in used_progs.items():
+        if prog == 'gromacs':
+            if needed:
+                for prog in gro_exe:
+                    if exe := shutil.which(prog, path=search_parth):
+                        # execute gromacs to get version
+                        gmx_ouput = subprocess.check_output([exe, '-version']).decode().split('\n')
+                        gmx_version = [l.split()[-1].strip('\n') for l in gmx_ouput if 'GROMACS version:' in l][0]
+                        my_progs['make_ndx'] = [exe, 'make_ndx']
+                        my_progs['editconf'] = [exe, 'editconf']
+                        my_progs['trjconv'] = [exe, 'trjconv']
+                        if prog in ['gmx_mpi', 'gmx_mpi_d'] and mpi_size > 1:
+                            GMXMMPBSA_ERROR('gmx_mpi and gmx_mpi_d are not supported when running gmx_MMPBSA in parallel '
+                                            'due to incompatibility between the mpi libraries used to compile GROMACS and '
+                                            'mpi4py respectively. You can still use gmx_mpi or gmx_mpi_d to run gmx_MMPBSA '
+                                            'serial. For parallel calculations use gmx instead')
+                        logging.info(f'{prog} {gmx_version} found! Using {exe}')
+                        break
+        else:
+            my_progs[prog] = shutil.which(prog, path=os.environ['PATH'])
+            if needed:
+                if not my_progs[prog]:
+                    GMXMMPBSA_ERROR(f'Could not find necessary program [{prog}]')
+                logging.info(f'{prog} found! Using {str(my_progs[prog])}')
 
-    if 'make_ndx' not in my_progs or 'editconf' not in my_progs or 'trjconv' not in my_progs:
-        GMXMMPBSA_ERROR('Could not find necessary program [ GROMACS ]')
     logging.info('Checking external programs...Done.\n')
     return my_progs
 
@@ -150,51 +148,6 @@ def get_warnings():
                 info['warning'] += 1
     return info
 
-
-def selector(selection: str):
-    string_list = re.split(r"\s|;\s*", selection)
-    dist = None
-    # exclude = None
-    res_selections = []
-    if selection == 'all':
-        pass
-    elif selection.startswith('within'):
-        try:
-            dist = float(string_list[1])
-        except:
-            GMXMMPBSA_ERROR(f'Invalid dist, we expected a float value but we get "{string_list[1]}"')
-    else:
-        # try to process residue selection
-        for s in string_list:
-            n = re.split(r":\s*|/\s*", s)
-            if len(n) != 2 or n[0] not in ascii_letters:
-                GMXMMPBSA_ERROR(f'We expected something like this: A/2-10,35,41 B/104 but we get {s} instead')
-            chain = n[0]
-            resl = n[1].split(',')
-            for r in resl:
-                rr = r.split('-')
-                if len(rr) == 1:
-                    ci = rr[0].split(':')
-                    ri = [chain, int(ci[0]), ''] if len(ci) == 1 else [chain, int(ci[0]), ci[1]]
-                    if ri in res_selections:
-                        logging.warning('Found duplicated residue in selection: CHAIN:{} RES_NUM:{} ICODE: '
-                                        '{}'.format(*ri))
-                        continue
-                    res_selections.append(ri)
-                else:
-                    try:
-                        start = int(rr[0])
-                        end = int(rr[1]) + 1
-                    except:
-                        GMXMMPBSA_ERROR(f'When residues range is defined, start and end most be integer but we get'
-                                        f' {rr[0]} and {rr[1]}')
-                    for cr in range(start, end):
-                        if [chain, cr, ''] in res_selections:
-                            logging.warning('Found duplicated residue in selection: CHAIN:{} RES_NUM:{} ICODE: '
-                                            '{}'.format(chain, cr, ''))
-                            continue
-                        res_selections.append([chain, cr, ''])
-    return dist, res_selections
 
 
 def log_subprocess_output(process):
