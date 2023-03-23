@@ -24,7 +24,7 @@ re-supplying all of the information again.
 
 import re
 import warnings
-
+from types import SimpleNamespace
 # For compatibility with v1.5.x. Will be removed in v1.8.x
 nl_variables = {
     'sys_name': 'general', 'startframe': 'general', 'endframe': 'general', 'interval': 'general',
@@ -138,11 +138,10 @@ class InfoFile(object):
 
     def read_info(self, name=None):
         """ Reads a _MMPBSA_info file and populates the app """
-        from xBFreE.mmpbsa.commandlineparser import OptionList
         # Give self.app a FILES attribute if it does not have one yet before
         # trying to modify it
         if not hasattr(self.app, 'FILES'):
-            self.app.FILES = OptionList()
+            self.app.FILES = SimpleNamespace()
         if name is None:
             name = f'{self.app.pre}info'
 
