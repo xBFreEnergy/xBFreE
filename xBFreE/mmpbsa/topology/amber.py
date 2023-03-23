@@ -19,7 +19,7 @@ from parmed.tools.changeradii import ChRad
 from .core import BuildTop
 import parmed
 from xBFreE.exceptions import GMXMMPBSA_ERROR
-from xBFreE.utils.molecule import list2range, mask2list, get_amber_indexes, res2map, check_str, eq_strs
+from xBFreE.utils.molecule import list2range, get_indexes_from_str, res2map, check_str, eq_strs
 from ..utils.changeradii import LoadRadii
 
 
@@ -35,8 +35,8 @@ class BuildTopAmber(BuildTop):
         :return: complex, receptor, ligand topologies and their mutants
         """
 
-        com_top, rec_top, lig_top = self.str2pdb()
-        tops = self.prmtop2prmtop(com_top, rec_top, lig_top)
+        self.str2pdb()
+        tops = self.prmtop2prmtop()
 
         # FIXME: Is this step necessary? When the trajs are created with cpptraj a cleanup is made. However,
         #  this step get the complex trajectory in multi-component system
@@ -58,33 +58,13 @@ class BuildTopAmber(BuildTop):
         lig_pdb = com_pdb.__copy__()
         lig_pdb.strip(f"!:{com_lig_group.strip(':')}")
 
-        # create com topology
-        com_top = parmed.amber.AmberParm(self.FILES.complex_top)
-        com_top.strip(f"!:{com_rec_group.strip(':')},{com_lig_group.strip(':')}")
-
-        # create rec topology
-        if self.FILES.receptor_top:
-            rec_top = parmed.amber.AmberParm(self.FILES.receptor_top)
-            rec_top.strip(f"!{self.FILES.receptor_group}")
-        else:
-            rec_top = com_top.__copy__()
-            rec_top.strip(f"!:{com_rec_group.strip(':')}")
-
-        # create lig topology
-        if self.FILES.receptor_top:
-            lig_top = parmed.amber.AmberParm(self.FILES.ligand_top)
-            lig_top.strip(f"!{self.FILES.ligand_group}")
-        else:
-            lig_top = com_top.__copy__()
-            lig_top.strip(f"!:{com_lig_group.strip(':')}")
-
         # get amber selection based on AmberMask
-        com_ind = AmberMask(com_top, f"!:{com_rec_group.strip(':')},{com_lig_group.strip(':')}").Selection()
-        com_rec_ind = AmberMask(com_top, f"!:{com_rec_group.strip(':')}").Selection()
-        com_lig_ind = AmberMask(com_top, f"!:{com_lig_group.strip(':')}").Selection()
+        com_ind = AmberMask(com_pdb, f"!:{com_rec_group.strip(':')},{com_lig_group.strip(':')}").Selection()
+        com_rec_ind = AmberMask(com_pdb, f"!:{com_rec_group.strip(':')}").Selection()
+        com_lig_ind = AmberMask(com_pdb, f"!:{com_lig_group.strip(':')}").Selection()
 
-        rec_ind = (AmberMask(rec_top, f"!{self.FILES.receptor_group}").Selection() if self.FILES.receptor_top else None)
-        lig_ind = (AmberMask(lig_top, f"!{self.FILES.ligand_group}").Selection() if self.FILES.ligand_top else None)
+        rec_ind = (AmberMask(rec_pdb, f"!{self.FILES.receptor_group}").Selection() if self.FILES.receptor_top else None)
+        lig_ind = (AmberMask(lig_pdb, f"!{self.FILES.ligand_group}").Selection() if self.FILES.ligand_top else None)
 
         # # initialize receptor and ligand structures. Needed to get residues map
         self.complex_str = self.molstr(com_pdb)
@@ -96,27 +76,47 @@ class BuildTopAmber(BuildTop):
 
         # # FIXME: remove, since now the topology is processed with the index file
         # # self.check4water()
-        self.indexes = get_amber_indexes(com_ind={'com': com_ind, 'rec': com_rec_ind, 'lig': com_lig_ind},
-                                         rec_ind=rec_ind, lig_ind=lig_ind)
+        self.indexes = get_indexes_from_str(com_ind={'com': com_ind, 'rec': com_rec_ind, 'lig': com_lig_ind},
+                                            rec_ind=rec_ind, lig_ind=lig_ind)
         self.resi, self.resl, self.orderl = res2map(self.indexes, self.complex_str)
-        self.check_consistency([self.complex_str, com_top], [self.receptor_str, rec_top], [self.ligand_str, lig_top])
 
-        return com_top, rec_top, lig_top
+    def prmtop2prmtop(self):
 
-    def prmtop2prmtop(self, com_amb_prm, rec_amb_prm, lig_amb_prm):
+        # create complex, receptor and ligand PDBs
+        com_rec_group, com_lig_group = self.FILES.complex_groups
+        # create com topology
+        com_amb_prm = parmed.amber.AmberParm(self.FILES.complex_top)
+        com_amb_prm.strip(f"!:{com_rec_group.strip(':')},{com_lig_group.strip(':')}")
 
-        eq_strs(com_amb_prm, self.complex_str, molid='complex')
+        # create rec topology
+        if self.FILES.receptor_top:
+            rec_amb_prm = parmed.amber.AmberParm(self.FILES.receptor_top)
+            rec_amb_prm.strip(f"!{self.FILES.receptor_group}")
+        else:
+            rec_amb_prm = com_amb_prm.__copy__()
+            rec_amb_prm.strip(f"!:{com_rec_group.strip(':')}")
+
+        # create lig topology
+        if self.FILES.receptor_top:
+            lig_amb_prm = parmed.amber.AmberParm(self.FILES.ligand_top)
+            lig_amb_prm.strip(f"!{self.FILES.ligand_group}")
+        else:
+            lig_amb_prm = com_amb_prm.__copy__()
+            lig_amb_prm.strip(f"!:{com_lig_group.strip(':')}")
+
+        self.check_consistency([self.complex_str, com_amb_prm], [self.receptor_str, rec_amb_prm],
+                               [self.ligand_str, lig_amb_prm])
+
+
         com_amb_prm.coordinates = self.complex_str.coordinates
         com_amb_prm.save(f"{self.FILES.prefix}COM.inpcrd", format='rst7', overwrite=True)
         # IMPORTANT: make_trajs ends in error if the box is defined
         com_amb_prm.box = None
 
-        eq_strs(rec_amb_prm, self.receptor_str, molid='receptor')
         rec_amb_prm.coordinates = self.receptor_str.coordinates
         rec_amb_prm.save(f"{self.FILES.prefix}REC.inpcrd", format='rst7', overwrite=True)
         rec_amb_prm.box = None
 
-        eq_strs(lig_amb_prm, self.ligand_str, molid='receptor')
         lig_amb_prm.coordinates = self.ligand_str.coordinates
         lig_amb_prm.save(f"{self.FILES.prefix}LIG.inpcrd", format='rst7', overwrite=True)
         lig_amb_prm.box = None
@@ -279,10 +279,12 @@ class BuildTopAmber(BuildTop):
 
         if rec_data:
             check_str(rec_str, skip=True)
+            eq_strs(rec_str, rec_top, molid='receptor')
             if len(rec_top.residues) != len(rec_str.residues):
                 raise
         if lig_data:
             check_str(lig_str, skip=True)
+            eq_strs(lig_str, lig_top, molid='ligand')
             if len(lig_top.residues) != len(lig_str.residues):
                 raise
 
