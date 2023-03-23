@@ -564,7 +564,7 @@ class OutputFile(object):
                 self.writeline(f'{"|Mutant (AMBER) receptor topology file:":40}{FILES.mutant_receptor_prmtop:>40}')
                 self.writeline(f'{"|Mutant (AMBER) ligand topology file:":40}{FILES.mutant_ligand_prmtop:>40}')
 
-        self.write(f'{"|Initial trajectories:":40}')
+        self.writeline(f'{"|Initial trajectories:":40}')
         self.write(f'{"|Complex trajectories:":40}')
 
         for i in range(len(FILES.complex_trajs)):
