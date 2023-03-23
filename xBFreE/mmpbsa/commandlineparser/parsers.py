@@ -88,6 +88,12 @@ def index(arg):
     return arg
 
 
+def mask(arg):
+    if not arg.startswith(':'):
+        arg = f":{arg}"
+    return arg.replace(' ', '')
+
+
 class OptionList(SimpleNamespace):
     """
     Just a container to hold the command-line options. Necessary when reading in
