@@ -8,6 +8,7 @@ __license__ = "GPLv3"
 __mmpbsa_author__ = "Jason Swails, Dwight McGee, and Bill Miller III"
 __mmpbsa_version__ = "16.0"
 __ambertools_version__ = "20"
+__prog__ = 'xBFreE'
 
 from xBFreE._version import get_versions
 __version__ = get_versions()['version']
