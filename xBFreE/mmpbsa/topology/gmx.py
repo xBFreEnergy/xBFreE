@@ -28,11 +28,8 @@ from ..utils.changeradii import LoadRadii
 echo_command = ['echo'] if platform.system() == "Darwin" else ['echo', '-e']
 
 chains_letters = list(string.ascii_uppercase)
-his = ['HIS', 'HIE', 'HID', 'HIP']
-cys_name = ['CYS', 'CYX', 'CYM']
-lys = ['LYS', 'LYN']
-asp = ['ASP', 'ASH']
-glu = ['GLU', 'GLH']
+
+
 positive_aa = ['LYS', 'ARG', 'HIP']
 negative_aa = ['GLU', 'ASP']
 nonpolar_aa = ['PHE', 'TRP', 'VAL', 'ILE', 'LEU', 'MET', 'PRO', 'CYX', 'ALA', 'GLY']
@@ -355,8 +352,8 @@ class BuildTopGromacs(BuildTop):
         self.radii.assign_radii(gmx_com_top)
         self.radii.assign_radii(gmx_rec_top)
         self.radii.assign_radii(gmx_lig_top)
-        logging.info("Saving Normal Topology files...")
 
+        logging.info("Saving Normal Topology files...")
         com_amb_prm = top_class.from_structure(gmx_com_top)
         self.fixparm2amber(com_amb_prm)
         # IMPORTANT: In this case, we need to assign RADIUS_SET manually since GromacsTopologyFile don't contain it
@@ -377,8 +374,8 @@ class BuildTopGromacs(BuildTop):
             self.com_mut_index, self.part_mut, self.part_index = self.getMutationInfo()
             gmx_mut_com_top = self.makeMutTop(gmx_com_top, self.com_mut_index)
             gmx_mut_com_top.save(f"{self.FILES.prefix}MUT_COM.inpcrd", format='rst7', overwrite=True)
-
             gmx_mut_com_top.box = None
+
             if self.part_mut == 'REC':
                 logging.debug('Detecting mutation in Receptor. Building Mutant Receptor topology...')
                 out_prmtop = self.mutant_receptor_pmrtop
@@ -403,7 +400,7 @@ class BuildTopGromacs(BuildTop):
             self.radii.assign_radii(gmx_mut_com_top)
             self.radii.assign_radii(mut_gmx_top)
 
-            logging.info(f"Saving Mutant Topology files...")
+            logging.info("Saving Mutant Topology files...")
             mut_com_amb_prm = top_class.from_structure(gmx_mut_com_top)
             self.fixparm2amber(mut_com_amb_prm)
             mut_com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
@@ -502,7 +499,9 @@ class BuildTopGromacs(BuildTop):
 
         return top
 
-    def fixparm2amber(self, structure, str_name=None):
+    def fixparm2amber(self, structure):
+        his = ['HIS', 'HIE', 'HID', 'HIP']
+        cys_name = ['CYS', 'CYX', 'CYM']
 
         for c, residue in enumerate(structure.residues, start=1):
             # change atoms name from GROMACS to AMBER
@@ -543,31 +542,11 @@ class BuildTopGromacs(BuildTop):
                     if 'SG' in atom.name:
                         for bondedatm in atom.bond_partners:
                             if bondedatm.name == 'SG':
-                                if str_name:
-                                    if str_name == 'COM':
-                                        cys1 = c
-                                        cys2 = structure.residues.index(bondedatm.residue) + 1
-                                    else:
-                                        cys1 = residue.number
-                                        cys2 = bondedatm.residue.number
-                                    if ([cys1, cys2] not in self.cys_bonds[str_name] and
-                                            [cys2, cys1] not in self.cys_bonds[str_name]):
-                                        self.cys_bonds[str_name].append([cys1, cys2])
                                 if residue.name == 'CYX' and bondedatm.residue.name == 'CYX':
                                     continue
                                 residue.name = 'CYX'
                                 bondedatm.residue.name = 'CYX'
                         break
-            # GROMACS 4.x save the pdb without atom element column, so parmed does not recognize some H atoms.
-            # Parmed assigns 0 to the atomic number of these atoms. In order to correctly eliminate hydrogens,
-            # it is necessary to assign the atomic number.
-            if len(self.make_ndx) == 2:
-                for atom in residue.atoms:
-                    if 'H' in atom.name and atom.atomic_number == 0:
-                        atom.atomic_number = 1
-                # Remove H atoms. Only when using the pdb files with tleap to build the topologies
-        if str_name:
-            structure.strip('@/H')
 
     def cleanup_trajs(self):
         # clear trajectory
