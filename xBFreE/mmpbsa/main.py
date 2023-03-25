@@ -684,13 +684,16 @@ class MMPBSA_App(object):
                 top_builder = BuildTopAmber
             elif self.md_prog == 'namd':
                 logging.info(f'Building AMBER topologies from NAMD files using {self.traj_protocol} approach...')
-                from xBFreE.mmpbsa.topology.namd import BuildTopNAMD
-                top_builder = BuildTopNAMD
+                if self.FILES.complex_top.split('.')[-1] == 'psf':
+                    from xBFreE.mmpbsa.topology.namd import BuildTopNAMD_CHARMM
+                    top_builder = BuildTopNAMD_CHARMM
+                else:
+                    from xBFreE.mmpbsa.topology.namd import BuildTopNAMD_Amber
+                    top_builder = BuildTopNAMD_Amber
             elif self.md_prog == 'charmm':
                 logging.info(f'Building AMBER topologies from CHARMM files using {self.traj_protocol} approach...')
-                # from xBFreE.mmpbsa.topology.charmm import BuildTopCHARMM
-                # top_builder = BuildTopGromacs
-
+                from xBFreE.mmpbsa.topology.charmm import BuildTopCHARMM
+                top_builder = BuildTopCHARMM
 
             maketop = top_builder(self.FILES, self.INPUT, self.external_progs)
             (self.FILES.complex_prmtop, self.FILES.receptor_prmtop, self.FILES.ligand_prmtop,
