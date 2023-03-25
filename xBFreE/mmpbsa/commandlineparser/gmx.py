@@ -1,5 +1,5 @@
 from xBFreE.mmpbsa.commandlineparser.parsers import (mmpbsa_parser,
-                                                     gmx_topology, gmx_structure, index, gmx_trajectory, pdb, mol2,
+                                                     gmx_topology, gmx_structure, index, gmx_trajectory, pdb,
                                                      complex_group_des, receptor_group_des, ligand_group_des,
                                                      add_miscellaneous_actions)
 from xBFreE import __version__

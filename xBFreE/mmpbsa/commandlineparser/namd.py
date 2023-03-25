@@ -20,7 +20,7 @@ in gmx_MMPBSA will be assigned as attributes to the returned class.
 """
 
 from xBFreE.mmpbsa.commandlineparser.parsers import (mmpbsa_parser,
-                                                     namd_topology, namd_trajectory, pdb, mask,
+                                                     namd_topology, charmm_trajectory, pdb, mask,
                                                      complex_group_des, receptor_group_des, ligand_group_des,
                                                      add_miscellaneous_actions)
 from xBFreE import __version__
@@ -38,7 +38,7 @@ group.add_argument('-cg', dest='complex_groups', metavar=('<receptor_mask>', '<l
                    help='Selection for receptor and ligand in complex topology file using namd mask. '
                         'The notation is as follows: '
                         '"-cg <receptor_mask> <ligand_mask>", ie. -cg :1-100,121-150 :101-120')
-group.add_argument('-ct', dest='complex_trajs', nargs='*', metavar='TRJ', type=namd_trajectory,
+group.add_argument('-ct', dest='complex_trajs', nargs='*', metavar='TRJ', type=charmm_trajectory,
                    help='''Complex trajectories. Make sure the trajectory is fitted and pbc have been removed. 
                    Allowed formats: *.mdcrd, *.crd, *.pdb, *.nc (specify as many as you'd like).''')
 
@@ -49,7 +49,7 @@ group.add_argument('-rg', dest='receptor_group', metavar='<receptor_mask>', defa
                    help='Receptor group in receptor topology file using namd mask. '
                         'The notation is as follows: '
                         '"-rg <receptor_mask>", ie. -rg :1-100')
-group.add_argument('-rt', dest='receptor_trajs', nargs='*', metavar='TRJ', type=namd_trajectory,
+group.add_argument('-rt', dest='receptor_trajs', nargs='*', metavar='TRJ', type=charmm_trajectory,
                    help='''Input trajectories of the unbound receptor for multiple trajectory approach.
                          Allowed formats: *.mdcrd, *.crd, *.pdb, *.nc (specify as many
                          as you'd like).''')
@@ -61,7 +61,7 @@ group.add_argument('-lg', dest='ligand_group', metavar='<ligand_mask>', default=
                    help='Ligand group in ligand topology file using namd mask. '
                         'The notation is as follows: '
                         '"-lg <ligand_mask>", ie. -lg :1-20')
-group.add_argument('-lt', dest='ligand_trajs', nargs='*', metavar='TRJ', type=namd_trajectory,
+group.add_argument('-lt', dest='ligand_trajs', nargs='*', metavar='TRJ', type=charmm_trajectory,
                    help='''Input trajectories of the unbound ligand for multiple trajectory approach.
                          Allowed formats: *.mdcrd, *.crd, *.pdb, *.nc (specify as many
                          as you'd like).''')

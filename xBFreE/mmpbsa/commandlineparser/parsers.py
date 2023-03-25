@@ -59,7 +59,7 @@ def amber_trajectory(arg):
 
 
 @check_arg(['.dcd', '.nc'], True)
-def namd_trajectory(arg):
+def charmm_trajectory(arg):
     return arg
 
 
@@ -73,13 +73,13 @@ def amber_topology(arg):
     return arg
 
 
-@check_arg(['.psf'], True)
+@check_arg(['.psf', '.prmtop', '.top', '.parm7'], True)
 def namd_topology(arg):
     return arg
 
 
-@check_arg(['.mol2'], True)
-def mol2(arg):
+@check_arg(['.psf'], True)
+def charmm_topology(arg):
     return arg
 
 
@@ -92,15 +92,6 @@ def mask(arg):
     if not arg.startswith(':'):
         arg = f":{arg}"
     return arg.replace(' ', '')
-
-
-class OptionList(SimpleNamespace):
-    """
-    Just a container to hold the command-line options. Necessary when reading in
-    a gmx_MMPBSA info file to have a container to load the results from the
-    parser.
-    """
-    pass
 
 
 if os.getenv('AMBERHOME'):
