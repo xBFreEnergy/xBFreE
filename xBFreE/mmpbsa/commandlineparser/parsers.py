@@ -150,7 +150,7 @@ def mmpbsa_parser(epilog='', description=''):
     parser.add_argument('-s', '--stability', dest='stability', action='store_true', default=False,
                         help='''Perform stability calculation. Only the complex parameters are required. 
                         In any other case receptor and ligand parameters will be ignored''')
-    parser.add_argument('-nogui', dest='gui', action='store_false', default=True,
+    parser.add_argument('-ng', '--nogui', dest='gui', action='store_false', default=True,
                         help='No open gmx_MMPBSA_ana after all calculations finished')
 
     group = parser.add_argument_group('Input and Output Files', '''These options specify the input files and optional 
