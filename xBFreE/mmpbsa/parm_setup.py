@@ -5,7 +5,7 @@ in the context of a complex/receptor/ligand system. It will also be able
 to translate complex atom selections into either Amber masks or Amber
 group input selection strings for the complex, receptor, and ligand.
 It will also check through the systems and make sure that the prmtop
-files are compatible, as well. Necessary for gmx_MMPBSA functioning.
+files are compatible, as well. Necessary for xBFreE functioning.
 """
 
 # ##############################################################################
@@ -96,7 +96,7 @@ class MMPBSA_System(object):
 
     def __init__(self, complex_prmtop, receptor_prmtop=None, ligand_prmtop=None):
         """
-         Get amber topology from gromacs tpr file and Initializes the topology file classes for all of the prmtop files
+         Get amber topology from gromacs tpr file and Initializes the topology file classes for all the prmtop files
          """
 
         self.complex_prmtop = LoadParm(complex_prmtop)
@@ -136,8 +136,7 @@ class MMPBSA_System(object):
         # Check that every atom is selected once and only once by comparing
         # the sums of the two mask selections
         if sum(rmask) + sum(lmask) != self.complex_prmtop.ptr('natom'):
-            raise PrmtopError("provided receptor/ligand masks don't select " +
-                              "every atom in the complex topology!")
+            raise PrmtopError("provided receptor/ligand masks don't select every atom in the complex topology!")
         if sum(rmask) != self.receptor_prmtop.ptr('natom'):
             raise PrmtopError('mismatch in receptor mask and receptor prmtop')
         if sum(lmask) != self.ligand_prmtop.ptr('natom'):
@@ -146,11 +145,9 @@ class MMPBSA_System(object):
         # Now check that the masks don't select an atom twice
         for i in range(len(rmask)):
             if rmask[i] == 1 and lmask[i] == 1:
-                raise PrmtopError('Atom %d selected by both receptor and ' % i +
-                                  'ligand masks')
+                raise PrmtopError(f'Atom {i:d} selected by both receptor and ligand masks')
             if lmask[i] == 0 and rmask[i] == 0:
-                raise PrmtopError('Atom %d is not selected by either ' % i +
-                                  'receptor or ligand masks')
+                raise PrmtopError(f'Atom {i:d} is not selected by either receptor or ligand masks')
 
         # Now that we've verified everything is OK (we could do more, but this
         # should be good enough), let's actually create the res_list mapping
@@ -164,15 +161,15 @@ class MMPBSA_System(object):
                 new_res.ligand_number = lignum
                 if (self.complex_prmtop.parm_data['RESIDUE_LABEL'][i] !=
                         self.ligand_prmtop.parm_data['RESIDUE_LABEL'][lignum - 1]):
-                    raise PrmtopError('Residue mismatch while mapping. ' +
-                                      'Incompatible topology files or bad mask definitions')
+                    raise PrmtopError('Residue mismatch while mapping. Incompatible topology files or bad mask '
+                                      'definitions')
                 lignum += 1
             else:
                 new_res.receptor_number = recnum
                 if (self.complex_prmtop.parm_data['RESIDUE_LABEL'][i] !=
                         self.receptor_prmtop.parm_data['RESIDUE_LABEL'][recnum - 1]):
-                    raise PrmtopError('Residue mismatch while mapping. ' +
-                                      'Incompatible topology files or bad mask definitions')
+                    raise PrmtopError('Residue mismatch while mapping. Incompatible topology files or bad mask '
+                                      'definitions')
                 recnum += 1
             self.res_list.append(new_res)
         # end for i in range(self.complex_prmtop.ptr('nres'))
@@ -270,7 +267,7 @@ class MMPBSA_System(object):
         ligand_selection = [0 for i in range(self.ligand_prmtop.ptr('nres'))]
 
         # Now every residue in self.res_list has been selected according to
-        # that selection. Now we have to loop through all of the atoms until
+        # that selection. Now we have to loop through all the atoms until
         # we hit one that's selected
         i = 0
         while i < len(self.res_list):
@@ -453,8 +450,7 @@ class MMPBSA_System(object):
 
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-    def Group(self, selection, in_complex=True, com_group_type='RES',
-              rec_group_type='RRES', lig_group_type='LRES'):
+    def Group(self, selection, in_complex=True, com_group_type='RES', rec_group_type='RRES', lig_group_type='LRES'):
         """ This function turns a ,- or ;-delimited list of residues into an
           Amber group input specification for the complex, receptor, and ligand.
           If in_complex is true, then the group inputs returned will correspond
@@ -468,8 +464,7 @@ class MMPBSA_System(object):
         if self.stability:
             return self._stability_group(selection, com_group_type, rec_group_type)
         else:
-            return self._binding_group(selection, in_complex, com_group_type,
-                                       rec_group_type, lig_group_type)
+            return self._binding_group(selection, in_complex, com_group_type, rec_group_type, lig_group_type)
 
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
@@ -512,8 +507,7 @@ class MMPBSA_System(object):
 
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-    def _binding_group(self, selection, in_complex, com_group_type,
-                       rec_group_type, lig_group_type):
+    def _binding_group(self, selection, in_complex, com_group_type, rec_group_type, lig_group_type):
         """ Internal function for Group for no stability """
         import re
         numre = re.compile(r'(\d+)')
@@ -536,7 +530,7 @@ class MMPBSA_System(object):
         ligand_selection = [0 for i in range(self.ligand_prmtop.ptr('nres'))]
 
         # Now every residue in self.res_list has been selected according to
-        # that selection. Now we have to loop through all of the atoms until
+        # that selection. Now we have to loop through all the atoms until
         # we hit one that's selected
         i = 0
         while i < len(self.res_list):
@@ -727,8 +721,7 @@ class MMPBSA_System(object):
       """
 
         if not self.mapped:
-            raise PrmtopError('The MMPBSA_system must be mapped before you can '
-                              'request masks or groups!')
+            raise PrmtopError('The MMPBSA_system must be mapped before you can request masks or groups!')
 
         selection = selection.replace(';', ',')  # move to one kind of delimiter
         selection_fields = selection.split(',')
@@ -763,8 +756,7 @@ class MMPBSA_System(object):
                     raise SelectionError('Invalid selection! Integers expected.')
 
                 # Now make sure that they're within the legal range and not stupid
-                if res2 < res1 or res1 <= 0 or \
-                        res2 > self.complex_prmtop.ptr('nres'):
+                if res2 < res1 or res1 <= 0 or res2 > self.complex_prmtop.ptr('nres'):
                     raise SelectionError('Invalid selection. Illegal residue range')
 
                 # Now go through and select them
@@ -789,7 +781,7 @@ class MMPBSA_System(object):
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
     def _deselect_residues(self):
-        """ Deselect all of the residues in the system """
+        """ Deselect all the residues in the system """
 
         if not self.mapped:
             raise PrmtopError('Cannot deselect residues before mapping!')
@@ -805,20 +797,15 @@ class MMPBSA_System(object):
       """
         if self.stability: return None  # done checking here for stability calcs
 
-        if self.complex_prmtop.ptr('natom') != self.receptor_prmtop.ptr('natom') \
-                + self.ligand_prmtop.ptr('natom'):
+        if self.complex_prmtop.ptr('natom') != self.receptor_prmtop.ptr('natom') + self.ligand_prmtop.ptr('natom'):
             raise PrmtopError('Complex natom != receptor natom + ligand natom')
 
-        if self.complex_prmtop.ptr('nres') != self.receptor_prmtop.ptr('nres') + \
-                self.ligand_prmtop.ptr('nres'):
+        if self.complex_prmtop.ptr('nres') != self.receptor_prmtop.ptr('nres') + self.ligand_prmtop.ptr('nres'):
             raise PrmtopError('Complex nres != receptor nres + ligand nres')
 
-        if (self.complex_prmtop.chamber or self.receptor_prmtop.chamber or
-                self.ligand_prmtop.chamber):
-            if (not self.complex_prmtop.chamber or not self.receptor_prmtop.chamber
-                    or not self.ligand_prmtop.chamber):
-                raise PrmtopError('Prmtops must be either ALL chamber ' +
-                                  'prmtops or NONE')
+        if self.complex_prmtop.chamber or self.receptor_prmtop.chamber or self.ligand_prmtop.chamber:
+            if not self.complex_prmtop.chamber or not self.receptor_prmtop.chamber or not self.ligand_prmtop.chamber:
+                raise PrmtopError('Prmtops must be either ALL chamber prmtops or NONE')
 
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
@@ -838,8 +825,8 @@ class MMPBSA_System(object):
             if com_radii != rec_radii or com_radii != lig_radii:
                 raise PrmtopError('Topology files have inconsistent RADIUS_SETs')
         except KeyError:
-            raise PrmtopError('Topology files have no Implicit radii! You can ' +
-                              'add implicit radii using xparmed.py or parmed.py')
+            raise PrmtopError('Topology files have no Implicit radii! You can add implicit radii using xparmed.py or '
+                              'parmed.py')
         if not self.mapped:
             raise PrmtopError('Cannot check charges prior to mapping!')
 
@@ -849,8 +836,7 @@ class MMPBSA_System(object):
         # to the corresponding atom in the ligand or receptor
         for i in range(self.complex_prmtop.ptr('natom')):
             resnum = self.complex_prmtop.atoms[i].residue.idx
-            atom_in_res = (i + 1 -
-                           self.complex_prmtop.parm_data['RESIDUE_POINTER'][resnum])
+            atom_in_res = i + 1 - self.complex_prmtop.parm_data['RESIDUE_POINTER'][resnum]
             com_chg = self.complex_prmtop.parm_data['CHARGE'][i]
             if self.res_list[resnum].ligand_number is not None:
                 otherparm = self.ligand_prmtop
@@ -862,8 +848,7 @@ class MMPBSA_System(object):
             atnum = otherparm.parm_data['RESIDUE_POINTER'][resnum] - 1 + atom_in_res
             lig_or_rec_chg = otherparm.parm_data['CHARGE'][atnum]
             if abs(lig_or_rec_chg - com_chg) > TINY:
-                raise PrmtopError('Inconsistent charge definition for atom %d!' %
-                                  (i + 1))
+                raise PrmtopError(f'Inconsistent charge definition for atom {i + 1}!')
 
 
 def range_string(num1, num2):
