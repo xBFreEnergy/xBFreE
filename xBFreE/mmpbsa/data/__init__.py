@@ -11,3 +11,9 @@
 #  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    #
 #  for more details.                                                           #
 # ##############################################################################
+
+from pathlib import Path
+
+
+radii_files = {f.stem: f.absolute().as_posix()for f in Path(__file__).parent.joinpath('radii').glob('*')}
+xvv_files = {f.stem: f.absolute().as_posix()for f in Path(__file__).parent.joinpath('xvv').glob('*')}
