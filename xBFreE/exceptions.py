@@ -1,5 +1,5 @@
 """
-This is a module that contains the exceptions thrown by gmx_MMPBSA
+This is a module that contains the exceptions thrown by xBFreE
 """
 
 # ##############################################################################
@@ -20,103 +20,104 @@ This is a module that contains the exceptions thrown by gmx_MMPBSA
 #  for more details.                                                           #
 # ##############################################################################
 import logging
+import sys
 
 
-class MMPBSA_Error(Exception):
-    """ Base gmx_MMPBSA error class """
+class xBFreE_Error(Exception):
+    """ Base xBFreE error class """
 
-    def __init__(self, msg='gmx_MMPBSA error'):
+    def __init__(self, msg='xBFreE error'):
         self.msg = msg
 
     def __str__(self):
         return self.msg
 
 
-class MMPBSA_Warning(Warning):
-    """ Base gmx_MMPBSA warning class """
+class xBFreE_Warning(Warning):
+    """ Base xBFreE warning class """
 
-    def __init__(self, msg='gmx_MMPBSA warning'):
+    def __init__(self, msg='xBFreE warning'):
         self.msg = msg
 
     def __str__(self):
         return self.msg
 
 
-class TimerException(MMPBSA_Error):
+class TimerException(xBFreE_Error):
     """ Error in timer module """
     pass
 
 
-class CommandlineError(MMPBSA_Error):
+class CommandlineError(xBFreE_Error):
     """ Error parsing the command-line """
     pass
 
 
-class CalcError(MMPBSA_Error):
+class CalcError(xBFreE_Error):
     """ Error when running calculations """
     pass
 
 
-class SetupError(MMPBSA_Error):
+class SetupError(xBFreE_Error):
     """ Error in standard setup; i.e. environment variables """
     pass
 
 
-class PrmtopError(MMPBSA_Error):
+class PrmtopError(xBFreE_Error):
     """ Error in one of the prmtops """
     pass
 
 
-class SelectionError(MMPBSA_Error):
+class SelectionError(xBFreE_Error):
     """ Error in which a residue selection is illegal """
     pass
 
 
-class TrajError(MMPBSA_Error):
+class TrajError(xBFreE_Error):
     """ Error in trajectory processing """
     pass
 
 
-class InputError(MMPBSA_Error):
+class InputError(xBFreE_Error):
     """ Error in the Input File """
     pass
 
 
-class IllegalOption(MMPBSA_Error):
+class IllegalOption(xBFreE_Error):
     """ Error captured when looking for incompatibilities """
     pass
 
 
-class InterruptError(MMPBSA_Error):
+class InterruptError(xBFreE_Error):
     """ When the process is interrupted """
     pass
 
 
-class OutputError(MMPBSA_Error):
+class OutputError(xBFreE_Error):
     """ Error in parsing the output """
     pass
 
 
-class InconsistentError1(MMPBSA_Error):
+class InconsistentError1(xBFreE_Error):
     """ Error when internal potential terms are inconsistent. Specifically
         BOND, ANGLE, and DIHED terms
     """
     pass
 
 
-class InconsistentError2(MMPBSA_Error):
+class InconsistentError2(xBFreE_Error):
     """ Error when internal potential terms are inconsistent. Specifically
         1-4 VDW, and 1-4 EEL terms
     """
     pass
 
 
-class ConvergenceError(MMPBSA_Error):
+class ConvergenceError(xBFreE_Error):
     """ Error when nmode frame doesn't minimize within tolerance """
     pass
 
 
-class MutateError(MMPBSA_Error):
+class MutateError(xBFreE_Error):
     """ Error mutating a trajectory in alanine scanning """
     pass
 
@@ -126,53 +127,49 @@ class MutantResError(MutateError):
     pass
 
 
-class CreateInputError(MMPBSA_Error):
+class CreateInputError(xBFreE_Error):
     """ Error creating MDIN file """
     pass
 
 
-class LengthError(MMPBSA_Error):
+class LengthError(xBFreE_Error):
     """
     Error that occurs when trying to subtract different length EnergyVectors
     """
     pass
 
 
-class DecompError(MMPBSA_Error):
+class DecompError(xBFreE_Error):
     """ Error parsing decomp results """
     pass
 
 
-class InternalError(MMPBSA_Error):
+class InternalError(xBFreE_Error):
     """ Error from buggy coding """
     pass
 
 
-class NoFileExists(MMPBSA_Error):
+class NoFileExists(xBFreE_Error):
     """ Error if we don't have a file we need """
     pass
 
 
-class InputWarning(MMPBSA_Warning):
+class InputWarning(xBFreE_Warning):
     """ If we have a non-fatal warning """
     pass
 
-class StabilityWarning(MMPBSA_Warning):
+class StabilityWarning(xBFreE_Warning):
     """
     When define stability calculation and protein or ligand
     """
     pass
 
-class GMXMMPBSA_ERROR():
-    def __init__(self, msg='gmx_MMPBSA error', exc=MMPBSA_Error):
-        logging.error(f"{exc.__name__} {msg}.\n           Check the gmx_MMPBSA.log file to report the problem.")
-        raise exc(msg + '\nCheck the gmx_MMPBSA.log file to report the problem.')
+class xBFreEErrorLogging:
+    def __init__(self, msg='xBFreE error', exc=xBFreE_Error, exception=True):
+        logging.error(f"{exc.__name__} {msg}.\n           Check the xBFreE.log file to report the problem.")
+        if exception:
+            raise exc(msg + '\nCheck the xBFreE.log file to report the problem.')
+        else:
+            print(msg+ '\nCheck the xBFreE.log file to report the problem.')
+            sys.exit(1)
 
-
-class GMXMMPBSA_INFO():
-    def __init__(self, msg='gmx_MMPBSA info'):
-        self.msg = msg
-
-    def write(self, log):
-        print(log)
-        log.write('INFO      ' + self.msg + '\n')
