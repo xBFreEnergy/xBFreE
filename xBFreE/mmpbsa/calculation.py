@@ -39,7 +39,7 @@ from time import sleep
 import json
 
 from xBFreE.exceptions import CalcError
-from xBFreE.exceptions import GMXMMPBSA_ERROR
+from xBFreE.exceptions import xBFreEErrorLogging
 from xBFreE.mmpbsa.output.others import mdout2json
 import os
 import sys
@@ -622,11 +622,11 @@ class PBEnergyCalculation(EnergyCalculation):
                 error_list = [s.strip() for s in out.split('\n')
                               if errorre.match(s.strip())]
 
-                GMXMMPBSA_ERROR('%s failed with prmtop %s!\n\t' % (self.program, self.prmtop) +
-                                '\n\t'.join(error_list) + '\n' +
-                                'If you are using sander and PB calculation, check the *.mdout files to get the sander '
-                                'error\n',
-                                CalcError)
+                xBFreEErrorLogging('%s failed with prmtop %s!\n\t' % (self.program, self.prmtop) +
+                                   '\n\t'.join(error_list) + '\n' +
+                                   'If you are using sander and PB calculation, check the *.mdout files to get the sander '
+                                   'error\n',
+                                   CalcError)
         finally:
             if own_handle: process_stderr.close()
 
