@@ -12,24 +12,11 @@
 #  for more details.                                                           #
 # ##############################################################################
 
-import sys
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentDefaultsHelpFormatter
 
 from xBFreE import __version__
-from xBFreE.exceptions import xBFreEErrorLogging
 from xBFreE.mmpbsa.commandlineparser import gmx_parser, amber_parser, namd_parser, charmm_parser
-
-
-class xBFreE_ArgParser(ArgumentParser):
-    """
-    ArgumentParser subclass to redirect exit output to the xBFreE logging
-    """
-
-    def exit(self, status=0, message=None):
-        if message:
-            xBFreEErrorLogging(message)
-        sys.exit(status)
-
+from xBFreE.utils.misc import xBFreE_ArgParser
 
 cmdparser = xBFreE_ArgParser(
     epilog='''xBFreEnergy is a tool to compute Binding Free Energy with different methods''',
@@ -37,8 +24,7 @@ cmdparser = xBFreE_ArgParser(
     formatter_class=ArgumentDefaultsHelpFormatter
 )
 cmdparser.add_argument('-v', '--version', action='version',
-                    version='''%%(prog)s %s''' % __version__)
-
+                       version='''%%(prog)s %s''' % __version__)
 
 subparsers = cmdparser.add_subparsers(help='Methods to compute Binding Free Energy', dest='subparser')
 gmxmmpbsa_parser = subparsers.add_parser(

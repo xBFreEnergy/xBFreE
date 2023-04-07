@@ -19,12 +19,22 @@ from pathlib import Path
 import logging
 import platform
 import sys
+from argparse import ArgumentParser
+from pathlib import Path
+
 import parmed
-import re
-from string import ascii_letters
-import logging
-from xBFreE.exceptions import GMXMMPBSA_ERROR
-import subprocess
+from xBFreE.exceptions import xBFreEErrorLogging
+
+
+class xBFreE_ArgParser(ArgumentParser):
+    """
+    ArgumentParser subclass to redirect exit output to the xBFreE logging
+    """
+
+    def exit(self, status=0, message=None):
+        if message:
+            xBFreEErrorLogging(message)
+        sys.exit(status)
 
 
 def create_input_args(args: list, method):
