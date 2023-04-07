@@ -26,16 +26,16 @@ gmx_parser = mmpbsa_parser()
 
 group = gmx_parser.add_argument_group('Complex', complex_group_des)
 group.add_argument('-cs', dest='complex_structure', metavar='<Structure File>', default=None, type=gmx_structure,
-                   help="Structure file of the complex. Allowed formats: *.tpr (recommended), *.pdb", required=True)
+                   help="Structure file of the complex. Allowed formats: *.tpr (recommended), *.pdb")
 group.add_argument('-ci', dest='complex_index', metavar='<Index File>', default=None, type=index,
-                   help='Index file of the bound complex.', required=True)
-group.add_argument('-cg', dest='complex_groups', metavar='index', nargs=2, default=None, type=int, required=True,
+                   help='Index file of the bound complex.')
+group.add_argument('-cg', dest='complex_groups', metavar='index', nargs=2, default=None, type=int,
                    help='Groups of receptor and ligand in complex index file. The notation is as follows: "-cg '
                         '<Receptor group> <Ligand group>", ie. -cg 1 13')
-group.add_argument('-ct', dest='complex_trajs', nargs='*', metavar='TRJ', type=gmx_trajectory, required=True,
+group.add_argument('-ct', dest='complex_trajs', nargs='*', metavar='TRJ', type=gmx_trajectory,
                    help="Complex trajectories. Make sure the trajectory is fitted and pbc have been removed. "
                         "Allowed formats: *.xtc, *.trr, *.pdb (specify as many as you'd like).")
-group.add_argument('-cp', dest='complex_top', metavar='<Topology>', default=None, type=gmx_topology, required=True,
+group.add_argument('-cp', dest='complex_top', metavar='<Topology>', default=None, type=gmx_topology,
                    help="The complex Topology file. When it is defined -lm option is not needed")
 group.add_argument('-cr', dest='reference_structure', metavar='<PDB File>', default=None, type=pdb,
                    help="Complex Reference Structure file. This option is optional but recommended (Use the PDB file "

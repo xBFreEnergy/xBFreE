@@ -16,13 +16,11 @@
 This submodule contains the base parser
 """
 
-import sys
-from argparse import ArgumentParser
 from pathlib import Path
 
 from xBFreE import __version__
 from xBFreE.exceptions import xBFreEErrorLogging
-from xBFreE.commandlineparser import xBFreE_ArgParser
+from xBFreE.utils.misc import xBFreE_ArgParser
 
 
 def check_arg(str_suffix, path=False):
