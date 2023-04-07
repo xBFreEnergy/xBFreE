@@ -13,13 +13,11 @@
 # ##############################################################################
 import logging
 
-from parmed.amber import AmberMask
-from parmed.tools.changeradii import ChRad
-
-from .core import BuildTop
 import parmed
-from xBFreE.exceptions import GMXMMPBSA_ERROR
+from parmed.amber import AmberMask
+from xBFreE.exceptions import xBFreEErrorLogging
 from xBFreE.utils.molecule import list2range, get_indexes_from_str, res2map, check_str, eq_strs
+from .core import BuildTop
 from ..utils.changeradii import LoadRadii
 
 
@@ -206,7 +204,7 @@ class BuildTopAmber(BuildTop):
                 if idx not in res_list:
                     res_list.append(top.atoms[i - 1].residue.number + 1)
             except IndexError:
-                GMXMMPBSA_ERROR(f'The atom {i} in the {id} index is not found in the topology file. Please check that '
+                xBFreEErrorLogging(f'The atom {i} in the {id} index is not found in the topology file. Please check that '
                                 'the files are consistent.')
 
         ranges = list2range(res_list)

@@ -12,12 +12,12 @@
 #  for more details.                                                           #
 # ##############################################################################
 
+import string
+
 import parmed
 from xBFreE.exceptions import *
-from xBFreE.utils.molecule import get_dist, selector
 from xBFreE.mmpbsa.alamdcrd import _scaledistance
-import logging
-import string
+from xBFreE.utils.molecule import get_dist, selector
 
 positive_aa = ['LYS', 'ARG', 'HIP']
 negative_aa = ['GLU', 'ASP']
@@ -57,7 +57,7 @@ class BuildTop:
     def checkFiles(self):
         if (not self.FILES.complex_structure or not self.FILES.complex_index or
                 not self.FILES.complex_trajs or not self.FILES.complex_groups):
-            GMXMMPBSA_ERROR('You must define the structure, topology and index files, as well as the groups!')
+            xBFreEErrorLogging('You must define the structure, topology and index files, as well as the groups!')
 
     def buildTopology(self):
         pass
@@ -114,7 +114,7 @@ class BuildTop:
             # check if residues in receptor and ligand was defined
             if not residues_selection['rec'] or not residues_selection['lig']:
                 if not self.INPUT['ala']['alarun']:
-                    GMXMMPBSA_ERROR('For decomposition analysis, you most define residues for both receptor and ligand!')
+                    xBFreEErrorLogging('For decomposition analysis, you most define residues for both receptor and ligand!')
         else:
             for i in self.resl:
                 if i.is_ligand():
@@ -320,17 +320,17 @@ class BuildTop:
 
     def getMutationInfo(self):
         if not self.INPUT['ala']['mutant_res']:
-            GMXMMPBSA_ERROR("No residue for mutation was defined")
+            xBFreEErrorLogging("No residue for mutation was defined")
         # dict = { resind: [chain, resnum, icode]
         sele_res_dict = self.get_selected_residues(self.INPUT['ala']['mutant_res'])
         if len(sele_res_dict) != 1:
-            GMXMMPBSA_ERROR('Only ONE mutant residue is allowed.')
+            xBFreEErrorLogging('Only ONE mutant residue is allowed.')
         r = sele_res_dict[0]
         res = self.complex_str.residues[r - 1]
         icode = f':{res.insertion_code}' if res.insertion_code else ''
         if (not parmed.residue.AminoAcidResidue.has(res.name) or res.name in ['CYX', 'PRO', 'GLY'] or
                 res.name == 'ALA' and self.INPUT['ala']['mutant'] == 'ALA'):
-            GMXMMPBSA_ERROR(f"Selecting residue {res.chain}:{res.name}:{res.number}{icode} can't be mutated. Please, "
+            xBFreEErrorLogging(f"Selecting residue {res.chain}:{res.name}:{res.number}{icode} can't be mutated. Please, "
                             f"define a valid residue...")
 
         if r.is_receptor():
@@ -343,9 +343,9 @@ class BuildTop:
             part_index = None
             part_mut = None
             if icode:
-                GMXMMPBSA_ERROR(f'Residue {res.chain}:{res.number}:{res.insertion_code} not found')
+                xBFreEErrorLogging(f'Residue {res.chain}:{res.number}:{res.insertion_code} not found')
             else:
-                GMXMMPBSA_ERROR(f'Residue {res.chain}:{res.number} not found')
+                xBFreEErrorLogging(f'Residue {res.chain}:{res.number} not found')
 
         # return r - 1 since r is the complex mutant index from amber selection format. Needed for top mutation only
         return r - 1, part_mut, part_index
@@ -372,7 +372,7 @@ class BuildTop:
                     for x in new_str:
                         fw.write(x)
             except IOError as e:
-                GMXMMPBSA_ERROR('', str(e))
+                xBFreEErrorLogging('', str(e))
 
             structure = parmed.read_PDB(pdb_file)
         else:

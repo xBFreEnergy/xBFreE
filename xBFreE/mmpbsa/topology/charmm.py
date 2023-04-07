@@ -14,13 +14,11 @@
 import logging
 from pathlib import Path
 
-from parmed.amber import AmberMask
-from parmed.tools.changeradii import ChRad
-
-from .core import BuildTop
 import parmed
-from xBFreE.exceptions import GMXMMPBSA_ERROR
-from xBFreE.utils.molecule import list2range, mask2list, get_indexes_from_str, res2map, check_str, eq_strs
+from parmed.amber import AmberMask
+from xBFreE.exceptions import xBFreEErrorLogging
+from xBFreE.utils.molecule import get_indexes_from_str, res2map, check_str, eq_strs
+from .core import BuildTop
 from ..utils.changeradii import LoadRadii
 
 
@@ -215,7 +213,7 @@ class BuildTopCHARMM(BuildTop):
             break
 
         if not exist:
-            GMXMMPBSA_ERROR(f"The {top_file} associated toppar folder not exist. Please, define a valid one. Note "
+            xBFreEErrorLogging(f"The {top_file} associated toppar folder not exist. Please, define a valid one. Note "
                             f"that the toppar folder name can be defined as follow:\n"
                             f"COM: complex_toppar, com_toppar, toppar (for ST and MT)\n"
                             f"REC: receptor_toppar, rec_toppar (for MT only)\n"

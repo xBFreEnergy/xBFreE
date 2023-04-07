@@ -13,15 +13,13 @@
 # ##############################################################################
 
 import platform
+import string
+import subprocess
 
 import parmed
 from xBFreE.exceptions import *
-from xBFreE.utils.molecule import (list2range, res2map, get_indexes, check_str, eq_strs, get_index_groups)
 from xBFreE.utils.misc import log_subprocess_output
-import subprocess
-import logging
-import string
-from parmed.tools.changeradii import ChRad
+from xBFreE.utils.molecule import (list2range, res2map, get_indexes, check_str, eq_strs, get_index_groups)
 from .core import BuildTop
 from ..utils.changeradii import LoadRadii
 
@@ -75,7 +73,8 @@ class BuildTopGromacs(BuildTop):
         # make index for extract pdb structure
         com_rec_group, com_lig_group = self.FILES.complex_groups
         if com_rec_group == com_lig_group:
-            GMXMMPBSA_ERROR('The receptor and ligand groups have to be different')
+            xBFreEErrorLogging('The receptor and ligand groups have to be different')
+        print(self.FILES.complex_index, com_rec_group)
         num_com_rec_group, str_com_rec_group = get_index_groups(self.FILES.complex_index, com_rec_group)
         num_com_lig_group, str_com_lig_group = get_index_groups(self.FILES.complex_index, com_lig_group)
 
@@ -94,7 +93,7 @@ class BuildTopGromacs(BuildTop):
         c2 = subprocess.Popen(make_ndx_args, stdin=c1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         log_subprocess_output(c2)
         if c2.wait():  # if it quits with return code != 0
-            GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(self.make_ndx), self.FILES.complex_index))
+            xBFreEErrorLogging('%s failed when querying %s' % (' '.join(self.make_ndx), self.FILES.complex_index))
         self.FILES.complex_index = com_ndx
 
         logging.info(f'Normal Complex: Saving group {str_com_rec_group}_{str_com_lig_group} '
@@ -120,7 +119,7 @@ class BuildTopGromacs(BuildTop):
         c4 = subprocess.Popen(pdbcom_args, stdin=c3.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         log_subprocess_output(c4)
         if c4.wait():  # if it quits with return code != 0
-            GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
+            xBFreEErrorLogging('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
 
         # make a temp receptor pdb (even when stability) if decomp to get correct receptor residues from complex. This
         # avoids get multiples molecules from complex.split()
@@ -143,7 +142,7 @@ class BuildTopGromacs(BuildTop):
             cp2 = subprocess.Popen(pdbrec_args, stdin=cp1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(cp2)
             if cp2.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
         # check if stability
         if self.FILES.stability and (
                 (self.FILES.receptor_tpr or self.FILES.ligand_tpr)
@@ -167,7 +166,7 @@ class BuildTopGromacs(BuildTop):
             c2 = subprocess.Popen(make_ndx_args, stdin=c1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(c2)
             if c2.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(self.make_ndx), self.FILES.receptor_index))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(self.make_ndx), self.FILES.receptor_index))
             self.FILES.receptor_index = rec_ndx
 
             logging.info(f'Normal Receptor: Saving group {str_rec_group} ({num_rec_group}) in '
@@ -191,7 +190,7 @@ class BuildTopGromacs(BuildTop):
             cp2 = subprocess.Popen(pdbrec_args, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(cp2)
             if cp2.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(prog), self.FILES.receptor_trajs[0]))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(prog), self.FILES.receptor_trajs[0]))
         else:
             logging.info(f'Normal Receptor: Saving group {str_com_rec_group} ({num_com_rec_group}) in '
                          f'{self.FILES.complex_index} file as {self.receptor_str_file}')
@@ -211,7 +210,7 @@ class BuildTopGromacs(BuildTop):
             cp2 = subprocess.Popen(pdbrec_args, stdin=cp1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(cp2)
             if cp2.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
         # ligand
         # # check consistence
         if self.FILES.ligand_tpr:  # ligand is protein
@@ -230,7 +229,7 @@ class BuildTopGromacs(BuildTop):
             c2 = subprocess.Popen(make_ndx_args, stdin=c1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(c2)
             if c2.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(self.make_ndx), self.FILES.ligand_index))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(self.make_ndx), self.FILES.ligand_index))
             self.FILES.ligand_index = lig_ndx
 
             logging.info(f'Normal Ligand: Saving group {str_lig_group} ({num_lig_group}) in {self.FILES.ligand_index}'
@@ -254,7 +253,7 @@ class BuildTopGromacs(BuildTop):
             l2 = subprocess.Popen(pdblig_args, stdin=l1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(l2)
             if l2.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(prog), self.FILES.ligand_trajs[0]))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(prog), self.FILES.ligand_trajs[0]))
         else:
             # wt complex ligand
             logging.info(f'Normal Ligand: Saving group {str_com_lig_group} ({num_com_lig_group}) in '
@@ -278,7 +277,7 @@ class BuildTopGromacs(BuildTop):
             l2 = subprocess.Popen(pdblig_args, stdin=l1.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(l2)
             if l2.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(comprog), self.FILES.complex_trajs[0]))
         # check for IE variable
         # FIXME: change it to ERROR?
         if (self.FILES.receptor_tpr or self.FILES.ligand_tpr) and (
@@ -491,7 +490,7 @@ class BuildTopGromacs(BuildTop):
                 if idx not in res_list:
                     res_list.append(top.atoms[i - 1].residue.number + 1)
             except IndexError:
-                GMXMMPBSA_ERROR(f'The atom {i} in the {id} index is not found in the topology file. Please check that '
+                xBFreEErrorLogging(f'The atom {i} in the {id} index is not found in the topology file. Please check that '
                                 'the files are consistent.')
 
         ranges = list2range(res_list)
@@ -566,7 +565,7 @@ class BuildTopGromacs(BuildTop):
             c6 = subprocess.Popen(trjconv_args, stdin=c5.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             log_subprocess_output(c6)
             if c6.wait():  # if it quits with return code != 0
-                GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.complex_trajs[i]))
+                xBFreEErrorLogging('%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.complex_trajs[i]))
             new_trajs.append(f'COM_traj_{i}.xtc')
         self.FILES.complex_trajs = new_trajs
 
@@ -586,7 +585,7 @@ class BuildTopGromacs(BuildTop):
                 c6 = subprocess.Popen(trjconv_args, stdin=c5.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 log_subprocess_output(c6)
                 if c6.wait():  # if it quits with return code != 0
-                    GMXMMPBSA_ERROR(
+                    xBFreEErrorLogging(
                         '%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.receptor_trajs[i]))
                 new_trajs.append('REC_traj_{}.xtc'.format(i))
             self.FILES.receptor_trajs = new_trajs
@@ -606,7 +605,7 @@ class BuildTopGromacs(BuildTop):
                 c6 = subprocess.Popen(trjconv_args, stdin=c5.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 log_subprocess_output(c6)
                 if c6.wait():  # if it quits with return code != 0
-                    GMXMMPBSA_ERROR('%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.ligand_trajs[i]))
+                    xBFreEErrorLogging('%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.ligand_trajs[i]))
                 new_trajs.append('LIG_traj_{}.xtc'.format(i))
             self.FILES.ligand_trajs = new_trajs
 
@@ -620,12 +619,12 @@ class BuildTopGromacs(BuildTop):
             logging.info('Assigning chain ID to structures files according to the reference structure...')
             ref_str = check_str(self.FILES.reference_structure)
             if len(ref_str.residues) != len(com_str.residues):
-                GMXMMPBSA_ERROR(f'The number of residues of the complex ({len(com_str.residues)}) and of the '
+                xBFreEErrorLogging(f'The number of residues of the complex ({len(com_str.residues)}) and of the '
                                 f'reference structure ({len(ref_str.residues)}) are different. Please check that the '
                                 f'reference structure is correct')
             for c, res in enumerate(ref_str.residues):
                 if com_str.residues[c].number != res.number or com_str.residues[c].name != res.name:
-                    GMXMMPBSA_ERROR('There is no match between the complex and the reference structure used. An '
+                    xBFreEErrorLogging('There is no match between the complex and the reference structure used. An '
                                     f'attempt was made to assign the chain ID to "{com_str.residues[c].name}'
                                     f':{com_str.residues[c].number}:{com_str.residues[c].insertion_code}" in the '
                                     f'complex, but "{res.name}:{res.number}:{res.insertion_code}" was expected '
