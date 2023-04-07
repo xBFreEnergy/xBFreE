@@ -12,19 +12,19 @@
 #  for more details.                                                           #
 # ##############################################################################
 
-import sys
 import logging
-from pathlib import Path
+import os
 import signal
+import sys
+from datetime import datetime
+from pathlib import Path
 
+from mpi4py import MPI
+
+from xBFreE.exceptions import xBFreE_Error
 from xBFreE.main import xBFreE_App
 from xBFreE.mmpbsa.app import mmpbsa
 from xBFreE.utils.misc import create_input_args
-from xBFreE.exceptions import MMPBSA_Error
-import os
-
-# Local methods
-from mpi4py import MPI
 
 if MPI.COMM_WORLD.size == 1:
     from xBFreE.fake_mpi import MPI
@@ -43,7 +43,7 @@ def excepthook(exception_type, exception_value, tb):
     """
     import traceback
     # global _stderr, _mpi_size, _rank
-    if not isinstance(exception_type, MMPBSA_Error):
+    if not isinstance(exception_type, xBFreE_Error):
         traceback.print_tb(tb)
     _stderr.write('%s: %s\n' % (exception_type.__name__, exception_value))
     if _mpi_size > 1:
@@ -64,7 +64,7 @@ def setup_run():
     """
     Replace the uncaught exception handler to control traceback printing. Also
     add a signal handler for a SIGINT (Ctrl-C). However, we only want to do this
-    if we're running gmx_MMPBSA -- for the API, we don't want to clobber the
+    if we're running xBFreE -- for the API, we don't want to clobber the
     users' python environments like this.
     """
     sys.excepthook = excepthook
@@ -82,6 +82,11 @@ def run_xbfree():
     - Execute the sub-application according selected subcommand
     :return:
     """
+
+    xbfree_log = Path("xBFreE.log")
+    if xbfree_log.exists():
+        xbfree_log.rename(f"xBFreE-{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}.log")
+
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.INFO)
     formatter = logging.Formatter("[%(levelname)-7s] %(message)s")
@@ -114,60 +119,35 @@ def run_xbfree():
 
         sys.exit(0)
 
+    # See if we wanted to print out our input file options
+    if xbfree_app.FILES.infilehelp:
+        from xBFreE.input.mmpbsa import input_file
+        input_file.print_contents(sys.stdout)
+        sys.exit(0)
+
     if method == 'mmpbsa':
         mmpbsa(files, MPI)
 
 
-def gmxmmpbsa_ana():
-    try:
-        from PyQt6.QtWidgets import QApplication
-        pyqt = True
-    except:
-        try:
-            from PyQt5.QtWidgets import QApplication
-            pyqt = True
-        except:
-            pyqt = False
-    finally:
-        if not pyqt:
-            GMXMMPBSA_ERROR('Could not import PyQt5/PyQt6. gmx_MMPBSA_ana will be disabled until PyQt5/PyQt6 is '
-                            'installed')
-
-    from xBFreE.mmpbsa.analyzer.gui import GMX_MMPBSA_ANA
-    from xBFreE.mmpbsa.analyzer.utils import get_files
-
-    app = QApplication(sys.argv)
-    app.setApplicationName('gmx_MMPBSA Analyzer (gmx_MMPBSA_ana)')
-    try:
-        parser = anaparser.parse_args(sys.argv[1:])
-    except CommandlineError as e:
-        GMXMMPBSA_ERROR('%s: %s' % (type(e).__name__, e))
-        sys.exit(1)
-    ifiles = get_files(parser)
-    w = GMX_MMPBSA_ANA(ifiles)
-    w.show()
-    sys.exit(app.exec())
-
-
-def gmxmmpbsa_test():
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.INFO)
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="[%(levelname)-7s] %(message)s",
-        handlers=[
-            logging.FileHandler("gmx_MMPBSA_test.log", 'w'),
-            stream_handler])
-    try:
-        parser = testparser.parse_args(sys.argv[1:])
-    except CommandlineError as e:
-        GMXMMPBSA_ERROR('%s: %s' % (type(e).__name__, e))
-        sys.exit(1)
-    run_test(parser)
+# def gmxmmpbsa_test():
+#     stream_handler = logging.StreamHandler()
+#     stream_handler.setLevel(logging.INFO)
+#     logging.basicConfig(
+#         level=logging.DEBUG,
+#         format="[%(levelname)-7s] %(message)s",
+#         handlers=[
+#             logging.FileHandler("gmx_MMPBSA_test.log", 'w'),
+#             stream_handler])
+#     try:
+#         parser = testparser.parse_args(sys.argv[1:])
+#     except CommandlineError as e:
+#         GMXMMPBSA_ERROR('%s: %s' % (type(e).__name__, e))
+#         sys.exit(1)
+#     run_test(parser)
 
 
 if __name__ == '__main__':
     logging.info('Finished')
 
     # gmxmmpbsa()
-    gmxmmpbsa_ana()
+    # gmxmmpbsa_ana()
