@@ -12,41 +12,28 @@
 #  for more details.                                                           #
 # ##############################################################################
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawTextHelpFormatter
-from xBFreE.exceptions import GMXMMPBSA_ERROR
-from xBFreE import __version__
 import sys
-import os
-from pathlib import Path
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
+from xBFreE import __version__
+from xBFreE.exceptions import xBFreEErrorLogging
 from xBFreE.mmpbsa.commandlineparser import gmx_parser, amber_parser, namd_parser, charmm_parser
 
-if os.getenv('AMBERHOME'):
-    # rism_xvv = os.path.join(os.getenv('AMBERHOME'), 'dat', 'mmpbsa', 'spc.xvv')
-    path_to_file = os.path.join(os.getenv('AMBERHOME'), 'AmberTools', 'test', 'rism1d', 'tip3p-kh', 'tip3p.xvv.save')
-    if os.path.exists(path_to_file):
-        rism_xvv = path_to_file
-    else:
-        rism_xvv = os.path.join(Path(__file__).parent.joinpath('data'), 'xvv_files', 'tip3p.xvv')
-else:
-    rism_xvv = os.path.join(Path(__file__).parent.joinpath('data'), 'xvv_files', 'tip3p.xvv')
 
-
-class GMXMMPBSA_ArgParser(ArgumentParser):
+class xBFreE_ArgParser(ArgumentParser):
     """
     ArgumentParser subclass to redirect exit output to the xBFreE logging
     """
 
     def exit(self, status=0, message=None):
         if message:
-            GMXMMPBSA_ERROR(message)
+            xBFreEErrorLogging(message)
         sys.exit(status)
 
 
-cmdparser = GMXMMPBSA_ArgParser(
-    epilog='''xBFreEnergy is a tool to compute Binding Free Energy with different methods including MMPBSA and LIE''',
-    description='''xBFreEnergy is a tool to compute Binding Free Energy with different methods including MMPBSA and 
-    LIE''',
+cmdparser = xBFreE_ArgParser(
+    epilog='''xBFreEnergy is a tool to compute Binding Free Energy with different methods''',
+    description='''xBFreEnergy is a tool to compute Binding Free Energy with different methods''',
     formatter_class=ArgumentDefaultsHelpFormatter
 )
 cmdparser.add_argument('-v', '--version', action='version',
@@ -56,31 +43,29 @@ cmdparser.add_argument('-v', '--version', action='version',
 subparsers = cmdparser.add_subparsers(help='Methods to compute Binding Free Energy', dest='subparser')
 gmxmmpbsa_parser = subparsers.add_parser(
     name='gmx_MMPBSA', parents=[gmx_parser],
-    epilog='''xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE''',
-    description='''This is the core of gmx_MMPBSA and it will do all the calculations''',
-    help='MMPBSA calculations for GROMACS'
+    epilog='''xBFreE is a tool to compute Binding Free Enrgy with different methods''',
+    description='''gmx_MMPBSA is the subcommand of xBFreE for performing MMPBSA calculations for GROMACS''',
+    help='MMPBSA calculations for GROMACS',
+    formatter_class=ArgumentDefaultsHelpFormatter
 )
 ambermmpbsa_parser = subparsers.add_parser(
     name='amber_MMPBSA', parents=[amber_parser],
-    epilog='''xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE''',
-    description='''This is the core of gmx_MMPBSA and it will do all the calculations''',
-    help='MMPBSA calculations for AMBER'
+    epilog='''xBFreE is a tool to compute Binding Free Enrgy with different methods''',
+    description='''amber_MMPBSA is the subcommand of xBFreE for performing MMPBSA calculations for AMBER''',
+    help='MMPBSA calculations for AMBER',
+    formatter_class=ArgumentDefaultsHelpFormatter
 )
 namdmmpbsa_parser = subparsers.add_parser(
     name='namd_MMPBSA', parents=[namd_parser],
-    epilog='''xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE''',
-    description='''This is the core of gmx_MMPBSA and it will do all the calculations''',
+    epilog='''xBFreE is a tool to compute Binding Free Enrgy with different methods''',
+    description='''namd_MMPBSA is the subcommand of xBFreE for performing MMPBSA calculations for NAMD''',
     help='MMPBSA calculations for NAMD',
-
+    formatter_class=ArgumentDefaultsHelpFormatter
 )
 charmmmmpbsa_parser = subparsers.add_parser(
     name='charmm_MMPBSA', parents=[charmm_parser],
-    epilog='''xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE''',
-    description='''This is the core of gmx_MMPBSA and it will do all the calculations''',
-    help='MMPBSA calculations for CHARMM'
+    epilog='''xBFreE is a tool to compute Binding Free Enrgy with different methods''',
+    description='''charmm_MMPBSA is the subcommand of xBFreE for performing MMPBSA calculations for CHARMM''',
+    help='MMPBSA calculations for CHARMM',
+    formatter_class=ArgumentDefaultsHelpFormatter
 )
-
-
-# parser.parse_args(['gmx_MMPBSA', '-h'])
-
-
