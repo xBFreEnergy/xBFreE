@@ -12,12 +12,13 @@
 #  for more details.                                                           #
 # ##############################################################################
 
-import parmed
-from xBFreE.exceptions import GMXMMPBSA_ERROR
 import logging
-from math import sqrt
 import re
+from math import sqrt
 from string import ascii_letters
+
+import parmed
+from xBFreE.exceptions import xBFreEErrorLogging
 
 
 def _get_restype(resname):
@@ -42,12 +43,12 @@ def eq_strs(struct1, struct2, noh=False, molid='complex'):
         na1 = sum(not x.startswith('H') for x in struct1.atoms)
         na2 = sum(not x.startswith('H') for x in struct2.atoms)
         if na1 != na2:
-            GMXMMPBSA_ERROR(f"The number of atoms in the topology ({len(struct1.atoms)}) and the {molid} structure "
+            xBFreEErrorLogging(f"The number of atoms in the topology ({len(struct1.atoms)}) and the {molid} structure "
                             f"({len(struct2.atoms)}) are different. Please check these files and verify that they are "
                             f"correct. Otherwise report the error...")
 
     elif len(struct1.residues) != len(struct2.residues):
-        GMXMMPBSA_ERROR(f"The number of residues in the topology ({len(struct1.residues)}) and the {molid} structure "
+        xBFreEErrorLogging(f"The number of residues in the topology ({len(struct1.residues)}) and the {molid} structure "
                         f"({len(struct2.residues)}) are different. Please check these files and verify that they are "
                         f"correct. Otherwise report the error...")
     else:
@@ -66,11 +67,11 @@ def check_str(structure, ref=False, skip=False):
     duplicates = []
     for res in refstr.residues:
         if 'LP' in res.name:
-            GMXMMPBSA_ERROR('The LP pseudo-atom is not supported. Please remove them following this instructions: '
+            xBFreEErrorLogging('The LP pseudo-atom is not supported. Please remove them following this instructions: '
                             'https://valdes-tresanco-ms.github.io/gmx_MMPBSA/dev/examples/Protein_ligand_LPH_atoms_CHARMMff/')
         if res.chain == '':
             if ref:
-                GMXMMPBSA_ERROR('The reference structure used is inconsistent. The following residue does not have a '
+                xBFreEErrorLogging('The reference structure used is inconsistent. The following residue does not have a '
                                 f'chain ID: {res.number}:{res.name}')
             elif not previous:
                 res_dict[ind] = [[res.number, res.name, res.insertion_code]]
@@ -95,7 +96,7 @@ def check_str(structure, ref=False, skip=False):
 
     if ref:
         if duplicates:
-            GMXMMPBSA_ERROR(f'The reference structure used is inconsistent. The following residues are duplicates:\n'
+            xBFreEErrorLogging(f'The reference structure used is inconsistent. The following residues are duplicates:\n'
                             f' {", ".join(duplicates)}')
     elif skip:
         if duplicates:
@@ -117,13 +118,13 @@ def selector(selection: str):
         try:
             dist = float(string_list[1])
         except:
-            GMXMMPBSA_ERROR(f'Invalid dist, we expected a float value but we get "{string_list[1]}"')
+            xBFreEErrorLogging(f'Invalid dist, we expected a float value but we get "{string_list[1]}"')
     else:
         # try to process residue selection
         for s in string_list:
             n = re.split(r":\s*|/\s*", s)
             if len(n) != 2 or n[0] not in ascii_letters:
-                GMXMMPBSA_ERROR(f'We expected something like this: A/2-10,35,41 B/104 but we get {s} instead')
+                xBFreEErrorLogging(f'We expected something like this: A/2-10,35,41 B/104 but we get {s} instead')
             chain = n[0]
             resl = n[1].split(',')
             for r in resl:
@@ -140,7 +141,7 @@ def selector(selection: str):
                         start = int(rr[0])
                         end = int(rr[1]) + 1
                     except:
-                        GMXMMPBSA_ERROR(f'When residues range is defined, start and end most be integer but we get'
+                        xBFreEErrorLogging(f'When residues range is defined, start and end most be integer but we get'
                                         f' {rr[0]} and {rr[1]}')
                     for cr in range(start, end):
                         if [chain, cr, ''] in res_selections:
@@ -337,11 +338,11 @@ def get_index_groups(ndx, group):
 
     if isinstance(group, int):
         if group > len(groups):
-            GMXMMPBSA_ERROR('Define a valid index group')
+            xBFreEErrorLogging('Define a valid index group')
         return group, groups[group]
     else:
         if group not in groups:
-            GMXMMPBSA_ERROR('Define a valid index group')
+            xBFreEErrorLogging('Define a valid index group')
         return groups.index(group), group
 
 
