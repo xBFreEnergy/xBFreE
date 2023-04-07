@@ -189,6 +189,7 @@ input_file.addNamelist('pb', 'pb',
 
 input_file.addNamelist('rism', 'rism',
                        [
+                           ['xvv', str, 'spc', 'XVV file for 3D-RISM'],
                            ['closure', list, ['kh'], 'Closure equation to use'],
                            ['gfcorrection', int, 0, 'Compute the Gaussian fluctuation excess chemical potential '
                                                     'functional'],
