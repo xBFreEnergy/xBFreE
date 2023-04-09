@@ -25,44 +25,10 @@ re-supplying all of the information again.
 import re
 import warnings
 from types import SimpleNamespace
-# For compatibility with v1.5.x. Will be removed in v1.8.x
-nl_variables = {
-    'sys_name': 'general', 'startframe': 'general', 'endframe': 'general', 'interval': 'general',
-    'forcefields': 'general', 'ions_parameters': 'general', 'PBRadii': 'general', 'temperature': 'general',
-    'qh_entropy': 'general', 'interaction_entropy': 'general', 'ie_segment': 'general', 'c2_entropy': 'general',
-    'assign_chainID': 'general', 'exp_ki': 'general', 'full_traj': 'general', 'gmx_path': 'general',
-    'keep_files': 'general', 'netcdf': 'general', 'solvated_trajectory': 'general', 'verbose': 'general',
-    'receptor_mask': 'general', 'ligand_mask': 'general',
-    'gbrun': 'gb', 'igb': 'gb', 'intdiel': 'gb', 'extdiel': 'gb', 'saltcon': 'gb', 'surften': 'gb', 'surfoff': 'gb',
-    'molsurf': 'gb', 'msoffset': 'gb', 'probe': 'gb', 'ifqnt': 'gb', 'qm_theory': 'gb', 'qm_residues': 'gb',
-    'qmcharge_com': 'gb', 'qmcharge_lig': 'gb', 'qmcharge_rec': 'gb', 'qmcut': 'gb', 'scfconv': 'gb',
-    'peptide_corr': 'gb', 'writepdb': 'gb', 'verbosity': 'gb', 'alpb': 'gb', 'arad_method': 'gb',
-    'pbrun': 'pb', 'ipb': 'pb', 'inp': 'pb', 'sander_apbs': 'pb', 'indi': 'pb', 'exdi': 'pb', 'emem': 'pb',
-    'smoothopt': 'pb', 'istrng': 'pb', 'radiopt': 'pb', 'prbrad': 'pb', 'iprob': 'pb', 'sasopt': 'pb',
-    'arcres': 'pb', 'memopt': 'pb', 'mprob': 'pb', 'mthick': 'pb', 'mctrdz': 'pb', 'poretype': 'pb', 'npbopt': 'pb',
-    'solvopt': 'pb', 'accept': 'pb', 'linit': 'pb', 'fillratio': 'pb', 'scale': 'pb', 'nbuffer': 'pb',
-    'nfocus': 'pb', 'fscale': 'pb', 'npbgrid': 'pb', 'bcopt': 'pb', 'eneopt': 'pb', 'frcopt': 'pb', 'scalec': 'pb',
-    'cutfd': 'pb', 'cutnb': 'pb', 'nsnba': 'pb', 'decompopt': 'pb', 'use_rmin': 'pb', 'sprob': 'pb', 'vprob': 'pb',
-    'rhow_effect': 'pb', 'use_sav': 'pb', 'cavity_surften': 'pb', 'cavity_offset': 'pb', 'maxsph': 'pb',
-    'maxarcdot': 'pb', 'npbverb': 'pb','pbtemp': 'pb',
-    'rismrun': 'rism', 'closure': 'rism', 'gfcorrection': 'rism', 'pcpluscorrection': 'rism', 'noasympcorr': 'rism',
-    'buffer': 'rism', 'solvcut': 'rism', 'grdspc': 'rism', 'ng': 'rism', 'solvbox': 'rism', 'tolerance': 'rism',
-    'ljTolerance': 'rism', 'asympKSpaceTolerance': 'rism', 'treeDCF': 'rism', 'treeTCF': 'rism',
-    'treeCoulomb': 'rism', 'treeDCFMAC': 'rism', 'treeTCFMAC': 'rism', 'treeCoulombMAC': 'rism',
-    'treeDCFOrder': 'rism', 'treeTCFOrder': 'rism', 'treeCoulombOrder': 'rism', 'treeDCFN0': 'rism',
-    'treeTCFN0': 'rism', 'treeCoulombN0': 'rism', 'mdiis_del': 'rism', 'mdiis_nvec': 'rism', 'mdiis_restart': 'rism',
-    'maxstep': 'rism', 'npropagate': 'rism', 'polardecomp': 'rism', 'entropicdecomp': 'rism', 'rism_verbose': 'rism',
-    'rismrun_std': 'rism', 'rismrun_gf': 'rism','rismrun_pcplus': 'rism',
-    'alarun': 'ala', 'mutant_res': 'ala', 'mutant': 'ala', 'mutant_only': 'ala', 'cas_intdiel': 'ala',
-    'intdiel_nonpolar': 'ala', 'intdiel_polar': 'ala', 'intdiel_positive': 'ala', 'intdiel_negative': 'ala',
-    'decomprun': 'decomp', 'idecomp': 'decomp', 'dec_verbose': 'decomp', 'print_res': 'decomp',
-    'csv_format': 'decomp',
-    'nmoderun': 'nmode', 'nmstartframe': 'nmode', 'nmendframe': 'nmode', 'nminterval': 'nmode', 'nmode_igb': 'nmode',
-    'nmode_istrng': 'nmode', 'dielc': 'nmode', 'drms': 'nmode', 'maxcyc': 'nmode'}
 
 class InfoFile(object):
     """
-    This is the class responsible for backing up all of the calculation
+    This is the class responsible for backing up all the calculation
     information and details so the output files can be re-written or the data
     can be readied for post-processing with external scripts.
 
@@ -74,7 +40,7 @@ class InfoFile(object):
                                       'verbose'],
                           'decomp': ['csv_format', 'dec_verbose']}
 
-    EDIT_WITH_CARE_VARS = {'pb': ['inp']}
+    EDIT_WITH_CARE_VARS = {}
 
     DEPRECATED_VARS = {}
 
@@ -155,7 +121,6 @@ class InfoFile(object):
                 newfile = Path(f"{name}_{datetime.now().strftime('%m%d%Y%H%M%S')}")
                 shutil.copy(oldfile, newfile)
 
-        inputre = re.compile(r'''INPUT\['(\S+)'] = (.*)''')
         inputre_new = re.compile(r'''INPUT\['(\S+)']\['(\S+)'] = (.*)''')
         filesre = re.compile(r'''FILES\.(\S+) = (.*)''')
         otherre = re.compile(r'(\S+) = (.*)')
@@ -172,20 +137,6 @@ class InfoFile(object):
                 nl, var, val = rematch.groups()
                 val = _determine_type(val.strip())
                 # print(nl, var, val)
-                nl_dict = self.app.INPUT.get(nl)
-                if not nl_dict:
-                    self.app.INPUT[nl] = {}
-                self.app.INPUT[nl][var] = val
-                continue
-
-            elif rematch := inputre.match(line):
-                var, val = rematch.groups()
-                val = _determine_type(val.strip())
-
-                try:
-                    nl = nl_variables[var]
-                except KeyError as e:
-                    raise KeyError(f'{e}')
                 nl_dict = self.app.INPUT.get(nl)
                 if not nl_dict:
                     self.app.INPUT[nl] = {}
