@@ -19,9 +19,24 @@ input_file = InputFile()
 
 # Add namelists with a list of variables. The variables are added to the
 # namelists in lists. The entries are:
-# [<variable name> <variable type> <default value> <# of characters to match>]
+# [<variable name> <variable type> <default value> <description>]
 
-input_file.addNamelist('general', 'general',
+'''
+Variable structure:
+|       Index       | Description                                                                                     |
+|:-----------------:|:------------------------------------------------------------------------------------------------|
+|   variable name   | The name of the variable. Must be easy to type, remember no space and with maximum one "_" if   |
+|                   |  is needed.                                                                                     |
+|   variable type   | Define the variable type though python types (int, float, str and list).  When a list is        |
+|                   | defined the elements type must be defined as well. For example, list[str] define a list of      |
+|                   | string elements, list[int] define a list which contain integers, and so on.                     |
+|  v. description   | A brief description of the variable. This description is used to print out the inputfile and    |
+|                   | terminal output for the --input-file-help                                                       |
+For example:
+['sys_name', str, '', 'System name'],
+'''
+
+input_file.addNamelist('general', 'general', 'General namelist variables',
                        [
                            # Basic options
                            ['sys_name', str, '', 'System name'],
@@ -42,7 +57,7 @@ input_file.addNamelist('general', 'general',
 
                            # Miscellaneous options
                            ['assign_chainID', int, 0, 'Assign chains ID'],
-                           ['exp_ki', list, [0.0], 'Experimental Ki in nM', float],
+                           ['exp_ki', list[float], [0.0], 'Experimental Ki in nM'],
                            ['full_traj', int, 0, 'Print a full traj. AND the thread trajectories'],
                            ['gmx_path', str, '', 'Force to use this path to get GROMACS executable'],
                            ['exe_path', str, '', 'Add a custom path to search executables (i.e, gmx, apbs)'],
@@ -55,7 +70,7 @@ input_file.addNamelist('general', 'general',
                            ['verbose', int, 1, 'How many energy terms to print in the final output']
                        ], trigger=None)
 
-input_file.addNamelist('gb', 'gb',
+input_file.addNamelist('gb', 'gb', '(AMBER) Generalized-Born namelist variables',
                        [
                            ['igb', int, 5, 'GB model to use'],
                            ['intdiel', float, 1.0, 'Internal dielectric constant for sander'],
@@ -88,7 +103,7 @@ input_file.addNamelist('gb', 'gb',
                            ['arad_method', int, 1, 'Selected method to estimate the effective electrostatic size']
                        ], trigger='gbrun')
 
-input_file.addNamelist('gbnsr6', 'gbnsr6',
+input_file.addNamelist('gbnsr6', 'gbnsr6', 'GBNSR6 namelist variables',
                        [
                            ['b', float, 0.028, 'Specifies the value of uniform offset to the (inverse) effective '
                                                'radii'],
@@ -113,7 +128,7 @@ input_file.addNamelist('gbnsr6', 'gbnsr6',
                                                             'solvation calculation'],
                        ], trigger='gbnsr6run')
 
-input_file.addNamelist('pb', 'pb',
+input_file.addNamelist('pb', 'pb', '(AMBER) Possion-Boltzmann namelist variables',
                        [
                             # Basic input options
                            ['ipb', int, 2, 'Dielectric model for PB'],
@@ -187,10 +202,10 @@ input_file.addNamelist('pb', 'pb',
                            ['npbverb', int, 0, 'Option to turn on verbose mode']
                        ], trigger='pbrun')
 
-input_file.addNamelist('rism', 'rism',
+input_file.addNamelist('rism', 'rism', '3D-RISM namelist variables',
                        [
                            ['xvv', str, 'spc', 'XVV file for 3D-RISM'],
-                           ['closure', list, ['kh'], 'Closure equation to use'],
+                           ['closure', list[str], ['kh'], 'Closure equation to use'],
                            ['gfcorrection', int, 0, 'Compute the Gaussian fluctuation excess chemical potential '
                                                     'functional'],
                            ['pcpluscorrection', int, 0, 'Compute the PC+/3D-RISM excess chemical potential functional'],
@@ -198,10 +213,10 @@ input_file.addNamelist('rism', 'rism',
                                                    'output only'],
                            ['buffer', float, 14, 'Distance between solute and edge of grid'],
                            ['solvcut', float, -1, 'Cutoff of the box'],
-                           ['grdspc', list, [0.5, 0.5, 0.5], 'Grid spacing', float],
-                           ['ng', list, [-1, -1, -1], 'Number of grid points', int],
-                           ['solvbox', list, [-1, -1, -1], 'Box limits', int],
-                           ['tolerance', list, [1.0e-5], 'Convergence tolerance', float],
+                           ['grdspc', list[float], [0.5, 0.5, 0.5], 'Grid spacing'],
+                           ['ng', list[int], [-1, -1, -1], 'Number of grid points'],
+                           ['solvbox', list[int], [-1, -1, -1], 'Box limits'],
+                           ['tolerance', list[float], [1.0e-5], 'Convergence tolerance'],
                            ['ljTolerance', float, -1.0, 'Determines the Lennard-Jones cutoff distance based on the '
                                                         'desired accuracy of the calculation'],
                            ['asympKSpaceTolerance', float, -1.0, 'Determines the reciprocal space long range '
@@ -246,7 +261,7 @@ input_file.addNamelist('rism', 'rism',
                            ['rism_verbose', int, 0, 'Control how much 3D-RISM info to print']
                        ], trigger='rismrun')
 
-input_file.addNamelist('ala', 'alanine_scanning',
+input_file.addNamelist('ala', 'alanine_scanning', 'Decomposition namelist variables',
                        [
                            ['mutant_res', str, '', 'Which residue will be mutated'],
                            ['mutant', str, 'ALA', 'Defines if Alanine or Glycine scanning will be performed'],
@@ -258,7 +273,7 @@ input_file.addNamelist('ala', 'alanine_scanning',
                            ['intdiel_negative', int, 5, 'intdiel for negative charged residues']
                        ], trigger='alarun')
 
-input_file.addNamelist('decomp', 'decomposition',
+input_file.addNamelist('decomp', 'decomposition', 'Alanine scanning namelist variables',
                        [
                            ['idecomp', int, 0, 'Which type of decomposition analysis to do'],
                            ['dec_verbose', int, 0, 'Control energy terms are printed to the output'],
@@ -266,7 +281,7 @@ input_file.addNamelist('decomp', 'decomposition',
                            ['csv_format', int, 1, 'Write decomposition data in CSV format']
                        ], trigger='decomprun')
 
-input_file.addNamelist('nmode', 'nmode',
+input_file.addNamelist('nmode', 'nmode', 'Normal Modes Entropy namelist variables',
                        [
                             # Basic Options
                            ['nmstartframe', int, 1, 'First frame to analyze for normal modes'],
