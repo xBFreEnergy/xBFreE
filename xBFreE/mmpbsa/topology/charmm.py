@@ -28,6 +28,11 @@ class BuildTopCHARMM(BuildTop):
         self.use_temp = False
         self.com_mut_index = None
         self.radii = LoadRadii(self.INPUT['general']['PBRadii'], self.INPUT['general']['radii_path'])
+        self.checkFiles()
+
+        if (not self.FILES.complex_top and not self.FILES.complex_structure or
+                not self.FILES.complex_trajs or not self.FILES.complex_groups):
+            xBFreEErrorLogging('You must define the topology, structure and trajectories files, as well as the groups!')
 
     def buildTopology(self):
         """
@@ -36,6 +41,8 @@ class BuildTopCHARMM(BuildTop):
 
         self.str2pdb()
         tops = self.psf2prmtop()
+        # check if decomp or qmmm for residue selection
+        self.decomp_qmmm_ressel()
         self.cleanup_trajs()
         return tops
 

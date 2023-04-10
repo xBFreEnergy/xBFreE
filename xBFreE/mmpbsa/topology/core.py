@@ -13,11 +13,12 @@
 # ##############################################################################
 
 import string
+import textwrap
 
 import parmed
 from xBFreE.exceptions import *
 from xBFreE.mmpbsa.alamdcrd import _scaledistance
-from xBFreE.utils.molecule import get_dist, selector
+from xBFreE.utils.molecule import get_dist, selector, list2range
 
 positive_aa = ['LYS', 'ARG', 'HIP']
 negative_aa = ['GLU', 'ASP']
@@ -50,17 +51,116 @@ class BuildTop:
         self.receptor_str_file = f'{self.FILES.prefix}REC.pdb'
         self.ligand_str_file = f'{self.FILES.prefix}LIG.pdb'
 
-
         # FIXME: adapt this function to implemnted md programs
         # self.checkFiles()
 
     def checkFiles(self):
-        if (not self.FILES.complex_structure or not self.FILES.complex_index or
-                not self.FILES.complex_trajs or not self.FILES.complex_groups):
-            xBFreEErrorLogging('You must define the structure, topology and index files, as well as the groups!')
+        pass
 
     def buildTopology(self):
         pass
+
+    def decomp_qmmm_ressel(self):
+        if self.INPUT['decomp']['decomprun']:
+            decomp_res = self.get_selected_residues(self.INPUT['decomp']['print_res'])
+            if 'within' in self.INPUT['decomp']['print_res']:
+                if len(decomp_res) < 2:
+                    logging.warning(f"Number of decomp residues to print using "
+                                    f"print_res = '{self.INPUT['decomp']['print_res']}' < 2")
+                    logging.info(
+                        'Increasing cutoff value by 0.1 until number of decomp residues to print >= 2'
+                    )
+                    cutoff = float(self.INPUT['decomp']['print_res'].split()[1])
+                    it = 0
+                    while len(decomp_res) < 2:
+                        cutoff = round(cutoff, 1) + 0.25
+                        decomp_res = self.get_selected_residues(f'within {cutoff}')
+                        if it == 20:
+                            # probably not needed, but...
+                            xBFreEErrorLogging('The maximum number of iterations to select interaction residues was '
+                                               'reached. Please set print_res with a valid selection.')
+                        it += 1
+
+                    logging.info(f"Selecting residues by distance ({round(cutoff, 1)} Å) between "
+                                 f"receptor and ligand for decomposition analysis...")
+                else:
+                    logging.info(
+                        f"Selecting residues by distance ({self.INPUT['decomp']['print_res'].split()[1]} Å) between "
+                        f"receptor and ligand for decomposition analysis...")
+            elif self.INPUT['decomp']['print_res'] == 'all':
+                logging.info('Selecting all residues for decomposition analysis...')
+            else:
+                logging.info('User-selected residues for decomposition analysis...')
+
+            textwraped = textwrap.wrap('\t'.join(x.string for x in decomp_res), tabsize=4, width=120)
+            logging.info(f'Selected {len(decomp_res)} residues:\n' + '\n'.join(textwraped) + '\n')
+
+            if self.INPUT['decomp']['idecomp'] in [3, 4]:
+                if self.INPUT['decomp']['dec_verbose'] == 0:
+                    mol_terms = 1
+                elif self.INPUT['decomp']['dec_verbose'] == 1:
+                    mol_terms = 3
+                elif self.INPUT['decomp']['dec_verbose'] == 2:
+                    mol_terms = 4
+                else:
+                    mol_terms = 12
+                energy_terms = 6
+                num_res = len(decomp_res)
+                total_items = energy_terms * mol_terms * num_res ** 2
+                if total_items > 250:
+                    logging.warning(f"Using idecomp = {self.INPUT['decomp']['idecomp']} and dec_verbose ="
+                                    f" {self.INPUT['decomp']['dec_verbose']} will generate approximately {total_items} items. "
+                                    f"Large print selections demand a large amount of memory and take a "
+                                    f"significant amount of time to print!")
+
+            self.INPUT['decomp']['print_res'] = ','.join(list2range(decomp_res)['string'])
+        if self.INPUT['gb']['ifqnt']:
+            qm_residues, (rec_charge, lig_charge) = self.get_selected_residues(self.INPUT['gb']['qm_residues'], True)
+
+            if 'within' in self.INPUT['gb']['qm_residues']:
+                if len(qm_residues) == 0:
+                    logging.warning(f"Number of qm_residues using print_res = '{self.INPUT['gb']['qm_residues']}' = 0")
+                    logging.info(
+                        'Increasing cutoff value by 0.1 until number of qm_residues > 0'
+                    )
+                    cutoff = float(self.INPUT['gb']['qm_residues'].split()[1])
+                    it = 0
+                    while len(qm_residues) == 0:
+                        cutoff = round(cutoff, 1) + 0.25
+                        qm_residues, (rec_charge, lig_charge) = self.get_selected_residues(f'within {cutoff}', True)
+                        if it == 20:
+                            # probably not needed, but...
+                            xBFreEErrorLogging('The maximum number of iterations to select interaction residues was '
+                                               'reached. Please set print_res with a valid selection.')
+                        it += 1
+
+                    logging.info(f"Selecting residues by distance ({round(cutoff, 1)} Å) between "
+                                 f"receptor and ligand for QM/MM calculation...")
+                else:
+                    logging.info(
+                        f"Selecting residues by distance ({self.INPUT['gb']['qm_residues'].split()[1]} Å) between "
+                        f"receptor and ligand for QM calculation...")
+            elif self.INPUT['gb']['qm_residues'] == 'all':
+                logging.info('Selecting all residues for QM calculation...')
+            else:
+                logging.info('User-selected residues for QM calculation...')
+
+            textwraped = textwrap.wrap('\t'.join(x.string for x in qm_residues), tabsize=4, width=120)
+            logging.info(f'Selected {len(qm_residues)} residues:\n' + '\n'.join(textwraped) + '\n')
+            self.INPUT['gb']['qm_residues'] = ','.join(list2range(qm_residues)['string'])
+
+            if self.INPUT['gb']['qmcharge_com'] != rec_charge + lig_charge:
+                logging.warning('System specified with odd number of electrons. Most likely the charge of QM region '
+                                '(qmcharge_com) have been set incorrectly.')
+                self.INPUT['gb']['qmcharge_com'] = rec_charge + lig_charge
+                logging.warning(f'Setting qmcharge_com = {rec_charge + lig_charge}')
+
+            if self.INPUT['gb']['qmcharge_rec'] != rec_charge:
+                logging.warning(f'Setting qmcharge_rec = {rec_charge}')
+                self.INPUT['gb']['qmcharge_rec'] = rec_charge
+            if self.INPUT['gb']['qmcharge_lig'] != lig_charge:
+                logging.warning(f'Setting qmcharge_lig = {lig_charge}')
+                self.INPUT['gb']['qmcharge_lig'] = lig_charge
 
     def get_selected_residues(self, select, qm_sele=False):
         """
@@ -114,7 +214,8 @@ class BuildTop:
             # check if residues in receptor and ligand was defined
             if not residues_selection['rec'] or not residues_selection['lig']:
                 if not self.INPUT['ala']['alarun']:
-                    xBFreEErrorLogging('For decomposition analysis, you most define residues for both receptor and ligand!')
+                    xBFreEErrorLogging(
+                        'For decomposition analysis, you most define residues for both receptor and ligand!')
         else:
             for i in self.resl:
                 if i.is_ligand():
@@ -151,8 +252,8 @@ class BuildTop:
         cterm_atoms = 'OXT'
         sc_cb_atom = 'CB'
         sc_ala_atoms = ('HB,' +  # VAL, ILE, THR
-                        'HB1,HB2,' + # charmm -> HB1, HB2
-                        'HB3,' + # amber -> HB2, HB3
+                        'HB1,HB2,' +  # charmm -> HB1, HB2
+                        'HB3,' +  # amber -> HB2, HB3
                         'CG1,CG2,OG1,' +  # VAL, ILE, THR
                         'OG,' +  # SER
                         'SG,' +  # CYS
@@ -258,16 +359,19 @@ class BuildTop:
                                  f"Alanine scanning")
                 elif mutant_resname in nonpolar_aa:
                     self.INPUT['gb']['intdiel'] = self.INPUT['ala']['intdiel_nonpolar']
-                    logging.info(f"Setting intdiel = intdiel_nonpolar = {self.INPUT['ala']['intdiel_nonpolar']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting intdiel = intdiel_nonpolar = {self.INPUT['ala']['intdiel_nonpolar']} for Alanine "
+                        f"scanning")
                 elif mutant_resname in positive_aa:
                     self.INPUT['gb']['intdiel'] = self.INPUT['ala']['intdiel_positive']
-                    logging.info(f"Setting intdiel = intdiel_positive = {self.INPUT['ala']['intdiel_positive']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting intdiel = intdiel_positive = {self.INPUT['ala']['intdiel_positive']} for Alanine "
+                        f"scanning")
                 elif mutant_resname in negative_aa:
                     self.INPUT['gb']['intdiel'] = self.INPUT['ala']['intdiel_negative']
-                    logging.info(f"Setting intdiel = intdiel_negative = {self.INPUT['ala']['intdiel_negative']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting intdiel = intdiel_negative = {self.INPUT['ala']['intdiel_negative']} for Alanine "
+                        f"scanning")
                 else:
                     logging.warning(f"Unclassified mutant residue {mutant_resname}. The default "
                                     f"intdiel will be used")
@@ -281,16 +385,19 @@ class BuildTop:
                                  f"Alanine scanning")
                 elif mutant_resname in nonpolar_aa:
                     self.INPUT['gbnsr6']['epsin'] = self.INPUT['ala']['intdiel_nonpolar']
-                    logging.info(f"Setting epsin = intdiel_nonpolar = {self.INPUT['ala']['intdiel_nonpolar']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting epsin = intdiel_nonpolar = {self.INPUT['ala']['intdiel_nonpolar']} for Alanine "
+                        f"scanning")
                 elif mutant_resname in positive_aa:
                     self.INPUT['gbnsr6']['epsin'] = self.INPUT['ala']['intdiel_positive']
-                    logging.info(f"Setting epsin = intdiel_positive = {self.INPUT['ala']['intdiel_positive']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting epsin = intdiel_positive = {self.INPUT['ala']['intdiel_positive']} for Alanine "
+                        f"scanning")
                 elif mutant_resname in negative_aa:
                     self.INPUT['gbnsr6']['epsin'] = self.INPUT['ala']['intdiel_negative']
-                    logging.info(f"Setting epsin = intdiel_negative = {self.INPUT['ala']['intdiel_negative']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting epsin = intdiel_negative = {self.INPUT['ala']['intdiel_negative']} for Alanine "
+                        f"scanning")
                 else:
                     logging.warning(f"Unclassified mutant residue {mutant_resname}. The default "
                                     f"intdiel will be used")
@@ -301,19 +408,23 @@ class BuildTop:
                                     'cas_intdiel will be ignored and indi will be used instead')
                 elif mutant_resname in polar_aa:
                     self.INPUT['pb']['indi'] = self.INPUT['ala']['intdiel_polar']
-                    logging.info(f"Setting indi = intdiel_polar = {self.INPUT['ala']['intdiel_polar']} for Alanine scanning")
+                    logging.info(
+                        f"Setting indi = intdiel_polar = {self.INPUT['ala']['intdiel_polar']} for Alanine scanning")
                 elif mutant_resname in nonpolar_aa:
                     self.INPUT['pb']['indi'] = self.INPUT['ala']['intdiel_nonpolar']
-                    logging.info(f"Setting indi = intdiel_nonpolar = {self.INPUT['ala']['intdiel_nonpolar']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting indi = intdiel_nonpolar = {self.INPUT['ala']['intdiel_nonpolar']} for Alanine "
+                        f"scanning")
                 elif mutant_resname in positive_aa:
                     self.INPUT['pb']['indi'] = self.INPUT['ala']['intdiel_positive']
-                    logging.info(f"Setting intdiel = indi = intdiel_positive = {self.INPUT['ala']['intdiel_positive']} for "
-                                 f"Alanine scanning")
+                    logging.info(
+                        f"Setting intdiel = indi = intdiel_positive = {self.INPUT['ala']['intdiel_positive']} for "
+                        f"Alanine scanning")
                 elif mutant_resname in negative_aa:
                     self.INPUT['pb']['indi'] = self.INPUT['ala']['intdiel_negative']
-                    logging.info(f"Setting indi = intdiel_negative = {self.INPUT['ala']['intdiel_negative']} for Alanine "
-                                 f"scanning")
+                    logging.info(
+                        f"Setting indi = intdiel_negative = {self.INPUT['ala']['intdiel_negative']} for Alanine "
+                        f"scanning")
                 else:
                     logging.warning(f"Unclassified mutant residue {mutant_resname}. The default indi will be used")
         return mut_top
@@ -330,8 +441,9 @@ class BuildTop:
         icode = f':{res.insertion_code}' if res.insertion_code else ''
         if (not parmed.residue.AminoAcidResidue.has(res.name) or res.name in ['CYX', 'PRO', 'GLY'] or
                 res.name == 'ALA' and self.INPUT['ala']['mutant'] == 'ALA'):
-            xBFreEErrorLogging(f"Selecting residue {res.chain}:{res.name}:{res.number}{icode} can't be mutated. Please, "
-                            f"define a valid residue...")
+            xBFreEErrorLogging(
+                f"Selecting residue {res.chain}:{res.name}:{res.number}{icode} can't be mutated. Please, "
+                f"define a valid residue...")
 
         if r.is_receptor():
             part_index = r.id_index - 1

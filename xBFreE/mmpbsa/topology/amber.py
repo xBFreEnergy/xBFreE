@@ -27,6 +27,12 @@ class BuildTopAmber(BuildTop):
         self.use_temp = False
         self.com_mut_index = None
         self.radii = LoadRadii(self.INPUT['general']['PBRadii'], self.INPUT['general']['radii_path'])
+        self.checkFiles()
+
+    def checkFiles(self):
+        if (not self.FILES.complex_top and not self.FILES.complex_structure or
+                not self.FILES.complex_trajs or not self.FILES.complex_groups):
+            xBFreEErrorLogging('You must define the topology, structure and trajectories files, as well as the groups!')
 
     def buildTopology(self):
         """
@@ -35,7 +41,8 @@ class BuildTopAmber(BuildTop):
 
         self.str2pdb()
         tops = self.prmtop2prmtop()
-
+        # check if decomp or qmmm for residue selection
+        self.decomp_qmmm_ressel()
         # FIXME: Is this step necessary? When the trajs are created with cpptraj a cleanup is made. However,
         #  this step get the complex trajectory in multi-component system
         self.cleanup_trajs()
