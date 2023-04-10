@@ -41,11 +41,17 @@ import parmed
 from parmed.amber.mdin import Mdin
 from parmed.exceptions import AmberError
 from copy import deepcopy
+import subprocess
 
 ROH = {1: 0.586, 2: 0.699, 3: 0.734, 4: 0.183}
 
+def _get_arad(prmtop, prefix, arad_method):
+    top = parmed.load_file(prmtop, xyz=f"{prefix}COM.inpcrd")
+    top.save(f"{prefix}COM.pqr", format='pqr', overwrite=True)
+    stdoutdata = subprocess.getoutput(f"elsize {prefix}COM.pqr -hea")
+    return stdoutdata.split()[arad_method * -1]
 
-def create_inputs(INPUT, prmtop_system, pre):
+def create_inputs(INPUT, prmtop_system, prefix):
     """ Creates the input files for all necessary calculations """
     stability = prmtop_system.stability
 
@@ -57,7 +63,7 @@ def create_inputs(INPUT, prmtop_system, pre):
             temp_input['gbnsr6']['dgij'] = 1
         gbnsr6_mdin = GBNSR6Input(temp_input)
         gbnsr6_mdin.make_mdin()
-        gbnsr6_mdin.write_input(f'{pre}gbnsr6.mdin')
+        gbnsr6_mdin.write_input(f'{prefix}gbnsr6.mdin')
 
     # First check if we are running decomp
     if INPUT['decomp']['decomprun']:
@@ -71,64 +77,43 @@ def create_inputs(INPUT, prmtop_system, pre):
         # Convert the strings into card objects
         # Now create the mdin objects
         if INPUT['gb']['gbrun']:
-            com_arad = None
-            rec_arad = None
-            lig_arad = None
-            if INPUT['gb']['alpb']:
-                import subprocess
-                # FIXME: save pqr file from prmtop_system
-                com_top = parmed.load_file('COM.prmtop', xyz=f"{pre}COM.inpcrd")
-                com_top.save('COM.pqr', format='pqr', overwrite=True)
-                stdoutdata = subprocess.getoutput("elsize COM.pqr -hea")
-                com_arad = stdoutdata.split()[INPUT['gb']['arad_method'] * -1]
-                if not stability:
-                    rec_top = parmed.load_file('REC.prmtop', xyz=f"{pre}REC.inpcrd")
-                    rec_top.save('REC.pqr', format='pqr', overwrite=True)
-                    stdoutdata = subprocess.getoutput("elsize REC.pqr -hea")
-                    rec_arad = stdoutdata.split()[INPUT['gb']['arad_method'] * -1]
-
-                    lig_top = parmed.load_file('LIG.prmtop', xyz=f"{pre}LIG.inpcrd")
-                    lig_top.save('LIG.pqr', format='pqr', overwrite=True)
-                    stdoutdata = subprocess.getoutput("elsize LIG.pqr -hea")
-                    lig_arad = stdoutdata.split()[INPUT['gb']['arad_method'] * -1]
-
             rec_res = ['Residues considered as REC', full_rc]
             if stability:
                 pri_res = ['Residues to print', com_card]
                 com_input = deepcopy(INPUT)
-                if com_arad:
-                    com_input['gb']['arad'] = com_arad
+                if INPUT['gb']['alpb']:
+                    com_input['gb']['arad'] = _get_arad('COM.prmtop', prefix, INPUT['gb']['arad_method'])
                 com_mdin = SanderGBDecomp(com_input, rec_res, pri_res)
-                com_mdin.write_input(f"{pre}gb_decomp_com.mdin")
+                com_mdin.write_input(f"{prefix}gb_decomp_com.mdin")
             else:
                 lig_res = ['Residues considered as LIG', full_lc]
                 pri_res = ['Residues to print', com_card]
                 com_input = deepcopy(INPUT)
-                if com_arad:
-                    com_input['gb']['arad'] = com_arad
+                if INPUT['gb']['alpb']:
+                    com_input['gb']['arad'] = _get_arad('COM.prmtop', prefix, INPUT['gb']['arad_method'])
                 com_mdin = SanderGBDecomp(com_input, rec_res, lig_res, pri_res)
                 rec_res = ['Residues considered as REC', full_rec]
                 pri_res = ['Residues to print', rec_card]
                 rec_input = deepcopy(INPUT)
-                if rec_arad:
-                    rec_input['gb']['arad'] = rec_arad
+                if INPUT['gb']['alpb']:
+                    rec_input['gb']['arad'] = _get_arad('REC.prmtop', prefix, INPUT['gb']['arad_method'])
                 rec_mdin = SanderGBDecomp(rec_input, rec_res, pri_res)
                 lig_res = ['Residues considered as LIG', full_lig]
                 pri_res = ['Residues to print', lig_card]
                 lig_input = deepcopy(INPUT)
-                if lig_arad:
-                    lig_input['gb']['arad'] = lig_arad
+                if INPUT['gb']['alpb']:
+                    lig_input['gb']['arad'] = _get_arad('LIG.prmtop', prefix, INPUT['gb']['arad_method'])
                 lig_mdin = SanderGBDecomp(lig_input, lig_res, pri_res)
-                com_mdin.write_input(f"{pre}gb_decomp_com.mdin")
-                rec_mdin.write_input(f"{pre}gb_decomp_rec.mdin")
-                lig_mdin.write_input(f"{pre}gb_decomp_lig.mdin")
+                com_mdin.write_input(f"{prefix}gb_decomp_com.mdin")
+                rec_mdin.write_input(f"{prefix}gb_decomp_rec.mdin")
+                lig_mdin.write_input(f"{prefix}gb_decomp_lig.mdin")
 
         if INPUT['pb']['pbrun']:
             rec_res = ['Residues considered as REC', full_rc]
             if stability:
                 pri_res = ['Residues to print', com_card]
                 com_mdin = SanderPBDecomp(INPUT, rec_res, pri_res)
-                com_mdin.write_input(f"{pre}pb_decomp_com.mdin")
+                com_mdin.write_input(f"{prefix}pb_decomp_com.mdin")
             else:
                 lig_res = ['Residues considered as LIG', full_lc]
                 pri_res = ['Residues to print', com_card]
@@ -139,9 +124,9 @@ def create_inputs(INPUT, prmtop_system, pre):
                 lig_res = ['Residues considered as LIG', full_lig]
                 pri_res = ['Residues to print', lig_card]
                 lig_mdin = SanderPBDecomp(INPUT, lig_res, pri_res)
-                com_mdin.write_input(f"{pre}pb_decomp_com.mdin")
-                rec_mdin.write_input(f"{pre}pb_decomp_rec.mdin")
-                lig_mdin.write_input(f"{pre}pb_decomp_lig.mdin")
+                com_mdin.write_input(f"{prefix}pb_decomp_com.mdin")
+                rec_mdin.write_input(f"{prefix}pb_decomp_rec.mdin")
+                lig_mdin.write_input(f"{prefix}pb_decomp_lig.mdin")
 
         # Require one file for GBNSR6, pbsa.cuda and APBS calculations.
         # TODO: we need to define the intdiel for decomp because the eel term is computed by sander and not by GBNSR6
@@ -150,7 +135,7 @@ def create_inputs(INPUT, prmtop_system, pre):
             if stability:
                 pri_res = ['Residues to print', com_card]
                 com_mdin = SanderMMDecomp(INPUT, 'gbnsr6', rec_res, pri_res)
-                com_mdin.write_input(f"{pre}mm_gbnsr6_decomp_com.mdin")
+                com_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_com.mdin")
             else:
                 lig_res = ['Residues considered as LIG', full_lc]
                 pri_res = ['Residues to print', com_card]
@@ -161,103 +146,69 @@ def create_inputs(INPUT, prmtop_system, pre):
                 lig_res = ['Residues considered as LIG', full_lig]
                 pri_res = ['Residues to print', lig_card]
                 lig_mdin = SanderMMDecomp(INPUT, 'gbnsr6', lig_res, pri_res)
-                com_mdin.write_input(f"{pre}mm_gbnsr6_decomp_com.mdin")
-                rec_mdin.write_input(f"{pre}mm_gbnsr6_decomp_rec.mdin")
-                lig_mdin.write_input(f"{pre}mm_gbnsr6_decomp_lig.mdin")
+                com_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_com.mdin")
+                rec_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_rec.mdin")
+                lig_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_lig.mdin")
     else:  # not decomp
 
         if INPUT['gb']['gbrun']:
             # We need separate input files for QM/gmx_MMPBSA
-            com_arad = None
-            rec_arad = None
-            lig_arad = None
-            if INPUT['gb']['alpb']:
-                import subprocess
-                com_top = parmed.load_file('COM.prmtop', xyz=f"{pre}COM.inpcrd")
-                com_top.save('COM.pqr', format='pqr', overwrite=True)
-                stdoutdata = subprocess.getoutput("elsize COM.pqr -hea")
-                com_arad = stdoutdata.split()[INPUT['gb']['arad_method'] * -1]
-                if not stability:
-                    rec_top = parmed.load_file('REC.prmtop', xyz=f"{pre}REC.inpcrd")
-                    rec_top.save('REC.pqr', format='pqr', overwrite=True)
-                    stdoutdata = subprocess.getoutput("elsize REC.pqr -hea")
-                    rec_arad = stdoutdata.split()[INPUT['gb']['arad_method'] * -1]
-
-                    lig_top = parmed.load_file('LIG.prmtop', xyz=f"{pre}LIG.inpcrd")
-                    lig_top.save('LIG.pqr', format='pqr', overwrite=True)
-                    stdoutdata = subprocess.getoutput("elsize LIG.pqr -hea")
-                    lig_arad = stdoutdata.split()[INPUT['gb']['arad_method'] * -1]
-
-            if INPUT['gb']['ifqnt']:
+            if INPUT['gb']['ifqnt'] or INPUT['gb']['alpb']:
+                mdin_name = f'{prefix}gb_qmmm_%s.mdin' if INPUT['gb']['ifqnt'] else  f'{prefix}gb_%s.mdin'
                 com_input = deepcopy(INPUT)
                 rec_input = deepcopy(INPUT)
                 lig_input = deepcopy(INPUT)
-                (com_input['gb']['qmmask'], rec_input['gb']['qmmask'],
-                 lig_input['gb']['qmmask']) = prmtop_system.Mask(INPUT['gb']['qm_residues'], in_complex=False)
-                if not com_input['gb']['qmmask']:
-                    raise AmberError('No valid QM residues chosen!')
-                com_input['gb']['qm_theory'] = "'%s'" % com_input['gb']['qm_theory']
-                com_input['gb']['qmmask'] = "'%s'" % com_input['gb']['qmmask']
-                com_input['gb']['qmcharge'] = com_input['gb']['qmcharge_com']
-                # check if alpb
-                if com_arad:
-                    com_input['gb']['arad'] = com_arad
+
+                if INPUT['gb']['ifqnt']:
+                    (com_input['gb']['qmmask'], rec_input['gb']['qmmask'],
+                     lig_input['gb']['qmmask']) = prmtop_system.Mask(INPUT['gb']['qm_residues'], in_complex=False)
+                    if not com_input['gb']['qmmask']:
+                        raise AmberError('No valid QM residues chosen!')
+                    com_input['gb']['qm_theory'] = "'%s'" % com_input['gb']['qm_theory']
+                    com_input['gb']['qmmask'] = "'%s'" % com_input['gb']['qmmask']
+                    com_input['gb']['qmcharge'] = com_input['gb']['qmcharge_com']
+                if INPUT['gb']['alpb']:
+                    com_input['gb']['arad'] = _get_arad('COM.prmtop', prefix, INPUT['gb']['arad_method'])
                 gb_mdin = SanderGBInput(com_input)
                 gb_mdin.make_mdin()
-                gb_mdin.write_input(f'{pre}gb_qmmm_com.mdin')
+                gb_mdin.write_input(mdin_name % 'com')
+
                 if not stability:
-                    if not rec_input['gb']['qmmask']:
-                        rec_input['gb']['ifqnt'] = 0
-                    else:
-                        rec_input['gb']['qmmask'] = "'%s'" % rec_input['gb']['qmmask']
-                    rec_input['gb']['qm_theory'] = "'%s'" % rec_input['gb']['qm_theory']
-                    rec_input['gb']['qmcharge'] = rec_input['gb']['qmcharge_rec']
-                    # check if alpb
-                    if rec_arad:
-                        rec_input['gb']['arad'] = rec_arad
+                    if INPUT['gb']['ifqnt']:
+                        if not rec_input['gb']['qmmask']:
+                            rec_input['gb']['ifqnt'] = 0
+                        else:
+                            rec_input['gb']['qmmask'] = "'%s'" % rec_input['gb']['qmmask']
+                        rec_input['gb']['qm_theory'] = "'%s'" % rec_input['gb']['qm_theory']
+                        rec_input['gb']['qmcharge'] = rec_input['gb']['qmcharge_rec']
+                    if INPUT['gb']['alpb']:
+                        rec_input['gb']['arad'] = _get_arad('REC.prmtop', prefix, INPUT['gb']['arad_method'])
                     gb_mdin = SanderGBInput(rec_input)
                     gb_mdin.make_mdin()
-                    gb_mdin.write_input(f'{pre}gb_qmmm_rec.mdin')
+                    gb_mdin.write_input(mdin_name % 'rec')
+
                     if not lig_input['gb']['qmmask']:
                         lig_input['gb']['ifqnt'] = 0
                     else:
                         lig_input['gb']['qmmask'] = "'%s'" % lig_input['gb']['qmmask']
                     lig_input['gb']['qm_theory'] = "'%s'" % lig_input['gb']['qm_theory']
                     lig_input['gb']['qmcharge'] = lig_input['gb']['qmcharge_lig']
-                    # check if alpb
-                    if lig_arad:
-                        lig_input['gb']['arad'] = lig_arad
+                    if INPUT['gb']['alpb']:
+                        lig_input['gb']['arad'] = _get_arad('LIG.prmtop', prefix, INPUT['gb']['arad_method'])
                     gb_mdin = SanderGBInput(lig_input)
                     gb_mdin.make_mdin()
-                    gb_mdin.write_input(f'{pre}gb_qmmm_lig.mdin')
-
-            elif INPUT['gb']['alpb']:
-                com_input = deepcopy(INPUT)
-                rec_input = deepcopy(INPUT)
-                lig_input = deepcopy(INPUT)
-                com_input['gb']['arad'] = com_arad
-                gb_mdin = SanderGBInput(com_input)
-                gb_mdin.make_mdin()
-                gb_mdin.write_input(f'{pre}gb_com.mdin')
-                rec_input['gb']['arad'] = rec_arad
-                gb_mdin = SanderGBInput(rec_input)
-                gb_mdin.make_mdin()
-                gb_mdin.write_input(f'{pre}gb_rec.mdin')
-                lig_input['gb']['arad'] = lig_arad
-                gb_mdin = SanderGBInput(lig_input)
-                gb_mdin.make_mdin()
-                gb_mdin.write_input(f'{pre}gb_lig.mdin')
+                    gb_mdin.write_input(mdin_name % 'lig')
             else:
                 gb_mdin = SanderGBInput(INPUT)
                 gb_mdin.make_mdin()
-                gb_mdin.write_input(f'{pre}gb.mdin')
+                gb_mdin.write_input(f'{prefix}gb.mdin')
 
         # We only need to run it once for the GBNSR6, pbsa.cuda and APBS calculations.
         if INPUT['gbnsr6']['gbnsr6run']:
             mm_mdin = SanderMMInput(INPUT)
             mm_mdin.set_gbnsr6_param()
             mm_mdin.make_mdin()
-            mm_mdin.write_input(f'{pre}mm.mdin')
+            mm_mdin.write_input(f'{prefix}mm.mdin')
 
         if INPUT['pb']['pbrun']:
             pb_prog = 'sander.APBS' if INPUT['pb']['sander_apbs'] else 'sander'
@@ -267,12 +218,12 @@ def create_inputs(INPUT, prmtop_system, pre):
             else:
                 pb_mdin = SanderPBSAInput(INPUT)
                 pb_mdin.make_mdin()
-            pb_mdin.write_input(f'{pre}pb.mdin')
+            pb_mdin.write_input(f'{prefix}pb.mdin')
 
         if INPUT['rism']['rismrun']:
             rism_mdin = SanderRISMInput(INPUT)
             rism_mdin.make_mdin()
-            rism_mdin.write_input(f'{pre}rism.mdin')
+            rism_mdin.write_input(f'{prefix}rism.mdin')
 
     # end if decomprun
 
@@ -281,12 +232,12 @@ def create_inputs(INPUT, prmtop_system, pre):
         com_mask, rec_mask, lig_mask = prmtop_system.Mask('all', True)
         if not INPUT['ala']['mutant_only']:
             qh_in = QuasiHarmonicInput(com_mask, rec_mask, lig_mask, temperature=INPUT['temperature'],
-                                       stability=stability, prefix=pre, trj_suffix=trj_suffix)
-            qh_in.write_input(f'{pre}cpptrajentropy.in')
+                                       stability=stability, prefix=prefix, trj_suffix=trj_suffix)
+            qh_in.write_input(f'{prefix}cpptrajentropy.in')
         if INPUT['ala']['alarun']:
             qh_in = QuasiHarmonicInput(com_mask, rec_mask, lig_mask, temperature=INPUT['temperature'],
-                                       stability=stability, prefix=pre + 'mutant_', trj_suffix=trj_suffix)
-            qh_in.write_input(f'{pre}mutant_cpptrajentropy.in')
+                                       stability=stability, prefix=prefix + 'mutant_', trj_suffix=trj_suffix)
+            qh_in.write_input(f'{prefix}mutant_cpptrajentropy.in')
 
 
 class SanderInput(object):
