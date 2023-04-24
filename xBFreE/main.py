@@ -55,7 +55,7 @@ class xBFreE_App:
         if not self.master:
             self.stdout = open(os.devnull, 'w')
         if self.master:
-            logging.info(f'Starting gmx_MMPBSA {__version__}')
+            logging.info(f'Starting xBFreE {__version__}')
             misc.get_sys_info()
 
         # Set up timers
