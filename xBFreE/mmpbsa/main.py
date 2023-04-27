@@ -73,6 +73,7 @@ class MMPBSA_App(object):
         global _rank, _stdout, _stderr, _mpi_size, _MPI
         _MPI = self.MPI = MPI
         self.pre = '_GMXMMPBSA_'
+        self.mmpbsa_folder = Path('xBFreE_RESULTS', 'mmpbsa')
         self.INPUT = {}
         if stdout is None:
             _stdout = self.stdout = _unbuf_stdout
@@ -90,6 +91,12 @@ class MMPBSA_App(object):
         _mpi_size = self.mpi_size = self.MPI.COMM_WORLD.Get_size()
         if not self.master:
             self.stdout = open(os.devnull, 'w')
+
+        # create the mmpbsa folder
+        if self.master:
+            if self.mmpbsa_folder.exists():
+                self.remove()
+            self.mmpbsa_folder.mkdir()
 
         # Set up timers
         timers = [Timer() for _ in range(self.mpi_size)]
@@ -131,7 +138,7 @@ class MMPBSA_App(object):
             (self.numframes, rec_frames,
              lig_frames, self.numframes_nmode) = make_trajectories(INPUT, FILES, self.mpi_size,
                                                                    self.external_progs['cpptraj'],
-                                                                   self.pre)
+                                                                   self.mmpbsa_folder)
             if self.traj_protocol == 'MT' and not self.numframes == rec_frames == lig_frames:
                 xBFreEErrorLogging('The complex, receptor, and ligand trajectories must be the same length. Since v1.5.0 '
                                 'we have simplified a few things to make the code easier to maintain. Please check the '
@@ -230,13 +237,15 @@ class MMPBSA_App(object):
         for mutant and normal systems
         """
         # Set up a dictionary of external programs to use based one external progs
-        progs = {'gb': self.external_progs['sander'],
-                 'gbnsr6': self.external_progs['gbnsr6'],
-                 'sa': self.external_progs['cpptraj'],
-                 'pb': self.external_progs['sander'],
-                 'rism': self.external_progs['sander'],
-                 'qh': self.external_progs['cpptraj'],
-                 'nmode': self.external_progs['mmpbsa_py_nabnmode']
+        print(self.external_progs)
+        progs = {'gb': self.external_progs.get('sander'),
+                 'gbnsr6': self.external_progs.get('gbnsr6'),
+                 'sa': self.external_progs.get('cpptraj'),
+                 'pb': self.external_progs.get('sander'),
+                 'pbcuda': self.external_progs.get('pbcuda'),
+                 'rism': self.external_progs.get('sander'),
+                 'qh': self.external_progs.get('cpptraj'),
+                 'nmode': self.external_progs.get('mmpbsa_py_nabnmode')
                  }
         if self.INPUT['pb']['sander_apbs']:
             progs['pb'] = self.external_progs['sander.APBS']
@@ -492,7 +501,6 @@ class MMPBSA_App(object):
                                  f'{prefix}ligand_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
                                  self.INPUT['decomp']['dec_verbose'])
                     self.calc_list.append(c, '', timer_key='gbnsr6')
-        # end if self.INPUT['gb']['gbrun']
 
         # Next load the PB calculations
         if self.INPUT['pb']['pbrun']:
@@ -565,6 +573,20 @@ class MMPBSA_App(object):
 
         if self.INPUT['rism']['rismrun']:
             mdin = self.pre + 'rism.mdin'
+            # get xvv file from INPUT
+            from xBFreE.mmpbsa.data import xvv_files
+
+            self.FILES.xvvfile = None
+            if self.INPUT['rism']['xvv'] in xvv_files:
+                self.FILES.xvvfile = xvv_files[self.INPUT['rism']['xvv']]
+            else:
+                p = Path(self.INPUT['rism']['xvv'])
+                if p.exists() and p.suffix == '.xvv':
+                    self.FILES.xvvfile = p.absolute().as_posix()
+
+            if not self.FILES.xvvfile:
+                xBFreEErrorLogging('Please, define a valid xvv file')
+
             self.calc_list.append(
                 PrintCalc('Beginning 3D-RISM calculations with %s' % progs['rism']), timer_key='rism')
 
@@ -605,8 +627,6 @@ class MMPBSA_App(object):
                     self.calc_list.append(c, '  calculating ligand contribution...',
                                           timer_key='rism', output_basename='%sligand_rism.mdout.%%d' % (prefix))
 
-        # end if self.INPUT['rism']['rismrun']
-
         if self.INPUT['nmode']['nmoderun']:
             self.calc_list.append(
                 PrintCalc('Beginning nmode calculations with %s' % progs['nmode']), timer_key='nmode')
@@ -645,8 +665,6 @@ class MMPBSA_App(object):
                     self.calc_list.append(c, '  calculating ligand contribution...',
                                           timer_key='nmode', output_basename='%sligand_nm.out.%%d' % (prefix))
 
-        # end if self.INPUT['nmode']['nmoderun']
-
         # Only master does entropy calculations
         if self.INPUT['general']['qh_entropy']:
             self.calc_list.append(
@@ -664,8 +682,8 @@ class MMPBSA_App(object):
     def make_prmtops(self):
         self.timer.add_timer('setup_top', 'Total GROMACS setup time:')
         self.timer.start_timer('setup_top')
-        if not self.FILES.rewrite_output and self.master:
-            self.remove(-1)
+        # if not self.FILES.rewrite_output and self.master:
+        #     self.remove(-1)
 
         # Find external programs IFF we are doing a calc
         external_progs = misc.find_progs(self.INPUT, self.md_prog, self.mpi_size) if self.master else {}
@@ -1141,11 +1159,11 @@ class MMPBSA_App(object):
 
         logging.info(f'Checking {self.FILES.input_file} input file...Done.\n')
 
-    def remove(self, flag):
+    def remove(self):
         """ Removes temporary files """
         if not self.master:
             return
-        misc.remove(flag, fnpre=self.pre)
+        misc.remove('mmpbsa')
 
     def sync_mpi(self):
         """ Throws up a barrier """

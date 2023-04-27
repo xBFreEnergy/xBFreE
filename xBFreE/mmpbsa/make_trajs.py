@@ -40,12 +40,12 @@ from pathlib import Path
 strip_mask = ':WAT,Cl*,CIO,Cs+,IB,K*,Li+,MG*,Na+,Rb+,CS,RB,NA,F,CL'
 
 
-def make_trajectories(INPUT, FILES, size, cpptraj, pre):
+def make_trajectories(INPUT, FILES, size, cpptraj, folder):
     """
     This function creates the necessary trajectory files, and creates thread-specific trajectories for parallel
     calculations
     """
-
+    pre = f"{folder.as_posix()}/"
     stability = FILES.stability
 
     # File suffix is dependent on file type
@@ -91,7 +91,7 @@ def make_trajectories(INPUT, FILES, size, cpptraj, pre):
         if INPUT['gbnsr6']['gbnsr6run']:
             temp_dir = Path(f"{pre}inpcrd_{i}")
             temp_dir.mkdir()
-            traj.Outtraj(f"{pre}inpcrd_{i}/{pre}complex.inpcrd", frames=frame_string, filetype='restart',
+            traj.Outtraj(f"{pre}inpcrd_{i}/complex.inpcrd", frames=frame_string, filetype='restart',
                          options=['keepext'])
         last_frame += frame_count[i]
 

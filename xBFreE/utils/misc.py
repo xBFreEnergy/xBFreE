@@ -53,33 +53,31 @@ def create_input_args(args: list, method):
         print('Not implemented')
 
 
-def remove(flag, fnpre='_xBFreE_'):
+def remove(method=None):
     """ Removes temporary files. Allows for different levels of cleanliness """
-    # Collect all of the temporary files (those starting with _GMXMMPBSA_)
-    allfiles = os.listdir(os.getcwd())
 
-    other_files = ['COM.prmtop', 'REC.prmtop', 'LIG.prmtop', 'MUT_COM.prmtop', 'MUT_REC.prmtop', 'MUT_LIG.prmtop',
-                   'leap.log']
-    if flag == -1:
-        result_files = ['FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat']
-        for fil in allfiles:
-            if (
-                    fil.startswith(fnpre) or fil.startswith(f"#{fnpre}") or
-                    bool(re.match('#?(COM|REC|LIG|MUT_COM|MUT_REC|MUT_LIG)_traj_(\d)\.xtc', fil)) or
-                    fil == 'COMPACT_MMXSA_RESULTS.mmxsa' or
-                    fil in other_files or
-                    fil in result_files):
-                if Path(fil).is_dir():
-                    shutil.rmtree(fil)
-                else:
-                    os.remove(fil)
+    result_files = {'mmpbsa': ['FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat', 'COMPACT_RESULTS_MMPBSA.xbfre']
+                    # 'FINAL_RESULTS_LIE.dat', 'FINAL_DECOMP_LIE.dat',
+                    # 'FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat',
+                    # 'FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat',
+                    }
+    rfolder = Path('xBFreE_RESULTS')
 
-    elif flag == 0:  # remove all temporary files
-        for fil in allfiles:
-
-            if fil.startswith(fnpre) or bool(re.match('#?(COM|REC|LIG|MUT_COM|MUT_REC|MUT_LIG)_traj_(\d)\.xtc',
-                                                      fil)) or fil in other_files:
-                os.remove(fil)
+    if not method:
+        for mf in result_files.values():
+            for f in mf:
+                if Path(f).exists():
+                    os.remove(f)
+        if rfolder.exists():
+            shutil.rmtree(rfolder)
+        # remove log files
+        for f in Path().glob('xBFreE*.log'):
+            os.remove(f)
+    else:
+        for f in result_files[method]:
+            if Path(f).exists():
+                os.remove(f)
+        shutil.rmtree(rfolder.joinpath(method))
 
 
 def find_progs(INPUT, md_prog, mpi_size=0):
@@ -88,13 +86,14 @@ def find_progs(INPUT, md_prog, mpi_size=0):
     logging.info('Checking external programs...')
     used_progs = {'cpptraj': True,
                   'sander': True,
-                  'gromacs': md_prog == 'gmx',
+                  'gmx': md_prog == 'gmx',
                   # 'namd': md_prog == 'namd',
                   'sander.APBS': INPUT['pb']['sander_apbs'] == 1,
                   'mmpbsa_py_nabnmode': INPUT['nmode']['nmoderun'],
                   # 'rism3d.snglpnt': INPUT['rism']['rismrun']
                   'elsize': INPUT['gb']['alpb'],
-                  'gbnsr6': INPUT['gbnsr6']['gbnsr6run']
+                  'gbnsr6': INPUT['gbnsr6']['gbnsr6run'],
+                  'pbsa.cuda': INPUT['pbcuda']['pbcudarun']
                   }
     # look for any available gromacs executable
     # FIXME: We should use gmx_mpi? It seems to have problem with mpi4py
@@ -102,33 +101,19 @@ def find_progs(INPUT, md_prog, mpi_size=0):
 
     # The returned dictionary:
     my_progs = {}
+    user_path = ([':'.join(INPUT['general']['exe_path'])] if ':' in INPUT['general']['exe_path']
+                 else INPUT['general']['exe_path'])
+    search_paths = user_path + [os.environ['PATH']]
 
-    search_parth = INPUT['general']['gmx_path'] or os.environ['PATH']
     for prog, needed in used_progs.items():
-        if prog == 'gromacs':
-            if needed:
-                for prog in gro_exe:
-                    if exe := shutil.which(prog, path=search_parth):
-                        # execute gromacs to get version
-                        gmx_ouput = subprocess.check_output([exe, '-version']).decode().split('\n')
-                        gmx_version = [l.split()[-1].strip('\n') for l in gmx_ouput if 'GROMACS version:' in l][0]
-                        my_progs['make_ndx'] = [exe, 'make_ndx']
-                        my_progs['editconf'] = [exe, 'editconf']
-                        my_progs['trjconv'] = [exe, 'trjconv']
-                        if prog in ['gmx_mpi', 'gmx_mpi_d'] and mpi_size > 1:
-                            xBFreEErrorLogging(
-                                'gmx_mpi and gmx_mpi_d are not supported when running gmx_MMPBSA in parallel '
-                                'due to incompatibility between the mpi libraries used to compile GROMACS and '
-                                'mpi4py respectively. You can still use gmx_mpi or gmx_mpi_d to run gmx_MMPBSA '
-                                'serial. For parallel calculations use gmx instead')
-                        logging.info(f'{prog} {gmx_version} found! Using {exe}')
-                        break
-        else:
-            my_progs[prog] = shutil.which(prog, path=os.environ['PATH'])
-            if needed:
-                if not my_progs[prog]:
-                    xBFreEErrorLogging(f'Could not find necessary program [{prog}]')
-                logging.info(f'{prog} found! Using {str(my_progs[prog])}')
+        if needed:
+            for path in search_paths:
+                my_progs[prog] = shutil.which(prog, path=path)
+                if my_progs[prog]:
+                    break
+            if not my_progs[prog]:
+                xBFreEErrorLogging(f'Could not find necessary program [{prog}]')
+            logging.info(f'{prog} found! Using {str(my_progs[prog])}')
 
     logging.info('Checking external programs...Done.\n')
     return my_progs

@@ -42,9 +42,9 @@ class BuildTopGromacs(BuildTop):
         self.com_mut_index = None
 
         # Define Gromacs executable
-        self.make_ndx = self.external_progs['make_ndx']
-        self.trjconv = self.external_progs['trjconv']
-        self.editconf = self.external_progs['editconf']
+        self.make_ndx = [self.external_progs['gmx'], 'make_ndx']
+        self.trjconv = [self.external_progs['gmx'], 'trjconv']
+        self.editconf = [self.external_progs['gmx'], 'editconf']
         self.radii = LoadRadii(self.INPUT['general']['PBRadii'], self.INPUT['general']['radii_path'])
         self.checkFiles()
 
@@ -93,7 +93,7 @@ class BuildTopGromacs(BuildTop):
                                              '{l}\n q\n'.format(r=num_com_rec_group, l=num_com_lig_group)]
         c1 = subprocess.Popen(make_ndx_echo_args, stdout=subprocess.PIPE)
 
-        com_ndx = self.FILES.prefix + 'COM_index.ndx'
+        com_ndx = self.mmpbsa_folder.joinpath('COM_index.ndx').as_posix()
         make_ndx_args = self.make_ndx + ['-n', self.FILES.complex_index, '-o', com_ndx, '-f', self.FILES.complex_structure]
         logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                       (' '.join(make_ndx_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' + ' | ' +

@@ -60,7 +60,7 @@ input_file.addNamelist('general', 'general', 'General namelist variables',
                            ['exp_ki', list[float], [0.0], 'Experimental Ki in nM'],
                            ['full_traj', int, 0, 'Print a full traj. AND the thread trajectories'],
                            ['gmx_path', str, '', 'Force to use this path to get GROMACS executable'],
-                           ['exe_path', str, '', 'Add a custom path to search executables (i.e, gmx, apbs)'],
+                           ['exe_path', list[str], [], 'Add a custom path to search executables (i.e, gmx, apbs)'],
                            ['radii_path', str, '', 'Add a custom path to search radii file'],
 
                            ['keep_files', int, 2, 'How many files to keep after successful completion'],
@@ -201,6 +201,81 @@ input_file.addNamelist('pb', 'pb', '(AMBER) Possion-Boltzmann namelist variables
                            # Options for output
                            ['npbverb', int, 0, 'Option to turn on verbose mode']
                        ], trigger='pbrun')
+input_file.addNamelist('pbcuda', 'pbcuda', '(AMBER) Possion-Boltzmann namelist variables',
+                       [
+                            # Basic input options
+                           # FIXME: setup for 6/7/8 only
+                           ['ipb', int, 6, 'Dielectric model for PB'],
+                           ['inp', int, 1, 'Nonpolar solvation method'],
+
+                           # Options to define the physical constants
+                           ['indi', float, 1, 'Internal dielectric constant'],
+                           ['exdi', float, 80, 'External dielectric constant'],
+                           ['emem', float, 4.0, 'Membrane dielectric constant'],
+                           ['smoothopt', int, 1, 'Set up dielectric values for finite-difference grid edges that are '
+                                                 'located across the solute/solvent dielectric boundary'],
+                           ['istrng', float, 0.0, 'Ionic strength (M)'],
+                           ['radiopt', int, 1, 'Use optimized radii?'],
+                           ['prbrad', float, 1.4, 'Probe radius'],
+                           ['iprob', float, 2.0, 'Mobile ion probe radius (Angstroms) for ion accessible surface used '
+                                                 'to define the Stern layer'],
+                           # FIXME: set up to 2 by default. Change it in create input
+                           ['sasopt', int, 2, 'Molecular surface in PB implict model'],
+                           ['arcres', float, 0.25, 'The resolution (Å) to compute solvent accessible arcs'],
+
+                           # Options for Implicit Membranes
+                           ['memopt', int, 0, 'Use PB optimization for membrane'],
+                           ['mprob', float, 2.70, 'Membrane probe radius in Å'],
+                           ['mthick', float, 40.0, 'Membrane thickness'],
+                           ['mctrdz', float, 0.0, 'Distance to offset membrane in Z direction'],
+                           ['poretype', int, 1, 'Use exclusion region for channel proteins'],
+
+                           # Options to select numerical procedures
+                           ['npbopt', int, 0, 'Use NonLinear PB solver?'],
+                           ['solvopt', int, 2, 'Select iterative solver'],
+                           ['accept', float, 0.001, 'Sets the iteration convergence criterion (relative to the initial '
+                                                    'residue)'],
+                           ['linit', int, 1000, 'Number of SCF iterations'],
+                           ['fillratio', float, 4, 'Ratio between the longest dimension of the rectangular '
+                                                   'finite-difference grid and that of the solute'],
+                           ['scale', float, 2.0, '1/scale = grid spacing for the finite difference solver (default = '
+                                                 '1/2 Å)'],
+                           ['nbuffer', float, 0, 'Sets how far away (in grid units) the boundary of the finite '
+                                                 'difference grid is away from the solute surface'],
+                           ['nfocus', int, 2, 'Electrostatic focusing calculation'],
+                           ['fscale', int, 8, 'Set the ratio between the coarse and fine grid spacings in an '
+                                              'electrostatic focussing calculation'],
+                           ['npbgrid', int, 1, 'Sets how often the finite-difference grid is regenerated'],
+
+                            # Options to compute energy and forces
+                           # FIXME: In amber manual strongly recommend BCOPT=1 for NBC
+                           ['bcopt', int, 1, 'Boundary condition option'],
+                           ['eneopt', int, 2, 'Compute electrostatic energy and forces'],
+                           ['frcopt', int, 0, 'Output for computing electrostatic forces'],
+                           ['scalec', int, 0, 'Option to compute reaction field energy and forces'],
+                           ['cutfd', float, 5.0, 'Cutoff for finite-difference interactions'],
+                           ['cutnb', float, 0.0, 'Cutoff for nonbonded interations'],
+                           ['nsnba', int, 1, 'Sets how often atom-based pairlist is generated'],
+
+                            # Options to select a non-polar solvation treatment
+                           ['decompopt', int, 2, 'Option to select different decomposition schemes when INP = 2'],
+                           ['use_rmin', int, 1, 'The option to set up van der Waals radii'],
+                           ['sprob', float, 0.557, 'Solvent probe radius for SASA used to compute the dispersion term'],
+                           ['vprob', float, 1.300, 'Solvent probe radius for molecular volume (the volume enclosed by '
+                                                   'SASA)'],
+                           ['rhow_effect', float, 1.129, 'Effective water density used in the non-polar dispersion '
+                                                         'term calculation'],
+                           ['use_sav', int, 1, 'Use molecular volume (the volume enclosed by SASA) for cavity term '
+                                               'calculation'],
+                           ['cavity_surften', float, 0.0378, 'Surface tension'],
+                           ['cavity_offset', float, -0.5692, 'Offset for nonpolar solvation calc'],
+                           ['maxsph', int, 400, 'Approximate number of dots to represent the maximum atomic solvent '
+                                                'accessible surface'],
+                           ['maxarcdot', int, 1500, 'Number of dots used to store arc dots per atom'],
+
+                           # Options for output
+                           ['npbverb', int, 0, 'Option to turn on verbose mode']
+                       ], trigger='pbcudarun')
 
 input_file.addNamelist('rism', 'rism', '3D-RISM namelist variables',
                        [

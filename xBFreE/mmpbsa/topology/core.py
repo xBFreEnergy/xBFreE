@@ -14,6 +14,7 @@
 
 import string
 import textwrap
+from pathlib import Path
 
 import parmed
 from xBFreE.exceptions import *
@@ -32,24 +33,25 @@ class BuildTop:
         self.FILES = FILES
         self.INPUT = INPUT
         self.external_progs = external_programs
+        self.mmpbsa_folder = Path('xBFreE_RESULTS', 'mmpbsa')
 
         # create the * prmtop variables for compatibility with the original code
-        self.complex_pmrtop = 'COM.prmtop'
-        self.receptor_pmrtop = 'REC.prmtop'
-        self.ligand_pmrtop = 'LIG.prmtop'
+        self.complex_pmrtop = self.mmpbsa_folder.joinpath('COM.prmtop').as_posix()
+        self.receptor_pmrtop = self.mmpbsa_folder.joinpath('REC.prmtop').as_posix()
+        self.ligand_pmrtop = self.mmpbsa_folder.joinpath('LIG.prmtop').as_posix()
 
         self.ref_str = None
         self.complex_str = None
         self.receptor_str = None
         self.ligand_str = None
 
-        self.mutant_complex_pmrtop = 'MUT_COM.prmtop'
-        self.mutant_receptor_pmrtop = 'MUT_REC.prmtop'
-        self.mutant_ligand_pmrtop = 'MUT_LIG.prmtop'
+        self.mutant_complex_pmrtop = self.mmpbsa_folder.joinpath('MUT_COM.prmtop').as_posix()
+        self.mutant_receptor_pmrtop = self.mmpbsa_folder.joinpath('MUT_REC.prmtop').as_posix()
+        self.mutant_ligand_pmrtop = self.mmpbsa_folder.joinpath('MUT_LIG.prmtop').as_posix()
 
-        self.complex_str_file = f'{self.FILES.prefix}COM.pdb'
-        self.receptor_str_file = f'{self.FILES.prefix}REC.pdb'
-        self.ligand_str_file = f'{self.FILES.prefix}LIG.pdb'
+        self.complex_str_file = self.mmpbsa_folder.joinpath('COM.pdb').as_posix()
+        self.receptor_str_file = self.mmpbsa_folder.joinpath('REC.pdb').as_posix()
+        self.ligand_str_file = self.mmpbsa_folder.joinpath('LIG.pdb').as_posix()
 
         # FIXME: adapt this function to implemnted md programs
         # self.checkFiles()
