@@ -103,4 +103,4 @@ class xBFreE_App:
         """ Removes all/temporary files """
         if not self.master:
             return
-        misc.remove(flag, fnpre=self.prefix)
+        misc.remove()

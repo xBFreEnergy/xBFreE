@@ -53,10 +53,10 @@ def create_input_args(args: list, method):
         print('Not implemented')
 
 
-def remove(method=None):
+def remove(method=None, removetemp=0):
     """ Removes temporary files. Allows for different levels of cleanliness """
 
-    result_files = {'mmpbsa': ['FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat', 'COMPACT_RESULTS_MMPBSA.xbfre']
+    result_files = {'mmpbsa': ['FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat', 'COMPACT_RESULTS_MMPBSA.xbfree']
                     # 'FINAL_RESULTS_LIE.dat', 'FINAL_DECOMP_LIE.dat',
                     # 'FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat',
                     # 'FINAL_RESULTS_MMPBSA.dat', 'FINAL_DECOMP_MMPBSA.dat',
@@ -74,9 +74,10 @@ def remove(method=None):
         for f in Path().glob('xBFreE*.log'):
             os.remove(f)
     else:
-        for f in result_files[method]:
-            if Path(f).exists():
-                os.remove(f)
+        if not removetemp:
+            for f in result_files[method]:
+                if Path(f).exists():
+                    os.remove(f)
         shutil.rmtree(rfolder.joinpath(method))
 
 

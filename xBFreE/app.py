@@ -104,13 +104,9 @@ def run_xbfree():
     method = "mmpbsa" if "mmpbsa" in xbfree_app.FILES.subparser.lower() else None
 
     # Remove all generated files in the directory
-    if xbfree_app.FILES.clean:
+    if xbfree_app.FILES.xbfree_clean:
         logging.info('Cleaning temporary files and quitting.\n')
         xbfree_app.remove(-1)
-        sys.exit(0)
-    elif xbfree_app.FILES.clean:
-        logging.info(f'Cleaning temporary files for {method} and quitting.\n')
-        xbfree_app.remove(method)
         sys.exit(0)
 
     if xbfree_app.FILES.createinput is not None:

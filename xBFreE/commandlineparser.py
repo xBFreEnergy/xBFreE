@@ -25,6 +25,7 @@ cmdparser = xBFreE_ArgParser(
 )
 cmdparser.add_argument('-v', '--version', action='version',
                        version='''%%(prog)s %s''' % __version__)
+cmdparser.add_argument('--clean', dest='xbfree_clean', help='Clean all files', action='store_true')
 
 subparsers = cmdparser.add_subparsers(help='Methods to compute Binding Free Energy', dest='subparser')
 gmxmmpbsa_parser = subparsers.add_parser(

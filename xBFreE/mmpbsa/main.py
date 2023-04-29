@@ -1159,11 +1159,11 @@ class MMPBSA_App(object):
 
         logging.info(f'Checking {self.FILES.input_file} input file...Done.\n')
 
-    def remove(self):
+    def remove(self, removetemp=0):
         """ Removes temporary files """
         if not self.master:
             return
-        misc.remove('mmpbsa')
+        misc.remove('mmpbsa', removetemp)
 
     def sync_mpi(self):
         """ Throws up a barrier """
