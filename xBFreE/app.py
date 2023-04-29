@@ -100,8 +100,29 @@ def run_xbfree():
 
     xbfree_app = xBFreE_App(MPI)
     files = xbfree_app.get_cmd_args(sys.argv[1:])
+    # iterate over all posibles Path type variables in FILES to make them relative to wdir to chdir to
+    # xBFreE_RESULTS/mmpbsa
+    wdir = Path('.')
+    for p in dir(files):
+        if isinstance(getattr(files, p), list):
+            templ = []
+            for p1 in getattr(files, p):
+                if isinstance(p1, Path):
+                    if p1.is_relative_to(wdir):
+                         templ.append(Path('../..').joinpath(p1).as_posix())
+                    else:
+                        templ.append(p1)
+                else:
+                    templ.append(p1)
+            setattr(files, p, templ)
+        else:
+            arc = getattr(files, p)
+            if isinstance(arc, Path) and arc.is_relative_to(wdir):
+                setattr(files, p, Path('../..').joinpath(arc).as_posix())
+    files.wdir = wdir.resolve()
 
     method = "mmpbsa" if "mmpbsa" in xbfree_app.FILES.subparser.lower() else None
+    files.subwdir = Path('xBFreE_RESULTS', method).resolve()
 
     # Remove all generated files in the directory
     if xbfree_app.FILES.xbfree_clean:
