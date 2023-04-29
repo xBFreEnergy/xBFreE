@@ -135,8 +135,8 @@ class MMPBSA_App(object):
         if master:
             logging.info('Preparing trajectories for simulation...\n')
             (self.numframes, rec_frames,
-             lig_frames, self.numframes_nmode) = make_trajectories(INPUT, FILES, self.mpi_size,
-                                                                   self.external_progs['cpptraj'])
+             lig_frames, self.numframes_nmode) = make_trajectories(INPUT, FILES, self.external_progs['cpptraj'],
+                                                                   self.mpi_size, self.devices_rank)
             if self.traj_protocol == 'MT' and not self.numframes == rec_frames == lig_frames:
                 xBFreEErrorLogging('The complex, receptor, and ligand trajectories must be the same length. Since v1.5.0 '
                                 'we have simplified a few things to make the code easier to maintain. Please check the '
@@ -218,7 +218,10 @@ class MMPBSA_App(object):
         nmframes = self.numframes_nmode if self.master else 0
         self.calc_list = CalculationList(self.timer, nframes, nmframes, self.mpi_size)
         if self.master:
-            logging.info(f'Starting calculations in {self.mpi_size} CPUs...')
+            gpu_size = sum([1 for d in self.devices_rank.values() if d])
+            gpu_size_text = f' and {gpu_size} GPUs' if gpu_size else ''
+            text = f"Starting calculations in {self.mpi_size} CPUs{gpu_size_text}..."
+            logging.info(text)
             if (self.INPUT['pb']['pbrun'] or self.INPUT['rism']['rismrun'] or
                 self.INPUT['nmode']['nmoderun']) and self.mpi_size > 1:
                 logging.warning('PB/RISM/NMODE will be calculated with multiple threads, make sure you have enough RAM.')
@@ -946,6 +949,37 @@ class MMPBSA_App(object):
 
         # Default temperature
         # self.INPUT['temp'] = 298.15
+
+        # check for cuda if any calculation require it
+        if self.INPUT['pbcuda']['pbcudarun']:
+            from xBFreE.utils.cuda_check import get_cuda_devices
+            # create new communicators for each node according to the rank type shared (for size > 1)
+            if self.mpi_size > 1:
+                nodes_comm = self.MPI.COMM_WORLD.Split_type(self.MPI.COMM_TYPE_SHARED, key=self.mpi_rank)
+                nodes_rank = nodes_comm.Get_rank()
+                if nodes_rank == 0:
+                    dds = [self.mpi_rank, {'nodes_rank': nodes_rank, 'host_name': self.MPI.Get_processor_name(),
+                                           'devices': get_cuda_devices()}]
+                else:
+                    dds = [self.mpi_rank]
+                self.devices = self.MPI.COMM_WORLD.gather(dds)
+            else:
+                self.devices = [[self.mpi_rank, {'nodes_rank': 0, 'host_name': 'host', 'devices': get_cuda_devices()}]]
+
+            self.devices_rank = {}
+            if self.master:
+                for d in self.devices:
+                    if len(d) > 1:
+                        self.devices_rank[d[0]] = d[1]
+                    else:
+                        self.devices_rank[d[0]] = None
+
+            self.devices_rank = self.MPI.COMM_WORLD.bcast(self.devices_rank)
+            self.sync_mpi()
+            print(f"{self.mpi_rank = }, {self.devices_rank = }, {all(self.devices_rank.values()) = }")
+            # if self.mpi_rank == 7:
+            # print(f"{self.devices_rank = }")
+
 
     def check_for_bad_input(self, INPUT=None):
         """ Checks for bad user input """
