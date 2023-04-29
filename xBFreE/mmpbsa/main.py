@@ -124,7 +124,7 @@ class MMPBSA_App(object):
 
         # Create input files based on INPUT dict
         if master:
-            create_inputs(INPUT, self.normal_system, self.pre)
+            create_inputs(INPUT, self.normal_system)
         self.timer.stop_timer('setup')
 
         # Now create our trajectory files
@@ -136,8 +136,7 @@ class MMPBSA_App(object):
             logging.info('Preparing trajectories for simulation...\n')
             (self.numframes, rec_frames,
              lig_frames, self.numframes_nmode) = make_trajectories(INPUT, FILES, self.mpi_size,
-                                                                   self.external_progs['cpptraj'],
-                                                                   self.mmpbsa_folder)
+                                                                   self.external_progs['cpptraj'])
             if self.traj_protocol == 'MT' and not self.numframes == rec_frames == lig_frames:
                 xBFreEErrorLogging('The complex, receptor, and ligand trajectories must be the same length. Since v1.5.0 '
                                 'we have simplified a few things to make the code easier to maintain. Please check the '
@@ -153,7 +152,7 @@ class MMPBSA_App(object):
         if INPUT['ala']['alarun'] and self.master:
             logging.info('Mutating trajectories...')
         _, mutant_residue = make_mutant_trajectories(INPUT, FILES, self.mpi_rank, self.external_progs['cpptraj'],
-                                                     self.normal_system, self.mutant_system, self.pre)
+                                                     self.normal_system, self.mutant_system)
 
         self.MPI.COMM_WORLD.Barrier()
 
@@ -225,18 +224,18 @@ class MMPBSA_App(object):
                 logging.warning('PB/RISM/NMODE will be calculated with multiple threads, make sure you have enough RAM.')
         if not self.INPUT['ala']['mutant_only']:
             self.calc_list.append(PrintCalc('Running calculations on normal system...'), timer_key=None)
-            self._load_calc_list(self.pre, False, self.normal_system)
+            self._load_calc_list(self.normal_system)
         if self.INPUT['ala']['alarun']:
             self.calc_list.append(PrintCalc('Running calculations on mutant system...'), timer_key=None)
-            self._load_calc_list(f'{self.pre}', True, self.mutant_system)
+            self._load_calc_list(self.mutant_system, True)
 
-    def _load_calc_list(self, pre, mutant, parm_system):
+    def _load_calc_list(self, parm_system, mutant=False):
         """
         Internal routine to handle building calculation list. Called separately
         for mutant and normal systems
         """
         # Set up a dictionary of external programs to use based one external progs
-        print(self.external_progs)
+
         progs = {'gb': self.external_progs.get('sander'),
                  'gbnsr6': self.external_progs.get('gbnsr6'),
                  'sa': self.external_progs.get('cpptraj'),
@@ -260,7 +259,7 @@ class MMPBSA_App(object):
         copy_ligand = (mutant and not self.INPUT['ala']['mutant_only'] and
                        self.FILES.ligand_prmtop == self.FILES.mutant_ligand_prmtop)
 
-        prefix = pre + 'mutant_' if mutant else pre
+        prefix = 'mutant_' if mutant else ''
 
 
         mm_com_calculated = False
@@ -282,13 +281,13 @@ class MMPBSA_App(object):
 
             # Mdin depends on decomp or not
             if self.INPUT['decomp']['decomprun']:
-                mdin_template = self.pre + 'gb_decomp_%s.mdin'
+                mdin_template = 'gb_decomp_%s.mdin'
             elif self.INPUT['gb']['ifqnt']:
-                mdin_template = self.pre + 'gb_qmmm_%s.mdin'
+                mdin_template = 'gb_qmmm_%s.mdin'
             elif self.INPUT['gb']['alpb']:
-                mdin_template = self.pre + 'gb_%s.mdin'
+                mdin_template = 'gb_%s.mdin'
             else:
-                mdin_template = self.pre + 'gb.mdin'
+                mdin_template = 'gb.mdin'
 
             # Now do complex-specific stuff
             try:
@@ -302,7 +301,7 @@ class MMPBSA_App(object):
                                   incrd % 'complex',
                                   '%scomplex.%s.%%d' % (prefix, trj_sfx),
                                   mdin, '%scomplex_gb.mdout.%%d' % (prefix),
-                                  self.pre + 'restrt.%d')
+                                  'restrt.%d')
             self.calc_list.append(c, '  calculating complex contribution...', timer_key='gb',
                                   output_basename='%scomplex_gb.mdout.%%d' % (prefix))
             c = SAClass(parm_system.complex_prmtop,
@@ -331,7 +330,7 @@ class MMPBSA_App(object):
                                           incrd % 'receptor',
                                           '%sreceptor.%s.%%d' % (prefix, trj_sfx),
                                           mdin, '%sreceptor_gb.mdout.%%d' % (prefix),
-                                          self.pre + 'restrt.%d')
+                                          'restrt.%d')
                     self.calc_list.append(c, '  calculating receptor contribution...',
                                           timer_key='gb', output_basename='%sreceptor_gb.mdout.%%d' % (prefix))
                 c = SAClass(parm_system.receptor_prmtop,
@@ -359,7 +358,7 @@ class MMPBSA_App(object):
                                           incrd % 'ligand',
                                           '%sligand.%s.%%d' % (prefix, trj_sfx),
                                           mdin, '%sligand_gb.mdout.%%d' % (prefix),
-                                          self.pre + 'restrt.%d')
+                                          'restrt.%d')
                     self.calc_list.append(c, '  calculating ligand contribution...',
                                           timer_key='gb', output_basename='%sligand_gb.mdout.%%d' % (prefix))
                 c = SAClass(parm_system.ligand_prmtop,
@@ -371,13 +370,13 @@ class MMPBSA_App(object):
         # GBNSR6 calculation
         if self.INPUT['gbnsr6']['gbnsr6run']:
             incrd = '%sdummy%%s.inpcrd' % prefix
-            mdin = self.pre + 'gbnsr6.mdin'
+            mdin = 'gbnsr6.mdin'
 
             # Mdin depends on decomp or not
             if self.INPUT['decomp']['decomprun']:
-                mdin_template = self.pre + 'mm_gbnsr6_decomp_%s.mdin'
+                mdin_template = 'mm_gbnsr6_decomp_%s.mdin'
             else:
-                mdin_template = self.pre + 'mm.mdin'
+                mdin_template = 'mm_gbnsr6.mdin'
 
             # Now do complex-specific stuff
             try:
@@ -396,7 +395,7 @@ class MMPBSA_App(object):
                                       '%scomplex.%s.%%d' % (prefix, trj_sfx),
                                       mm_mdin,
                                       f'{prefix}complex_mm.mdout.%d',
-                                      self.pre + 'restrt.%d')
+                                      'restrt.%d')
                 self.calc_list.append(c, '    calculating MM...', timer_key='gbnsr6',
                                       output_basename=f'{prefix}complex_mm.mdout.%d')
             # use pre directly to have only one folder per rank
@@ -423,11 +422,11 @@ class MMPBSA_App(object):
                 # Either copy the existing receptor if the mutation is in the ligand
                 # or perform a receptor calculation
                 if copy_receptor:
-                    c = CopyCalc(f'{self.pre}receptor_mm.mdout.%d',
+                    c = CopyCalc('receptor_mm.mdout.%d',
                                  f'{prefix}receptor_mm.mdout.%d')
                     self.calc_list.append(c, '  no mutation found in receptor; '
                                              'using unmutated files', timer_key='gbnsr6')
-                    c = CopyCalc(f'{self.pre}receptor_gbnsr6.mdout.%d',
+                    c = CopyCalc('receptor_gbnsr6.mdout.%d',
                                  f'{prefix}receptor_gbnsr6.mdout.%d')
                     self.calc_list.append(c, '', timer_key='gbnsr6')
                 else:
@@ -439,7 +438,7 @@ class MMPBSA_App(object):
                                               f'{prefix}receptor.{trj_sfx}.%d',
                                               mm_mdin,
                                               f'{prefix}receptor_mm.mdout.%d',
-                                              self.pre + 'restrt.%d')
+                                              'restrt.%d')
 
                         self.calc_list.append(c, '    calculating MM...', timer_key='gbnsr6',
                                               output_basename=f'{prefix}receptor_mm.mdout.%d')
@@ -466,11 +465,11 @@ class MMPBSA_App(object):
                 # Either copy the existing ligand if the mutation is in the receptor
                 # or perform a ligand calculation
                 if copy_ligand:
-                    c = CopyCalc(f'{self.pre}ligand_mm.mdout.%d',
+                    c = CopyCalc('ligand_mm.mdout.%d',
                                  f'{prefix}ligand_mm.mdout.%d')
                     self.calc_list.append(c, '  no mutation found in ligand; '
                                              'using unmutated files', timer_key='gbnsr6')
-                    c = CopyCalc(f'{self.pre}ligand_gbnsr6.mdout.%d',
+                    c = CopyCalc('ligand_gbnsr6.mdout.%d',
                                  f'{prefix}ligand_gbnsr6.mdout.%d')
                     self.calc_list.append(c, '', timer_key='gbnsr6')
                 else:
@@ -482,7 +481,7 @@ class MMPBSA_App(object):
                                               f'{prefix}ligand.{trj_sfx}.%d',
                                               mm_mdin,
                                               f'{prefix}ligand_mm.mdout.%d',
-                                              self.pre + 'restrt.%d')
+                                              'restrt.%d')
 
                         self.calc_list.append(c, '    calculating MM...', timer_key='gbnsr6',
                                               output_basename=f'{prefix}ligand_mm.mdout.%d')
@@ -507,9 +506,9 @@ class MMPBSA_App(object):
 
             # Mdin depends on decomp or not
             if self.INPUT['decomp']['decomprun']:
-                mdin_template = self.pre + 'pb_decomp_%s.mdin'
+                mdin_template = 'pb_decomp_%s.mdin'
             else:
-                mdin_template = self.pre + 'pb.mdin'
+                mdin_template = 'pb.mdin'
 
             # Now do complex-specific stuff
             try:
@@ -523,7 +522,7 @@ class MMPBSA_App(object):
                                     incrd % 'complex',
                                     '%scomplex.%s.%%d' % (prefix, trj_sfx),
                                     mdin, '%scomplex_pb.mdout.%%d' % prefix,
-                                    self.pre + 'restrt.%d')
+                                    'restrt.%d')
             self.calc_list.append(c, '  calculating complex contribution...', timer_key='pb',
                                   output_basename='%scomplex_pb.mdout.%%d' % (prefix))
             if not self.stability:
@@ -544,7 +543,7 @@ class MMPBSA_App(object):
                                             incrd % 'receptor',
                                             '%sreceptor.%s.%%d' % (prefix, trj_sfx),
                                             mdin, '%sreceptor_pb.mdout.%%d' % prefix,
-                                            self.pre + 'restrt.%d')
+                                            'restrt.%d')
                     self.calc_list.append(c, '  calculating receptor contribution...',
                                           timer_key='pb', output_basename='%sreceptor_pb.mdout.%%d' % (prefix))
 
@@ -565,13 +564,13 @@ class MMPBSA_App(object):
                                             incrd % 'ligand',
                                             '%sligand.%s.%%d' % (prefix, trj_sfx),
                                             mdin, '%sligand_pb.mdout.%%d' % (prefix),
-                                            self.pre + 'restrt.%d')
+                                            'restrt.%d')
                     self.calc_list.append(c, '  calculating ligand contribution...',
                                           timer_key='pb', output_basename='%sligand_pb.mdout.%%d' % (prefix))
         # end if self.INPUT['pb']['pbrun']
 
         if self.INPUT['rism']['rismrun']:
-            mdin = self.pre + 'rism.mdin'
+            mdin = 'rism.mdin'
             # get xvv file from INPUT
             from xBFreE.mmpbsa.data import xvv_files
 
@@ -593,7 +592,7 @@ class MMPBSA_App(object):
                                   '%sdummycomplex.inpcrd' % prefix,
                                   '%scomplex.%s.%%d' % (prefix, trj_sfx), mdin,
                                   '%scomplex_rism.mdout.%%d' % prefix,
-                                  self.pre + 'restrt.%d', self.FILES.xvvfile)
+                                  'restrt.%d', self.FILES.xvvfile)
             self.calc_list.append(c, '  calculating complex contribution...', timer_key='rism',
                                   output_basename='%scomplex_rism.mdout.%%d' % (prefix))
 
@@ -608,7 +607,7 @@ class MMPBSA_App(object):
                                           '%sdummyreceptor.inpcrd' % prefix,
                                           '%sreceptor.%s.%%d' % (prefix, trj_sfx), mdin,
                                           '%sreceptor_rism.mdout.%%d' % prefix,
-                                          self.pre + 'restrt.%d', self.FILES.xvvfile)
+                                          'restrt.%d', self.FILES.xvvfile)
                     self.calc_list.append(c, '  calculating receptor contribution...',
                                           timer_key='rism', output_basename='%sreceptor_rism.mdout.%%d' % (prefix))
 
@@ -622,7 +621,7 @@ class MMPBSA_App(object):
                                           '%sdummyligand.inpcrd' % prefix,
                                           '%sligand.%s.%%d' % (prefix, trj_sfx), mdin,
                                           '%sligand_rism.mdout.%%d' % prefix,
-                                          self.pre + 'restrt.%d', self.FILES.xvvfile)
+                                          'restrt.%d', self.FILES.xvvfile)
                     self.calc_list.append(c, '  calculating ligand contribution...',
                                           timer_key='rism', output_basename='%sligand_rism.mdout.%%d' % (prefix))
 
@@ -720,7 +719,7 @@ class MMPBSA_App(object):
             self.INPUT['general']['receptor_mask'], self.INPUT['general']['ligand_mask'], self.resl = maketop.get_masks()
             self.mutant_index = maketop.com_mut_index
             self.mut_str = self.resl[maketop.com_mut_index].mutant_label if self.mutant_index is not None else ''
-            self.FILES.complex_fixed = f'{self.FILES.prefix}COM_FIXED.pdb'
+            # self.FILES.complex_fixed = 'COM_FIXED.pdb'
         self.FILES = self.MPI.COMM_WORLD.bcast(self.FILES, root=0)
         self.INPUT = self.MPI.COMM_WORLD.bcast(self.INPUT, root=0)
         self.sync_mpi()
@@ -1157,7 +1156,7 @@ class MMPBSA_App(object):
         self.INPUT['pb']['pbtemp'] = self.INPUT['general']['temperature']
         # self.INPUT['gbnsr6']['istrng'] = self.INPUT['gbnsr6']['istrng'] * 1000
 
-        logging.info(f'Checking {self.FILES.input_file} input file...Done.\n')
+        logging.info(f'Checking {self.FILES.input_file} input file... Done.\n')
 
     def remove(self, removetemp=0):
         """ Removes temporary files """
@@ -1183,9 +1182,9 @@ class MMPBSA_App(object):
         # Quasi-harmonic analysis is a special-case, so handle that separately
         if INPUT['general']['qh_entropy']:
             if not INPUT['ala']['mutant_only']:
-                self.calc_types.normal['qh'] = QHout(f'{self.pre}cpptraj_entropy.out', INPUT['general']['temperature'])
+                self.calc_types.normal['qh'] = QHout('cpptraj_entropy.out', INPUT['general']['temperature'])
             if INPUT['alarun']:
-                self.calc_types.mutant['qh'] = QHout(f'{self.pre}mutant_cpptraj_entropy.out', INPUT['general']['temperature'])
+                self.calc_types.mutant['qh'] = QHout('mutant_cpptraj_entropy.out', INPUT['general']['temperature'])
             if INPUT['ala']['alarun'] and not INPUT['ala']['mutant_only']:
                 self.calc_types.mut_norm['qh'] = DeltaDeltaQH(self.calc_types.mutant['qh'],
                                                               self.calc_types.normal['qh'])
@@ -1220,7 +1219,7 @@ class MMPBSA_App(object):
             # Non-mutant
             if not INPUT['ala']['mutant_only']:
                 self.calc_types.normal[key] = {'complex': outclass[i]('complex', self.INPUT, self.using_chamber)}
-                self.calc_types.normal[key]['complex'].parse_from_file(self.pre + basename[i] % 'complex',
+                self.calc_types.normal[key]['complex'].parse_from_file(basename[i] % 'complex',
                                                                        self.mpi_size, numframes)
                 # check if the nmode output is valid
                 if self.calc_types.normal[key]['complex'].no_nmode_convergence:
@@ -1230,10 +1229,10 @@ class MMPBSA_App(object):
 
                 if not self.stability:
                     self.calc_types.normal[key]['receptor'] = outclass[i]('receptor', self.INPUT, self.using_chamber)
-                    self.calc_types.normal[key]['receptor'].parse_from_file(self.pre + basename[i] % 'receptor',
+                    self.calc_types.normal[key]['receptor'].parse_from_file(basename[i] % 'receptor',
                                                                             self.mpi_size, numframes)
                     self.calc_types.normal[key]['ligand'] = outclass[i]('ligand', self.INPUT, self.using_chamber)
-                    self.calc_types.normal[key]['ligand'].parse_from_file(self.pre + basename[i] % 'ligand',
+                    self.calc_types.normal[key]['ligand'].parse_from_file(basename[i] % 'ligand',
                                                                           self.mpi_size, numframes)
                     self.calc_types.normal[key]['delta'] = BindingStatistics(self.calc_types.normal[key]['complex'],
                                                                              self.calc_types.normal[key]['receptor'],
@@ -1242,16 +1241,16 @@ class MMPBSA_App(object):
             # Time for mutant
             if INPUT['ala']['alarun']:
                 self.calc_types.mutant[key] = {'complex': outclass[i]('Mutant-Complex', self.INPUT, self.using_chamber)}
-                self.calc_types.mutant[key]['complex'].parse_from_file(self.pre + 'mutant_' + basename[i] % 'complex',
+                self.calc_types.mutant[key]['complex'].parse_from_file('mutant_' + basename[i] % 'complex',
                                                                        self.mpi_size, numframes)
                 if not self.stability:
                     self.calc_types.mutant[key]['receptor'] = outclass[i]('Mutant-Receptor', self.INPUT,
                                                                           self.using_chamber)
-                    self.calc_types.mutant[key]['receptor'].parse_from_file(self.pre + 'mutant_' + basename[i] %
+                    self.calc_types.mutant[key]['receptor'].parse_from_file('mutant_' + basename[i] %
                                                                             'receptor', self.mpi_size, numframes)
                     self.calc_types.mutant[key]['ligand'] = outclass[i]('Mutant-Ligand', self.INPUT,
                                                                         self.using_chamber)
-                    self.calc_types.mutant[key]['ligand'].parse_from_file(self.pre + 'mutant_' + basename[i] % 'ligand',
+                    self.calc_types.mutant[key]['ligand'].parse_from_file('mutant_' + basename[i] % 'ligand',
                                                                           self.mpi_size, numframes)
                     self.calc_types.mutant[key]['delta'] = BindingStatistics(self.calc_types.mutant[key]['complex'],
                                                                              self.calc_types.mutant[key]['receptor'],
@@ -1296,20 +1295,20 @@ class MMPBSA_App(object):
                         edata = self.calc_types.normal[key]['delta']['GGAS']
                         logging.info('Beginning Interaction Entropy calculations...')
                         ie = InteractionEntropyCalc(edata, self.INPUT, key)
-                        ie.save_output(f'{self.pre}normal_{key}_IE.dat')
+                        ie.save_output(f'normal_{key}_IE.dat')
 
                     self.calc_types.normal['ie'][key] = IEout(self.INPUT, key)
-                    self.calc_types.normal['ie'][key].parse_from_file(f'{self.pre}normal_{key}_IE.dat',
+                    self.calc_types.normal['ie'][key].parse_from_file(f'normal_{key}_IE.dat',
                                                                         self.numframes)
                 if key in self.calc_types.mutant:
                     if from_calc:
                         edata = self.calc_types.mutant[key]['delta']['GGAS']
                         logging.info('Beginning Mutant Interaction Entropy calculations...')
                         mie = InteractionEntropyCalc(edata, self.INPUT, key)
-                        mie.save_output(f'{self.pre}mutant_{key}_IE.dat')
+                        mie.save_output(f'mutant_{key}_IE.dat')
 
                     self.calc_types.mutant['ie'][key] = IEout(self.INPUT, key)
-                    self.calc_types.mutant['ie'][key].parse_from_file(f'{self.pre}mutant_{key}_IE.dat',
+                    self.calc_types.mutant['ie'][key].parse_from_file(f'mutant_{key}_IE.dat',
                                                                  self.numframes)
 
                 if self.INPUT['ala']['alarun'] and not self.INPUT['ala']['mutant_only'] and key in self.calc_types.normal:
@@ -1322,19 +1321,19 @@ class MMPBSA_App(object):
                         edata = self.calc_types.normal[key]['delta']['GGAS']
                         logging.info('Beginning C2 Entropy calculations...')
                         c2 = C2EntropyCalc(edata, self.INPUT, key)
-                        c2.save_output(f'{self.pre}normal_{key}_c2_entropy.dat')
+                        c2.save_output('normal_{key}_c2_entropy.dat')
 
                     self.calc_types.normal['c2'][key] = C2out(key)
-                    self.calc_types.normal['c2'][key].parse_from_file(f'{self.pre}normal_{key}_c2_entropy.dat')
+                    self.calc_types.normal['c2'][key].parse_from_file(f'normal_{key}_c2_entropy.dat')
                 if key in self.calc_types.mutant:
                     if from_calc:
                         edata = self.calc_types.mutant[key]['delta']['GGAS']
                         logging.info('Beginning Mutant C2 Entropy calculations...')
                         c2 = C2EntropyCalc(edata, self.INPUT, key)
-                        c2.save_output(f'{self.pre}mutant_{key}_c2_entropy.dat')
+                        c2.save_output(f'mutant_{key}_c2_entropy.dat')
 
                     self.calc_types.mutant['c2'][key] = C2out(key)
-                    self.calc_types.mutant['c2'][key].parse_from_file(f'{self.pre}mutant_{key}_c2_entropy.dat')
+                    self.calc_types.mutant['c2'][key].parse_from_file(f'mutant_{key}_c2_entropy.dat')
 
                 if self.INPUT['ala']['alarun'] and not self.INPUT['ala']['mutant_only'] and key in self.calc_types.normal:
                     self.calc_types.mut_norm['c2'][key] = DeltaIEC2Statistic(
@@ -1427,16 +1426,16 @@ class MMPBSA_App(object):
 
             if not self.INPUT['ala']['mutant_only']:
                 self.calc_types.decomp_normal[key] = {'complex': DecompClass('complex')}
-                self.calc_types.decomp_normal[key]['complex'].parse_from_file(self.pre + basename[i] % 'complex',
+                self.calc_types.decomp_normal[key]['complex'].parse_from_file(basename[i] % 'complex',
                                                                               com_list, INPUT, surften,
                                                                               self.mpi_size, self.numframes)
                 if not self.stability:
                     self.calc_types.decomp_normal[key]['receptor'] = DecompClass('receptor')
-                    self.calc_types.decomp_normal[key]['receptor'].parse_from_file(self.pre + basename[i] % 'receptor',
+                    self.calc_types.decomp_normal[key]['receptor'].parse_from_file(basename[i] % 'receptor',
                                                                                    rec_list, INPUT, surften,
                                                                                    self.mpi_size, self.numframes)
                     self.calc_types.decomp_normal[key]['ligand'] = DecompClass('ligand')
-                    self.calc_types.decomp_normal[key]['ligand'].parse_from_file(self.pre + basename[i] % 'ligand',
+                    self.calc_types.decomp_normal[key]['ligand'].parse_from_file(basename[i] % 'ligand',
                                                                                  lig_list, INPUT, surften,
                                                                                  self.mpi_size, self.numframes)
                     self.calc_types.decomp_normal[key]['delta'] = DecompBindingClass(
@@ -1448,7 +1447,7 @@ class MMPBSA_App(object):
                 # Do mutant
                 self.calc_types.decomp_mutant[key] = {'complex': DecompClass('Mutant-Complex')}
                 self.calc_types.decomp_mutant[key]['complex'].parse_from_file(
-                    (f'{self.pre}mutant_' + basename[i] % 'complex'),
+                    ('mutant_' + basename[i] % 'complex'),
                     com_list,
                     INPUT,
                     surften,
@@ -1460,7 +1459,7 @@ class MMPBSA_App(object):
                 if not self.stability:
                     self.calc_types.decomp_mutant[key]['receptor'] = DecompClass('Mutant-Receptor')
                     self.calc_types.decomp_mutant[key]['receptor'].parse_from_file(
-                        (f'{self.pre}mutant_' + basename[i] % 'receptor'),
+                        ('mutant_' + basename[i] % 'receptor'),
                         rec_list,
                         INPUT,
                         surften,
@@ -1471,7 +1470,7 @@ class MMPBSA_App(object):
 
                     self.calc_types.decomp_mutant[key]['ligand'] = DecompClass('Mutant-Ligand')
                     self.calc_types.decomp_mutant[key]['ligand'].parse_from_file(
-                        (f'{self.pre}mutant_' + basename[i] % 'ligand'),
+                        ('mutant_' + basename[i] % 'ligand'),
                         lig_list,
                         INPUT,
                         surften,

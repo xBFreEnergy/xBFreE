@@ -45,13 +45,13 @@ import subprocess
 
 ROH = {1: 0.586, 2: 0.699, 3: 0.734, 4: 0.183}
 
-def _get_arad(prmtop, prefix, arad_method):
-    top = parmed.load_file(prmtop, xyz=f"{prefix}COM.inpcrd")
-    top.save(f"{prefix}COM.pqr", format='pqr', overwrite=True)
-    stdoutdata = subprocess.getoutput(f"elsize {prefix}COM.pqr -hea")
+def _get_arad(prmtop, arad_method):
+    top = parmed.load_file(prmtop, xyz="COM.inpcrd")
+    top.save("COM.pqr", format='pqr', overwrite=True)
+    stdoutdata = subprocess.getoutput(f"elsize COM.pqr -hea")
     return stdoutdata.split()[arad_method * -1]
 
-def create_inputs(INPUT, prmtop_system, prefix):
+def create_inputs(INPUT, prmtop_system):
     """ Creates the input files for all necessary calculations """
     stability = prmtop_system.stability
 
@@ -63,7 +63,7 @@ def create_inputs(INPUT, prmtop_system, prefix):
             temp_input['gbnsr6']['dgij'] = 1
         gbnsr6_mdin = GBNSR6Input(temp_input)
         gbnsr6_mdin.make_mdin()
-        gbnsr6_mdin.write_input(f'{prefix}gbnsr6.mdin')
+        gbnsr6_mdin.write_input('gbnsr6.mdin')
 
     # First check if we are running decomp
     if INPUT['decomp']['decomprun']:
@@ -82,38 +82,38 @@ def create_inputs(INPUT, prmtop_system, prefix):
                 pri_res = ['Residues to print', com_card]
                 com_input = deepcopy(INPUT)
                 if INPUT['gb']['alpb']:
-                    com_input['gb']['arad'] = _get_arad('COM.prmtop', prefix, INPUT['gb']['arad_method'])
+                    com_input['gb']['arad'] = _get_arad('COM.prmtop', INPUT['gb']['arad_method'])
                 com_mdin = SanderGBDecomp(com_input, rec_res, pri_res)
-                com_mdin.write_input(f"{prefix}gb_decomp_com.mdin")
+                com_mdin.write_input("gb_decomp_com.mdin")
             else:
                 lig_res = ['Residues considered as LIG', full_lc]
                 pri_res = ['Residues to print', com_card]
                 com_input = deepcopy(INPUT)
                 if INPUT['gb']['alpb']:
-                    com_input['gb']['arad'] = _get_arad('COM.prmtop', prefix, INPUT['gb']['arad_method'])
+                    com_input['gb']['arad'] = _get_arad('COM.prmtop', INPUT['gb']['arad_method'])
                 com_mdin = SanderGBDecomp(com_input, rec_res, lig_res, pri_res)
                 rec_res = ['Residues considered as REC', full_rec]
                 pri_res = ['Residues to print', rec_card]
                 rec_input = deepcopy(INPUT)
                 if INPUT['gb']['alpb']:
-                    rec_input['gb']['arad'] = _get_arad('REC.prmtop', prefix, INPUT['gb']['arad_method'])
+                    rec_input['gb']['arad'] = _get_arad('REC.prmtop', INPUT['gb']['arad_method'])
                 rec_mdin = SanderGBDecomp(rec_input, rec_res, pri_res)
                 lig_res = ['Residues considered as LIG', full_lig]
                 pri_res = ['Residues to print', lig_card]
                 lig_input = deepcopy(INPUT)
                 if INPUT['gb']['alpb']:
-                    lig_input['gb']['arad'] = _get_arad('LIG.prmtop', prefix, INPUT['gb']['arad_method'])
+                    lig_input['gb']['arad'] = _get_arad('LIG.prmtop', INPUT['gb']['arad_method'])
                 lig_mdin = SanderGBDecomp(lig_input, lig_res, pri_res)
-                com_mdin.write_input(f"{prefix}gb_decomp_com.mdin")
-                rec_mdin.write_input(f"{prefix}gb_decomp_rec.mdin")
-                lig_mdin.write_input(f"{prefix}gb_decomp_lig.mdin")
+                com_mdin.write_input("gb_decomp_com.mdin")
+                rec_mdin.write_input("gb_decomp_rec.mdin")
+                lig_mdin.write_input("gb_decomp_lig.mdin")
 
         if INPUT['pb']['pbrun']:
             rec_res = ['Residues considered as REC', full_rc]
             if stability:
                 pri_res = ['Residues to print', com_card]
                 com_mdin = SanderPBDecomp(INPUT, rec_res, pri_res)
-                com_mdin.write_input(f"{prefix}pb_decomp_com.mdin")
+                com_mdin.write_input("pb_decomp_com.mdin")
             else:
                 lig_res = ['Residues considered as LIG', full_lc]
                 pri_res = ['Residues to print', com_card]
@@ -124,9 +124,9 @@ def create_inputs(INPUT, prmtop_system, prefix):
                 lig_res = ['Residues considered as LIG', full_lig]
                 pri_res = ['Residues to print', lig_card]
                 lig_mdin = SanderPBDecomp(INPUT, lig_res, pri_res)
-                com_mdin.write_input(f"{prefix}pb_decomp_com.mdin")
-                rec_mdin.write_input(f"{prefix}pb_decomp_rec.mdin")
-                lig_mdin.write_input(f"{prefix}pb_decomp_lig.mdin")
+                com_mdin.write_input("pb_decomp_com.mdin")
+                rec_mdin.write_input("pb_decomp_rec.mdin")
+                lig_mdin.write_input("pb_decomp_lig.mdin")
 
         # Require one file for GBNSR6, pbsa.cuda and APBS calculations.
         # TODO: we need to define the intdiel for decomp because the eel term is computed by sander and not by GBNSR6
@@ -135,7 +135,7 @@ def create_inputs(INPUT, prmtop_system, prefix):
             if stability:
                 pri_res = ['Residues to print', com_card]
                 com_mdin = SanderMMDecomp(INPUT, 'gbnsr6', rec_res, pri_res)
-                com_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_com.mdin")
+                com_mdin.write_input("mm_gbnsr6_decomp_com.mdin")
             else:
                 lig_res = ['Residues considered as LIG', full_lc]
                 pri_res = ['Residues to print', com_card]
@@ -146,15 +146,15 @@ def create_inputs(INPUT, prmtop_system, prefix):
                 lig_res = ['Residues considered as LIG', full_lig]
                 pri_res = ['Residues to print', lig_card]
                 lig_mdin = SanderMMDecomp(INPUT, 'gbnsr6', lig_res, pri_res)
-                com_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_com.mdin")
-                rec_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_rec.mdin")
-                lig_mdin.write_input(f"{prefix}mm_gbnsr6_decomp_lig.mdin")
+                com_mdin.write_input("mm_gbnsr6_decomp_com.mdin")
+                rec_mdin.write_input("mm_gbnsr6_decomp_rec.mdin")
+                lig_mdin.write_input("mm_gbnsr6_decomp_lig.mdin")
     else:  # not decomp
 
         if INPUT['gb']['gbrun']:
             # We need separate input files for QM/gmx_MMPBSA
             if INPUT['gb']['ifqnt'] or INPUT['gb']['alpb']:
-                mdin_name = f'{prefix}gb_qmmm_%s.mdin' if INPUT['gb']['ifqnt'] else  f'{prefix}gb_%s.mdin'
+                mdin_name = 'gb_qmmm_%s.mdin' if INPUT['gb']['ifqnt'] else  'gb_%s.mdin'
                 com_input = deepcopy(INPUT)
                 rec_input = deepcopy(INPUT)
                 lig_input = deepcopy(INPUT)
@@ -168,7 +168,7 @@ def create_inputs(INPUT, prmtop_system, prefix):
                     com_input['gb']['qmmask'] = "'%s'" % com_input['gb']['qmmask']
                     com_input['gb']['qmcharge'] = com_input['gb']['qmcharge_com']
                 if INPUT['gb']['alpb']:
-                    com_input['gb']['arad'] = _get_arad('COM.prmtop', prefix, INPUT['gb']['arad_method'])
+                    com_input['gb']['arad'] = _get_arad('COM.prmtop', INPUT['gb']['arad_method'])
                 gb_mdin = SanderGBInput(com_input)
                 gb_mdin.make_mdin()
                 gb_mdin.write_input(mdin_name % 'com')
@@ -182,7 +182,7 @@ def create_inputs(INPUT, prmtop_system, prefix):
                         rec_input['gb']['qm_theory'] = "'%s'" % rec_input['gb']['qm_theory']
                         rec_input['gb']['qmcharge'] = rec_input['gb']['qmcharge_rec']
                     if INPUT['gb']['alpb']:
-                        rec_input['gb']['arad'] = _get_arad('REC.prmtop', prefix, INPUT['gb']['arad_method'])
+                        rec_input['gb']['arad'] = _get_arad('REC.prmtop', INPUT['gb']['arad_method'])
                     gb_mdin = SanderGBInput(rec_input)
                     gb_mdin.make_mdin()
                     gb_mdin.write_input(mdin_name % 'rec')
@@ -194,21 +194,21 @@ def create_inputs(INPUT, prmtop_system, prefix):
                     lig_input['gb']['qm_theory'] = "'%s'" % lig_input['gb']['qm_theory']
                     lig_input['gb']['qmcharge'] = lig_input['gb']['qmcharge_lig']
                     if INPUT['gb']['alpb']:
-                        lig_input['gb']['arad'] = _get_arad('LIG.prmtop', prefix, INPUT['gb']['arad_method'])
+                        lig_input['gb']['arad'] = _get_arad('LIG.prmtop', INPUT['gb']['arad_method'])
                     gb_mdin = SanderGBInput(lig_input)
                     gb_mdin.make_mdin()
                     gb_mdin.write_input(mdin_name % 'lig')
             else:
                 gb_mdin = SanderGBInput(INPUT)
                 gb_mdin.make_mdin()
-                gb_mdin.write_input(f'{prefix}gb.mdin')
+                gb_mdin.write_input('gb.mdin')
 
         # We only need to run it once for the GBNSR6, pbsa.cuda and APBS calculations.
         if INPUT['gbnsr6']['gbnsr6run']:
             mm_mdin = SanderMMInput(INPUT)
             mm_mdin.set_gbnsr6_param()
             mm_mdin.make_mdin()
-            mm_mdin.write_input(f'{prefix}mm.mdin')
+            mm_mdin.write_input('mm_gbnsr6.mdin')
 
         if INPUT['pb']['pbrun']:
             pb_prog = 'sander.APBS' if INPUT['pb']['sander_apbs'] else 'sander'
@@ -218,12 +218,12 @@ def create_inputs(INPUT, prmtop_system, prefix):
             else:
                 pb_mdin = SanderPBSAInput(INPUT)
                 pb_mdin.make_mdin()
-            pb_mdin.write_input(f'{prefix}pb.mdin')
+            pb_mdin.write_input('pb.mdin')
 
         if INPUT['rism']['rismrun']:
             rism_mdin = SanderRISMInput(INPUT)
             rism_mdin.make_mdin()
-            rism_mdin.write_input(f'{prefix}rism.mdin')
+            rism_mdin.write_input('rism.mdin')
 
     # end if decomprun
 
@@ -232,12 +232,12 @@ def create_inputs(INPUT, prmtop_system, prefix):
         com_mask, rec_mask, lig_mask = prmtop_system.Mask('all', True)
         if not INPUT['ala']['mutant_only']:
             qh_in = QuasiHarmonicInput(com_mask, rec_mask, lig_mask, temperature=INPUT['temperature'],
-                                       stability=stability, prefix=prefix, trj_suffix=trj_suffix)
-            qh_in.write_input(f'{prefix}cpptrajentropy.in')
+                                       stability=stability, trj_suffix=trj_suffix)
+            qh_in.write_input('cpptrajentropy.in')
         if INPUT['ala']['alarun']:
             qh_in = QuasiHarmonicInput(com_mask, rec_mask, lig_mask, temperature=INPUT['temperature'],
-                                       stability=stability, prefix=prefix + 'mutant_', trj_suffix=trj_suffix)
-            qh_in.write_input(f'{prefix}mutant_cpptrajentropy.in')
+                                       stability=stability, prefix='mutant_', trj_suffix=trj_suffix)
+            qh_in.write_input('mutant_cpptrajentropy.in')
 
 
 class SanderInput(object):
@@ -711,23 +711,23 @@ class QuasiHarmonicInput(object):
     """ Write a cpptraj input file to do a quasi-harmonic entropy calculation """
 
     def __init__(self, com_mask, rec_mask, lig_mask, temperature=298.15, stability=False,
-                 prefix='_GMXMMPBSA_', trj_suffix='mdcrd'):
-        self.file_string = ("trajin %scomplex.%s\n" % (prefix, trj_suffix) +
-                            "reference %savgcomplex.pdb\n" % (prefix) +
+                trj_suffix='mdcrd'):
+        self.file_string = ("trajin complex.%s\n" % trj_suffix +
+                            "reference avgcomplex.pdb\n" +
                             "rms mass reference %s\n" % (com_mask) +
                             "matrix mwcovar name comp.matrix %s\n" % (com_mask) +
                             "analyze matrix comp.matrix out " +
-                            "%scomplex_entropy.out thermo reduce temp %s\n" % (prefix, temperature))
+                            "complex_entropy.out thermo reduce temp %s\n" % temperature)
         if not stability:
             self.file_string = (self.file_string +
                                 "rms mass reference %s\n" % (rec_mask) +
                                 "matrix mwcovar name rec.matrix %s\n" % (rec_mask) +
                                 "analyze matrix rec.matrix out " +
-                                "%sreceptor_entropy.out thermo reduce temp %s\n" % (prefix, temperature) +
+                                "receptor_entropy.out thermo reduce temp %s\n" % temperature +
                                 "rms mass reference %s\n" % (lig_mask) +
                                 "matrix mwcovar name lig.matrix %s\n" % (lig_mask) +
                                 "analyze matrix lig.matrix out " +
-                                "%sligand_entropy.out thermo reduce temp %s\n" % (prefix, temperature))
+                                "ligand_entropy.out thermo reduce temp %s\n" % temperature)
 
     def write_input(self, filename):
         """ Writes the input file """

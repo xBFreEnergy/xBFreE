@@ -93,8 +93,9 @@ class BuildTopGromacs(BuildTop):
                                              '{l}\n q\n'.format(r=num_com_rec_group, l=num_com_lig_group)]
         c1 = subprocess.Popen(make_ndx_echo_args, stdout=subprocess.PIPE)
 
-        com_ndx = self.mmpbsa_folder.joinpath('COM_index.ndx').as_posix()
-        make_ndx_args = self.make_ndx + ['-n', self.FILES.complex_index, '-o', com_ndx, '-f', self.FILES.complex_structure]
+        com_ndx = 'COM_index.ndx'
+        make_ndx_args = self.make_ndx + ['-n', self.FILES.complex_index, '-o', com_ndx, '-f',
+                                         self.FILES.complex_structure]
         logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                       (' '.join(make_ndx_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' + ' | ' +
                       ' '.join(make_ndx_args))
@@ -165,7 +166,7 @@ class BuildTopGromacs(BuildTop):
             make_ndx_echo_args = echo_command + ['name {r} GMXMMPBSA_REC\n q\n'.format(r=num_rec_group)]
             c1 = subprocess.Popen(make_ndx_echo_args, stdout=subprocess.PIPE)
 
-            rec_ndx = self.FILES.prefix + 'REC_index.ndx'
+            rec_ndx = 'REC_index.ndx'
             make_ndx_args = self.make_ndx + ['-n', self.FILES.receptor_index, '-o', rec_ndx, '-f',
                                              self.FILES.receptor_tpr]
             logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
@@ -229,7 +230,7 @@ class BuildTopGromacs(BuildTop):
             make_ndx_echo_args = echo_command + ['name {l} GMXMMPBSA_LIG\n q\n'.format(l=num_lig_group)]
             c1 = subprocess.Popen(make_ndx_echo_args, stdout=subprocess.PIPE)
 
-            lig_ndx = self.FILES.prefix + 'LIG_index.ndx'
+            lig_ndx = self.mm + 'LIG_index.ndx'
             make_ndx_args = self.make_ndx + ['-n', self.FILES.ligand_index, '-o', lig_ndx, '-f', self.FILES.ligand_tpr]
             logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                           (' '.join(make_ndx_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' + ' | ' +
@@ -318,7 +319,7 @@ class BuildTopGromacs(BuildTop):
         eq_strs(gmx_com_top, self.complex_str, molid='complex')
 
         gmx_com_top.coordinates = self.complex_str.coordinates
-        gmx_com_top.save(f"{self.FILES.prefix}COM.inpcrd", format='rst7', overwrite=True)
+        gmx_com_top.save("COM.inpcrd", format='rst7', overwrite=True)
         # IMPORTANT: make_trajs ends in error if the box is defined
         gmx_com_top.box = None
 
@@ -338,7 +339,7 @@ class BuildTopGromacs(BuildTop):
             gmx_rec_top = self.molstr(gmx_com_top)
             gmx_rec_top.strip(f'!:{rec_indexes_string}')
 
-        gmx_rec_top.save(f"{self.FILES.prefix}REC.inpcrd", format='rst7', overwrite=True)
+        gmx_rec_top.save("REC.inpcrd", format='rst7', overwrite=True)
         gmx_rec_top.box = None
 
         if self.FILES.ligand_top:
@@ -596,7 +597,7 @@ class BuildTopGromacs(BuildTop):
                 if c6.wait():  # if it quits with return code != 0
                     xBFreEErrorLogging(
                         '%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.receptor_trajs[i]))
-                new_trajs.append('REC_traj_{}.xtc'.format(i))
+                new_trajs.append(f'REC_traj_{i}.xtc')
             self.FILES.receptor_trajs = new_trajs
 
         if self.FILES.ligand_tpr:
@@ -666,7 +667,8 @@ class BuildTopGromacs(BuildTop):
             if assign:
                 self._assign_chains_IDs(com_str, rec_str, lig_str)
         # Save fixed complex structure for analysis and set it in FILES to save in info file
-        com_str.save(f'{self.FILES.prefix}COM_FIXED.pdb', 'pdb', True, renumber=False)
+        com_str.save('COM_FIXED.pdb', 'pdb', True, renumber=False)
+        self.FILES.complex_fixed = 'COM_FIXED.pdb'
         logging.info('')
 
     def _assign_chains_IDs(self, com_str, rec_str, lig_str):
