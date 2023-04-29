@@ -46,7 +46,7 @@ def data2pkl(app):
         else None
     )
 
-    with open('COMPACT_MMXSA_RESULTS.mmxsa', "wb") as f:
+    with open('../../COMPACT_RESULTS_MMPBSA.xbfree', "wb") as f:
         pickle.dump(info_file, f)
         pickle.dump(app.calc_types, f)
 

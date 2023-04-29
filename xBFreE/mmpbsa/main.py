@@ -72,7 +72,6 @@ class MMPBSA_App(object):
         self.md_prog = None
         global _rank, _stdout, _stderr, _mpi_size, _MPI
         _MPI = self.MPI = MPI
-        self.pre = '_GMXMMPBSA_'
         self.mmpbsa_folder = Path('xBFreE_RESULTS', 'mmpbsa')
         self.INPUT = {}
         if stdout is None:
@@ -792,7 +791,9 @@ class MMPBSA_App(object):
             data2pkl(self)
 
         info = InfoFile(self)
-        info.write_info(f'{self.pre}info')
+        info.write_info('info')
+
+        os.chdir(self.FILES.wdir)
 
         self.timer.stop_timer('output')
 
@@ -838,7 +839,7 @@ class MMPBSA_App(object):
             logging.info('Opening gmx_MMPBSA_ana to analyze results...\n')
             ifile = Path(f'{self.FILES.prefix}info')
             if not ifile.exists():
-                ifile = Path('COMPACT_MMXSA_RESULTS.mmxsa')
+                ifile = Path('COMPACT_RESULTS_MMPBSA.xbfree')
 
             g = subprocess.Popen(['gmx_MMPBSA_ana', '-f', ifile.as_posix()])
             if g.wait():
@@ -879,10 +880,9 @@ class MMPBSA_App(object):
             self.FILES = parser
         else:
             self.FILES = object()
+        os.chdir(self.FILES.subwdir)
         # Broadcast the FILES
         self.FILES = self.MPI.COMM_WORLD.bcast(self.FILES)
-        # Hand over the file prefix to the App instance
-        self.pre = self.FILES.prefix
         if self.FILES.receptor_trajs or self.FILES.ligand_trajs:
             self.traj_protocol = 'MT'  # multiple traj protocol
         else:

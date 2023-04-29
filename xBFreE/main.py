@@ -15,6 +15,8 @@
 import sys
 import os
 import logging
+from pathlib import Path
+
 from xBFreE.utils import misc
 from xBFreE.fake_mpi import MPI as FakeMPI
 from xBFreE.utils.misc import check4dup_args
@@ -37,6 +39,7 @@ class xBFreE_App:
         self.FILES = {}
         _MPI = self.MPI = MPI
         self.prefix = '_xBFreE_'
+        self.rfolder = Path('xBFreE_RESULTS')
         self.INPUT = {}
         if stdout is None:
             _stdout = self.stdout = _unbuf_stdout
@@ -57,6 +60,9 @@ class xBFreE_App:
         if self.master:
             logging.info(f'Starting xBFreE {__version__}')
             misc.get_sys_info()
+
+            # create the Result folder if not exists
+            self.rfolder.mkdir(exist_ok=True)
 
         # Set up timers
         timers = [Timer() for _ in range(self.mpi_size)]
@@ -90,9 +96,6 @@ class xBFreE_App:
             self.FILES = object()
         # Broadcast the FILES
         self.FILES = self.MPI.COMM_WORLD.bcast(self.FILES)
-        # Hand over the file prefix to the App instance
-        self.prefix = self.FILES.prefix
-
         # return the parser/ FILES to use it in the selected method
         return self.FILES
 
