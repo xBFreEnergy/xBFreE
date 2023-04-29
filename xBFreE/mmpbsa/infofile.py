@@ -52,7 +52,7 @@ class InfoFile(object):
     def write_info(self, name=None):
         """ Writes the info file to the info name """
         if name is None:
-            name = f'{self.app.pre}info'
+            name = 'info'
         outfile = open(name, 'w')
         # The data we have to write: INPUT, FILES, and the following attributes:
         # numframes, numframes_nmode, mpi_size (also recognize size),
@@ -109,7 +109,7 @@ class InfoFile(object):
         if not hasattr(self.app, 'FILES'):
             self.app.FILES = SimpleNamespace()
         if name is None:
-            name = f'{self.app.pre}info'
+            name = 'info'
 
         # if rewrite-output
         if self.make_copy:
@@ -158,7 +158,7 @@ class InfoFile(object):
         # Determine stability here:
         self.app.stability = self.app.FILES.stability
         # Set app.pre as prefix
-        self.app.pre = self.app.FILES.prefix
+
         if self.app.FILES.receptor_trajs or self.app.FILES.ligand_trajs:
             self.app.traj_protocol = 'MT'
         else:

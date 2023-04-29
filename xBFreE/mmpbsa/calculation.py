@@ -520,14 +520,13 @@ class QuasiHarmCalc(Calculation):
     """ Quasi-harmonic entropy calculation class """
 
     def __init__(self, prog, prmtop, inptraj, input_file, output,
-                 receptor_mask, ligand_mask, fnpre):
+                 receptor_mask, ligand_mask):
         """ Initializes the Quasi-harmonic calculation class """
         Calculation.__init__(self, prog, prmtop, None, inptraj,
                              input_file, output)
         self.stability = not bool(receptor_mask) and not bool(ligand_mask)
         self.receptor_mask, self.ligand_mask = receptor_mask, ligand_mask
         self.calc_setup = False
-        self.fnpre = fnpre  # file name prefix
 
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
@@ -536,10 +535,10 @@ class QuasiHarmCalc(Calculation):
         from subprocess import Popen, PIPE
 
         # Determine the prefix from our input file... hack way to do this
-        if self.input_file.startswith(self.fnpre + 'mutant_'):
-            prefix = self.fnpre + 'mutant_'
+        if self.input_file.startswith('mutant_'):
+            prefix = 'mutant_'
         else:
-            prefix = self.fnpre
+            prefix = ''
 
         # Make sure masks are a list, and that there are enough masks
 
@@ -547,7 +546,7 @@ class QuasiHarmCalc(Calculation):
         ptraj_str = 'trajin %s\naverage %savgcomplex.pdb pdb chainid " "\ngo' % (self.inptraj,
                                                                                  prefix)
 
-        outfile = open(self.fnpre + 'create_average.out', 'w')
+        outfile = open('create_average.out', 'w')
 
         process = Popen([self.program, self.prmtop], stdin=PIPE, stdout=outfile)
         out, err = process.communicate(ptraj_str.encode())

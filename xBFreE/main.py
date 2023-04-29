@@ -38,7 +38,6 @@ class xBFreE_App:
 
         self.FILES = {}
         _MPI = self.MPI = MPI
-        self.prefix = '_xBFreE_'
         self.rfolder = Path('xBFreE_RESULTS')
         self.INPUT = {}
         if stdout is None:

@@ -33,7 +33,6 @@ class BuildTop:
         self.FILES = FILES
         self.INPUT = INPUT
         self.external_progs = external_programs
-        self.mmpbsa_folder = Path('xBFreE_RESULTS', 'mmpbsa')
 
         # create the * prmtop variables for compatibility with the original code
         self.complex_prmtop = 'COM.prmtop'

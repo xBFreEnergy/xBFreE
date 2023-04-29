@@ -711,23 +711,23 @@ class QuasiHarmonicInput(object):
     """ Write a cpptraj input file to do a quasi-harmonic entropy calculation """
 
     def __init__(self, com_mask, rec_mask, lig_mask, temperature=298.15, stability=False,
-                trj_suffix='mdcrd'):
-        self.file_string = ("trajin complex.%s\n" % trj_suffix +
-                            "reference avgcomplex.pdb\n" +
+                 prefix='', trj_suffix='mdcrd'):
+        self.file_string = ("trajin %scomplex.%s\n" % (prefix, trj_suffix) +
+                            "reference %savgcomplex.pdb\n" % (prefix) +
                             "rms mass reference %s\n" % (com_mask) +
                             "matrix mwcovar name comp.matrix %s\n" % (com_mask) +
                             "analyze matrix comp.matrix out " +
-                            "complex_entropy.out thermo reduce temp %s\n" % temperature)
+                            "%scomplex_entropy.out thermo reduce temp %s\n" % (prefix, temperature))
         if not stability:
             self.file_string = (self.file_string +
                                 "rms mass reference %s\n" % (rec_mask) +
                                 "matrix mwcovar name rec.matrix %s\n" % (rec_mask) +
                                 "analyze matrix rec.matrix out " +
-                                "receptor_entropy.out thermo reduce temp %s\n" % temperature +
+                                "%sreceptor_entropy.out thermo reduce temp %s\n" % (prefix, temperature) +
                                 "rms mass reference %s\n" % (lig_mask) +
                                 "matrix mwcovar name lig.matrix %s\n" % (lig_mask) +
                                 "analyze matrix lig.matrix out " +
-                                "ligand_entropy.out thermo reduce temp %s\n" % temperature)
+                                "%sligand_entropy.out thermo reduce temp %s\n" % (prefix, temperature))
 
     def write_input(self, filename):
         """ Writes the input file """

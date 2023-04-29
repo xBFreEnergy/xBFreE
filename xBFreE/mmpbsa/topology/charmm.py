@@ -119,16 +119,16 @@ class BuildTopCHARMM(BuildTop):
 
 
         namd_com_top.coordinates = self.complex_str.coordinates
-        namd_com_top.save(f"{self.FILES.prefix}COM.inpcrd", format='rst7', overwrite=True)
+        namd_com_top.save("COM.inpcrd", format='rst7', overwrite=True)
         # IMPORTANT: make_trajs ends in error if the box is defined
         namd_com_top.box = None
 
         namd_rec_top.coordinates = self.receptor_str.coordinates
-        namd_rec_top.save(f"{self.FILES.prefix}REC.inpcrd", format='rst7', overwrite=True)
+        namd_rec_top.save("REC.inpcrd", format='rst7', overwrite=True)
         namd_rec_top.box = None
 
         namd_lig_top.coordinates = self.ligand_str.coordinates
-        namd_lig_top.save(f"{self.FILES.prefix}LIG.inpcrd", format='rst7', overwrite=True)
+        namd_lig_top.save("LIG.inpcrd", format='rst7', overwrite=True)
         namd_lig_top.box = None
 
         logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Normal topologies...")
@@ -157,7 +157,7 @@ class BuildTopCHARMM(BuildTop):
             # get mutation index in complex
             self.com_mut_index, self.part_mut, self.part_index = self.getMutationInfo()
             namd_mut_com_top = self.makeMutTop(namd_com_top, self.com_mut_index)
-            namd_mut_com_top.save(f"{self.FILES.prefix}MUT_COM.inpcrd", format='rst7', overwrite=True)
+            namd_mut_com_top.save("MUT_COM.inpcrd", format='rst7', overwrite=True)
             namd_mut_com_top.box = None
 
             if self.part_mut == 'REC':
@@ -308,7 +308,7 @@ class BuildTopCHARMM(BuildTop):
             # trajsystem.Image()
             trajsystem.Strip(f"!:{com_rec_group.strip(':')},{com_lig_group.strip(':')}")
             trajsystem.Outtraj(f'COM_traj_{i}.nc', filetype='nc')
-            trajsystem.Run(f'{self.FILES.prefix}cleanup_trajs.out')
+            trajsystem.Run('cleanup_trajs.out')
             new_trajs.append(f'COM_traj_{i}.nc')
         self.FILES.complex_trajs = new_trajs
 
@@ -321,7 +321,7 @@ class BuildTopCHARMM(BuildTop):
                 # trajsystem.Image()
                 trajsystem.Strip(f"!:{com_rec_group.strip(':')},{com_lig_group.strip(':')}")
                 trajsystem.Outtraj(f'REC_traj_{i}.nc', filetype='nc')
-                trajsystem.Run(f'{self.FILES.prefix}cleanup_trajs.out')
+                trajsystem.Run('cleanup_trajs.out')
                 new_trajs.append(f'REC_traj_{i}.nc')
             self.FILES.receptor_trajs = new_trajs
 
@@ -333,7 +333,7 @@ class BuildTopCHARMM(BuildTop):
                 trajsystem.Image()
                 trajsystem.Strip(f"!:{com_rec_group.strip(':')},{com_lig_group.strip(':')}")
                 trajsystem.Outtraj(f'LIG_traj_{i}.nc', filetype='nc')
-                trajsystem.Run(f'{self.FILES.prefix}cleanup_trajs.out')
+                trajsystem.Run('cleanup_trajs.out')
                 new_trajs.append(f'LIG_traj_{i}.nc')
             self.FILES.ligand_trajs = new_trajs
 
@@ -360,5 +360,6 @@ class BuildTopCHARMM(BuildTop):
                 raise
 
         # Save fixed complex structure for analysis and set it in FILES to save in info file
-        com_str.save(f'{self.FILES.prefix}COM_FIXED.pdb', 'pdb', True, renumber=False)
+        com_str.save('COM_FIXED.pdb', 'pdb', True, renumber=False)
+        self.FILES.complex_fixed = 'COM_FIXED.pdb'
         logging.info('')

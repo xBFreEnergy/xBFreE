@@ -318,12 +318,10 @@ class MMPBSA_App(object):
                 # Either copy the existing receptor if the mutation is in the ligand
                 # or perform a receptor calculation
                 if copy_receptor:
-                    c = CopyCalc('%sreceptor_gb.mdout.%%d' % self.pre,
-                                 '%sreceptor_gb.mdout.%%d' % prefix)
+                    c = CopyCalc('receptor_gb.mdout.%%d', '%sreceptor_gb.mdout.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in receptor; '
                                              'using unmutated files', timer_key='gb')
-                    c = CopyCalc('%sreceptor_gb_surf.dat.%%d' % self.pre,
-                                 '%sreceptor_gb_surf.dat.%%d' % prefix)
+                    c = CopyCalc('receptor_gb_surf.dat.%%d', '%sreceptor_gb_surf.dat.%%d' % prefix)
                     self.calc_list.append(c, '', timer_key='gb')
                 else:
                     c = EnergyCalculation(progs['gb'], parm_system.receptor_prmtop,
@@ -346,12 +344,10 @@ class MMPBSA_App(object):
                 # Either copy the existing ligand if the mutation is in the receptor
                 # or perform a ligand calculation
                 if copy_ligand:
-                    c = CopyCalc('%sligand_gb.mdout.%%d' % self.pre,
-                                 '%sligand_gb.mdout.%%d' % prefix)
+                    c = CopyCalc('ligand_gb.mdout.%%d', '%sligand_gb.mdout.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in ligand; '
                                              'using unmutated files', timer_key='gb')
-                    c = CopyCalc('%sligand_gb_surf.dat.%%d' % self.pre,
-                                 '%sligand_gb_surf.dat.%%d' % prefix)
+                    c = CopyCalc('ligand_gb_surf.dat.%%d', '%sligand_gb_surf.dat.%%d' % prefix)
                     self.calc_list.append(c, '', timer_key='gb')
                 else:
                     c = EnergyCalculation(progs['gb'], parm_system.ligand_prmtop,
@@ -399,7 +395,7 @@ class MMPBSA_App(object):
                 self.calc_list.append(c, '    calculating MM...', timer_key='gbnsr6',
                                       output_basename=f'{prefix}complex_mm.mdout.%d')
             # use pre directly to have only one folder per rank
-            files = sorted(list(Path(f"{pre}inpcrd_{self.mpi_rank}").glob(f"{prefix}complex*.inpcrd")),
+            files = sorted(list(Path(f"inpcrd_{self.mpi_rank}").glob(f"{prefix}complex*.inpcrd")),
                            key=lambda x: int(x.stem.split('.')[1]))
             mdouts = [file.parent.joinpath(f"{file.name.split('.')[0]}_gbnsr6{file.suffixes[0]}.mdout").as_posix()
                       for file in files]
@@ -407,7 +403,7 @@ class MMPBSA_App(object):
 
             c = ListEnergyCalculation(progs['gbnsr6'], parm_system.complex_prmtop, mdin, inpcrds, mdouts)
             self.calc_list.append(c, '    calculating GB...', timer_key='gbnsr6',
-                                      output_basename=f"{pre}inpcrd_%d/{prefix}complex_gbnsr6.mdout")
+                                      output_basename=f"inpcrd_%d/{prefix}complex_gbnsr6.mdout")
 
             c = MergeOut(self.FILES.complex_prmtop, f"{prefix}complex_gbnsr6.mdout.%d",
                          f'{prefix}complex_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
@@ -442,7 +438,7 @@ class MMPBSA_App(object):
 
                         self.calc_list.append(c, '    calculating MM...', timer_key='gbnsr6',
                                               output_basename=f'{prefix}receptor_mm.mdout.%d')
-                    files = sorted(list(Path(f"{pre}inpcrd_{self.mpi_rank}").glob(f"{prefix}receptor*.inpcrd")),
+                    files = sorted(list(Path(f"inpcrd_{self.mpi_rank}").glob(f"{prefix}receptor*.inpcrd")),
                                    key=lambda x: int(x.stem.split('.')[1]))
                     mdouts = [
                         file.parent.joinpath(f"{file.name.split('.')[0]}_gbnsr6{file.suffixes[0]}.mdout").as_posix()
@@ -451,7 +447,7 @@ class MMPBSA_App(object):
 
                     c = ListEnergyCalculation(progs['gbnsr6'], parm_system.receptor_prmtop, mdin, inpcrds, mdouts)
                     self.calc_list.append(c, '    calculating GB...', timer_key='gbnsr6',
-                                          output_basename=f"{pre}inpcrd_%d/{prefix}receptor_gbnsr6.mdout")
+                                          output_basename=f"inpcrd_%d/{prefix}receptor_gbnsr6.mdout")
 
                     c = MergeOut(self.FILES.receptor_prmtop, f"{prefix}receptor_gbnsr6.mdout.%d",
                                  f'{prefix}receptor_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
@@ -485,7 +481,7 @@ class MMPBSA_App(object):
 
                         self.calc_list.append(c, '    calculating MM...', timer_key='gbnsr6',
                                               output_basename=f'{prefix}ligand_mm.mdout.%d')
-                    files = sorted(list(Path(f"{pre}inpcrd_{self.mpi_rank}").glob(f"{prefix}ligand*.inpcrd")),
+                    files = sorted(list(Path(f"inpcrd_{self.mpi_rank}").glob(f"{prefix}ligand*.inpcrd")),
                                    key=lambda x: int(x.stem.split('.')[1]))
                     mdouts = [
                         file.parent.joinpath(f"{file.name.split('.')[0]}_gbnsr6{file.suffixes[0]}.mdout").as_posix()
@@ -494,7 +490,7 @@ class MMPBSA_App(object):
 
                     c = ListEnergyCalculation(progs['gbnsr6'], parm_system.ligand_prmtop, mdin, inpcrds, mdouts)
                     self.calc_list.append(c, '    calculating GB...', timer_key='gbnsr6',
-                                          output_basename=f"{pre}inpcrd_%d/{prefix}ligand_gbnsr6.mdout")
+                                          output_basename=f"inpcrd_%d/{prefix}ligand_gbnsr6.mdout")
                     c = MergeOut(self.FILES.ligand_prmtop, f"{prefix}ligand_gbnsr6.mdout.%d",
                                  f'{prefix}ligand_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
                                  self.INPUT['decomp']['dec_verbose'])
@@ -534,8 +530,7 @@ class MMPBSA_App(object):
                 # Either copy the existing receptor if the mutation is in the ligand
                 # or perform a receptor calculation
                 if copy_receptor:
-                    c = CopyCalc('%sreceptor_pb.mdout.%%d' % self.pre,
-                                 '%sreceptor_pb.mdout.%%d' % prefix)
+                    c = CopyCalc('receptor_pb.mdout.%%d', '%sreceptor_pb.mdout.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in receptor; '
                                              'using unmutated files', timer_key='pb')
                 else:
@@ -555,8 +550,7 @@ class MMPBSA_App(object):
                 # Either copy the existing ligand if the mutation is in the receptor
                 # or perform a ligand calculation
                 if copy_ligand:
-                    c = CopyCalc('%sligand_pb.mdout.%%d' % self.pre,
-                                 '%sligand_pb.mdout.%%d' % prefix)
+                    c = CopyCalc('ligand_pb.mdout.%%d', '%sligand_pb.mdout.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in ligand; '
                                              'using unmutated files', timer_key='pb')
                 else:
@@ -598,8 +592,7 @@ class MMPBSA_App(object):
 
             if not self.stability:
                 if copy_receptor:
-                    c = CopyCalc('%sreceptor_rism.mdout.%%d' % self.pre,
-                                 '%sreceptor_rism.mdout.%%d' % prefix)
+                    c = CopyCalc('receptor_rism.mdout.%%d', '%sreceptor_rism.mdout.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in receptor; '
                                              'using unmutated files', timer_key='pb')
                 else:
@@ -612,8 +605,7 @@ class MMPBSA_App(object):
                                           timer_key='rism', output_basename='%sreceptor_rism.mdout.%%d' % (prefix))
 
                 if copy_ligand:
-                    c = CopyCalc('%sligand_rism.mdout.%%d' % self.pre,
-                                 '%sligand_rism.mdout.%%d' % prefix)
+                    c = CopyCalc('ligand_rism.mdout.%%d', '%sligand_rism.mdout.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in ligand; '
                                              'using unmutated files', timer_key='pb')
                 else:
@@ -638,8 +630,7 @@ class MMPBSA_App(object):
 
             if not self.stability:
                 if copy_receptor:
-                    c = CopyCalc('%sreceptor_nm.out.%%d' % self.pre,
-                                 '%sreceptor_nm.out.%%d' % prefix)
+                    c = CopyCalc('receptor_nm.out.%%d', '%sreceptor_nm.out.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in receptor; '
                                              'using unmutated files', timer_key='nmode')
                 else:
@@ -651,8 +642,7 @@ class MMPBSA_App(object):
                                           timer_key='nmode', output_basename='%sreceptor_nm.out.%%d' % (prefix))
 
                 if copy_ligand:
-                    c = CopyCalc('%sligand_nm.out.%%d' % self.pre,
-                                 '%sligand_nm.out.%%d' % prefix)
+                    c = CopyCalc('ligand_nm.out.%%d', '%sligand_nm.out.%%d' % prefix)
                     self.calc_list.append(c, '  no mutation found in ligand; '
                                              'using unmutated files', timer_key='nmode')
                 else:
@@ -674,7 +664,7 @@ class MMPBSA_App(object):
                               '%scpptrajentropy.in' % prefix,
                               '%scpptraj_entropy.out' % prefix,
                               self.INPUT['general']['receptor_mask'],
-                              self.INPUT['general']['ligand_mask'], self.pre)
+                              self.INPUT['general']['ligand_mask'])
             self.calc_list.append(c, '', timer_key='qh')
 
     def make_prmtops(self):
@@ -1349,25 +1339,25 @@ class MMPBSA_App(object):
 
         if not self.INPUT['ala']['mutant_only']:
             mm_data['normal'] = {'complex': MMout('complex', self.INPUT, self.using_chamber)}
-            mm_data['normal']['complex'].parse_from_file(f"{self.pre}complex_mm.mdout", self.mpi_size, self.numframes)
+            mm_data['normal']['complex'].parse_from_file("complex_mm.mdout", self.mpi_size, self.numframes)
             if not self.stability:
                 mm_data['normal']['receptor'] = MMout('receptor', self.INPUT, self.using_chamber)
-                mm_data['normal']['receptor'].parse_from_file(f"{self.pre}receptor_mm.mdout", self.mpi_size,
+                mm_data['normal']['receptor'].parse_from_file("receptor_mm.mdout", self.mpi_size,
                                                               self.numframes)
                 mm_data['normal']['ligand'] = MMout('ligand', self.INPUT, self.using_chamber)
-                mm_data['normal']['ligand'].parse_from_file(f"{self.pre}ligand_mm.mdout", self.mpi_size, self.numframes)
+                mm_data['normal']['ligand'].parse_from_file("ligand_mm.mdout", self.mpi_size, self.numframes)
 
         # Time for mutant
         if self.INPUT['ala']['alarun']:
             mm_data['mutant'] = {'complex': MMout('mutant-complex', self.INPUT, self.using_chamber)}
-            mm_data['mutant']['complex'].parse_from_file(f"{self.pre}mutant_complex_mm.mdout", self.mpi_size,
+            mm_data['mutant']['complex'].parse_from_file("mutant_complex_mm.mdout", self.mpi_size,
                                                          self.numframes)
             if not self.stability:
                 mm_data['mutant']['receptor'] = MMout('mutant-receptor', self.INPUT, self.using_chamber)
-                mm_data['mutant']['receptor'].parse_from_file(f"{self.pre}mutant_receptor_mm.mdout", self.mpi_size,
+                mm_data['mutant']['receptor'].parse_from_file("mutant_receptor_mm.mdout", self.mpi_size,
                                                               self.numframes)
                 mm_data['mutant']['ligand'] = MMout('mutant-ligand', self.INPUT, self.using_chamber)
-                mm_data['mutant']['ligand'].parse_from_file(f"{self.pre}mutant_ligand_mm.mdout", self.mpi_size,
+                mm_data['mutant']['ligand'].parse_from_file("mutant_ligand_mm.mdout", self.mpi_size,
                                                             self.numframes)
         return mm_data
 
