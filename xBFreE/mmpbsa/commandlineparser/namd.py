@@ -19,7 +19,7 @@ This submodule contains the NAMD parser
 from xBFreE.mmpbsa.commandlineparser.parsers import (mmpbsa_parser,
                                                      namd_topology, charmm_trajectory, pdb, mask,
                                                      complex_group_des, receptor_group_des, ligand_group_des,
-                                                     add_miscellaneous_actions)
+                                                     add_miscellaneous_actions, add_input_outputs)
 
 namd_parser = mmpbsa_parser()
 group = namd_parser.add_argument_group('Complex', complex_group_des)
@@ -57,5 +57,5 @@ group.add_argument('-lg', dest='ligand_group', metavar='<ligand_mask>', default=
 group.add_argument('-lt', dest='ligand_trajs', nargs='*', metavar='TRJ', type=charmm_trajectory,
                    help="Input trajectories of the unbound ligand for multiple trajectory approach."
                         "Allowed formats: *.dcd, *.nc, *.pdb (specify as many as you'd like).")
-
+add_input_outputs(namd_parser, 'MMPBSA')
 add_miscellaneous_actions(namd_parser)

@@ -20,7 +20,7 @@ This submodule contains the GROMACS parser
 from xBFreE.mmpbsa.commandlineparser.parsers import (mmpbsa_parser,
                                                      gmx_topology, gmx_structure, index, gmx_trajectory, pdb,
                                                      complex_group_des, receptor_group_des, ligand_group_des,
-                                                     add_miscellaneous_actions)
+                                                     add_miscellaneous_actions, add_input_outputs)
 
 gmx_parser = mmpbsa_parser()
 
@@ -71,4 +71,5 @@ group.add_argument('-lt', dest='ligand_trajs', nargs='*', metavar='TRJ', type=gm
 group.add_argument('-lp', dest='ligand_top', metavar='<Topology>', default=None, type=gmx_topology,
                    help="Topology file of the ligand.")
 
+add_input_outputs(gmx_parser, 'MMPBSA')
 add_miscellaneous_actions(gmx_parser)

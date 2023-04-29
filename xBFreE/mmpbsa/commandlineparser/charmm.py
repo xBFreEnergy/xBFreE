@@ -19,7 +19,7 @@ This submodule contains the CHARMM parser
 from xBFreE.mmpbsa.commandlineparser.parsers import (mmpbsa_parser,
                                                      charmm_topology, charmm_trajectory, pdb, mask,
                                                      complex_group_des, receptor_group_des, ligand_group_des,
-                                                     add_miscellaneous_actions)
+                                                     add_miscellaneous_actions, add_input_outputs)
 
 charmm_parser = mmpbsa_parser()
 group = charmm_parser.add_argument_group('Complex', complex_group_des)
@@ -58,4 +58,5 @@ group.add_argument('-lt', dest='ligand_trajs', nargs='*', metavar='TRJ', type=ch
                    help="Input trajectories of the unbound ligand for multiple trajectory approach."
                         "Allowed formats: *.dcd, *.nc, *.pdb (specify as many as you'd like).")
 
+add_input_outputs(charmm_parser, 'MMPBSA')
 add_miscellaneous_actions(charmm_parser)

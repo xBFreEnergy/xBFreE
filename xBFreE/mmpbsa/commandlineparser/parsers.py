@@ -40,52 +40,56 @@ def check_arg(str_suffix, path=False):
 
 @check_arg(['.tpr', '.pdb'], True)
 def gmx_structure(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.pdb'], True)
 def pdb(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.xtc', '.trr', '.pdb'], True)
 def gmx_trajectory(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.mdcrd', '.crd', '.nc', '.pdb'], True)
 def amber_trajectory(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.dcd', '.nc', '.pdb'], True)
 def charmm_trajectory(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.top'], True)
 def gmx_topology(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.prmtop', '.top', '.parm7'], True)
 def amber_topology(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.psf', '.prmtop', '.top', '.parm7'], True)
 def namd_topology(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.psf'], True)
 def charmm_topology(arg):
-    return arg
+    return Path(arg)
 
 
 @check_arg(['.ndx'], True)
 def index(arg):
-    return arg
+    return Path(arg)
+
+
+def input_output(arg):
+    return Path(arg)
 
 
 def mask(arg):
@@ -123,28 +127,29 @@ def mmpbsa_parser():
                              'case receptor and ligand parameters will be ignored')
     parser.add_argument('-ng', '--nogui', dest='gui', action='store_false', default=True,
                         help='No open xBFreE-Analyzer after all calculations finished')
+    return parser
 
+def add_input_outputs(parser, method):
     group = parser.add_argument_group('Input and Output Files',
                                       'These options specify the input files and optional output files.')
-    group.add_argument('-i', dest='input_file', metavar='mmpbsa.in', help='MM/PBSA input file.')
-    group.add_argument('-o', dest='output_file', default='FINAL_RESULTS.dat', metavar='FINAL_RESULTS.dat',
-                       help='Output file with selected method (MMPBSA or LIE) statistics.')
-    group.add_argument('-do', dest='decompout', metavar='FINAL_DECOMP.dat', default='FINAL_DECOMP.dat',
+    group.add_argument('-i', dest='input_file', metavar='mmpbsa.in', help='MM/PBSA input file.', type=input_output)
+    group.add_argument('-o', dest='output_file', default=f'FINAL_RESULTS_{method}.dat', type=input_output,
+                       metavar=f'FINAL_RESULTS_{method}.dat',
+                       help='Output file with selected method statistics.')
+    group.add_argument('-do', dest='decompout', default=f'FINAL_DECOMP_{method}.dat', type=input_output,
+                       metavar=f'FINAL_DECOMP_{method}.dat',
                        help='Output file for decomposition statistics summary.')
-    group.add_argument('-eo', dest='energyout', metavar='FILE',
+    group.add_argument('-eo', dest='energyout', metavar='FILE', type=input_output,
                        help='CSV-format output of all energy terms for every frame in every calculation. File name '
                             'forced to end in [.csv]. This file is only written when specified on the command-line.')
-    group.add_argument('-deo', dest='dec_energies', metavar='FILE',
+    group.add_argument('-deo', dest='dec_energies', metavar='FILE', type=input_output,
                        help='CSV-format output of all energy terms for each printed residue in decomposition '
                             'calculations. File name forced to end in [.csv]. This file is only written when '
                             'specified on the command-line.')
-    return parser
 
 
 def add_miscellaneous_actions(parser):
     group = parser.add_argument_group('Miscellaneous Options')
-    group.add_argument('--prefix', dest='prefix', default='_xBFreE_', metavar='<file prefix>',
-                       help='Prefix for intermediate files.')
     group.add_argument('--input-file-help', dest='infilehelp', action='store_true', default=False,
                        help='Print all available options in the input file.'
                        )
