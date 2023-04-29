@@ -141,15 +141,15 @@ class BuildTopCHARMM(BuildTop):
         self.fixparm2amber(com_amb_prm)
         # IMPORTANT: In this case, we need to assign RADIUS_SET manually since GromacsTopologyFile don't contain it
         com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
-        com_amb_prm.write_parm(self.complex_pmrtop)
+        com_amb_prm.write_parm(self.complex_prmtop)
         rec_amb_prm = top_class.from_structure(namd_rec_top)
         rec_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
         self.fixparm2amber(rec_amb_prm)
-        rec_amb_prm.write_parm(self.receptor_pmrtop)
+        rec_amb_prm.write_parm(self.receptor_prmtop)
         lig_amb_prm = top_class.from_structure(namd_lig_top)
         lig_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
         self.fixparm2amber(lig_amb_prm)
-        lig_amb_prm.write_parm(self.ligand_pmrtop)
+        lig_amb_prm.write_parm(self.ligand_prmtop)
 
         # make the mutant
         if self.INPUT['ala']['alarun']:
@@ -196,7 +196,7 @@ class BuildTopCHARMM(BuildTop):
         else:
             self.mutant_complex_pmrtop = None
 
-        return (self.complex_pmrtop, self.receptor_pmrtop, self.ligand_pmrtop, self.mutant_complex_pmrtop,
+        return (self.complex_prmtop, self.receptor_prmtop, self.ligand_prmtop, self.mutant_complex_pmrtop,
                 self.mutant_receptor_pmrtop, self.mutant_ligand_pmrtop)
 
     def read_psf(self, top_file, molid='complex'):

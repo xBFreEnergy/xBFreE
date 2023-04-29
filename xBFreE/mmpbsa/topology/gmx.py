@@ -365,15 +365,15 @@ class BuildTopGromacs(BuildTop):
         self.fixparm2amber(com_amb_prm)
         # IMPORTANT: In this case, we need to assign RADIUS_SET manually since GromacsTopologyFile don't contain it
         com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
-        com_amb_prm.write_parm(self.complex_pmrtop)
+        com_amb_prm.write_parm(self.complex_prmtop)
         rec_amb_prm = top_class.from_structure(gmx_rec_top)
         rec_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
         self.fixparm2amber(rec_amb_prm)
-        rec_amb_prm.write_parm(self.receptor_pmrtop)
+        rec_amb_prm.write_parm(self.receptor_prmtop)
         lig_amb_prm = top_class.from_structure(gmx_lig_top)
         lig_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
         self.fixparm2amber(lig_amb_prm)
-        lig_amb_prm.write_parm(self.ligand_pmrtop)
+        lig_amb_prm.write_parm(self.ligand_prmtop)
 
         if self.INPUT['ala']['alarun']:
             logging.debug('Building Mutant Amber Topology...')
@@ -385,8 +385,8 @@ class BuildTopGromacs(BuildTop):
 
             if self.part_mut == 'REC':
                 logging.debug('Detecting mutation in Receptor. Building Mutant Receptor topology...')
-                out_prmtop = self.mutant_receptor_pmrtop
-                self.mutant_ligand_pmrtop = None
+                out_prmtop = self.mutant_receptor_prmtop
+                self.mutant_ligand_prmtop = None
                 if self.FILES.receptor_top:
                     mut_gmx_top = self.makeMutTop(gmx_rec_top, self.part_index)
                 else:
@@ -394,8 +394,8 @@ class BuildTopGromacs(BuildTop):
                     mut_gmx_top.strip(f'!:{rec_indexes_string}')
             else:
                 logging.debug('Detecting mutation in Ligand. Building Mutant Ligand topology...')
-                out_prmtop = self.mutant_ligand_pmrtop
-                self.mutant_receptor_pmrtop = None
+                out_prmtop = self.mutant_ligand_prmtop
+                self.mutant_receptor_prmtop = None
                 if self.FILES.ligand_top:
                     mut_gmx_top = self.makeMutTop(gmx_lig_top, self.part_index)
                 else:
@@ -411,16 +411,17 @@ class BuildTopGromacs(BuildTop):
             mut_com_amb_prm = top_class.from_structure(gmx_mut_com_top)
             self.fixparm2amber(mut_com_amb_prm)
             mut_com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
-            mut_com_amb_prm.write_parm(self.mutant_complex_pmrtop)
+            mut_com_amb_prm.write_parm(self.mutant_complex_prmtop)
+            # save receptor or ligand mutant
             mut_amb_prm = top_class.from_structure(mut_gmx_top)
             self.fixparm2amber(mut_amb_prm)
             mut_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
-            mut_amb_prm.write_parm(out_prmtop)
+            mut_amb_prm.write_parm(f"{out_prmtop}")
         else:
-            self.mutant_complex_pmrtop = None
+            self.mutant_complex_prmtop = None
 
-        return (self.complex_pmrtop, self.receptor_pmrtop, self.ligand_pmrtop, self.mutant_complex_pmrtop,
-                self.mutant_receptor_pmrtop, self.mutant_ligand_pmrtop)
+        return (self.complex_prmtop, self.receptor_prmtop, self.ligand_prmtop, self.mutant_complex_prmtop,
+                self.mutant_receptor_prmtop, self.mutant_ligand_prmtop)
 
     def read_top(self, top_file, id='complex'):
         """

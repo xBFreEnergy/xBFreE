@@ -135,9 +135,9 @@ class BuildTopAmber(BuildTop):
         lig_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
 
         logging.info("Saving Normal Topology files...")
-        com_amb_prm.write_parm(self.complex_pmrtop)
-        rec_amb_prm.write_parm(self.receptor_pmrtop)
-        lig_amb_prm.write_parm(self.ligand_pmrtop)
+        com_amb_prm.write_parm(self.complex_prmtop)
+        rec_amb_prm.write_parm(self.receptor_prmtop)
+        lig_amb_prm.write_parm(self.ligand_prmtop)
 
         # make the mutant
         if self.INPUT['ala']['alarun']:
@@ -172,7 +172,7 @@ class BuildTopAmber(BuildTop):
         else:
             self.mutant_complex_pmrtop = None
 
-        return (self.complex_pmrtop, self.receptor_pmrtop, self.ligand_pmrtop, self.mutant_complex_pmrtop,
+        return (self.complex_prmtop, self.receptor_prmtop, self.ligand_prmtop, self.mutant_complex_pmrtop,
                 self.mutant_receptor_pmrtop, self.mutant_ligand_pmrtop)
 
 

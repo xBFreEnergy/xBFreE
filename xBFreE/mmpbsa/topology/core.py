@@ -36,22 +36,23 @@ class BuildTop:
         self.mmpbsa_folder = Path('xBFreE_RESULTS', 'mmpbsa')
 
         # create the * prmtop variables for compatibility with the original code
-        self.complex_pmrtop = self.mmpbsa_folder.joinpath('COM.prmtop').as_posix()
-        self.receptor_pmrtop = self.mmpbsa_folder.joinpath('REC.prmtop').as_posix()
-        self.ligand_pmrtop = self.mmpbsa_folder.joinpath('LIG.prmtop').as_posix()
+        self.complex_prmtop = 'COM.prmtop'
+        self.receptor_prmtop = 'REC.prmtop'
+        self.ligand_prmtop = 'LIG.prmtop'
 
         self.ref_str = None
         self.complex_str = None
         self.receptor_str = None
         self.ligand_str = None
 
-        self.mutant_complex_pmrtop = self.mmpbsa_folder.joinpath('MUT_COM.prmtop').as_posix()
-        self.mutant_receptor_pmrtop = self.mmpbsa_folder.joinpath('MUT_REC.prmtop').as_posix()
-        self.mutant_ligand_pmrtop = self.mmpbsa_folder.joinpath('MUT_LIG.prmtop').as_posix()
+        self.mutant_complex_prmtop = 'MUT_COM.prmtop'
+        self.mutant_receptor_prmtop = 'MUT_REC.prmtop'
+        self.mutant_ligand_prmtop = 'MUT_LIG.prmtop'
 
-        self.complex_str_file = self.mmpbsa_folder.joinpath('COM.pdb').as_posix()
-        self.receptor_str_file = self.mmpbsa_folder.joinpath('REC.pdb').as_posix()
-        self.ligand_str_file = self.mmpbsa_folder.joinpath('LIG.pdb').as_posix()
+        self.complex_str_file = 'COM.pdb'
+        self.receptor_str_file = 'REC.pdb'
+        self.ligand_str_file = 'LIG.pdb'
+
 
         # FIXME: adapt this function to implemnted md programs
         # self.checkFiles()
@@ -169,7 +170,7 @@ class BuildTop:
         Convert string selection format to amber index list
         """
         if qm_sele:
-            com_top = parmed.load_file(self.complex_pmrtop)
+            com_top = parmed.load_file(self.complex_prmtop)
 
         dist, res_selection = selector(select)
         residues_selection = {'rec': [], 'lig': []}
