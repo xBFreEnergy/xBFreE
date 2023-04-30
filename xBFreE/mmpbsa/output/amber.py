@@ -639,7 +639,7 @@ class GBout(AmberOutput):
 
 class GBNSR6out(AmberOutput):
     """ Amber output class for normal generalized Born simulations """
-    print_levels = {'BOND': 2, 'ANGLE': 2, 'DIHED': 2, 'VDWAALS': 1, 'EEL': 1, '1-4 VDW': 2, '1-4 EEL': 2, 'EGB': 1,
+    print_levels = {'BOND': 2, 'ANGLE': 2, 'DIHED': 2, 'VDWAALS': 1, 'EEL': 1, '1-4 VDW': 2, '1-4 EEL': 2,
                     'ESURF': 1}
 
     # Ordered list of keys in the data dictionary
@@ -671,6 +671,43 @@ class GBNSR6out(AmberOutput):
                 self['1-4 EEL'][self.frame_idx] = float(words[7])
                 words = outfile.readline().split()
                 self['ESURF'][self.frame_idx] = float(words[2])
+                self.frame_idx += 1
+
+class PBCUDAout(AmberOutput):
+    """ Amber output class for normal generalized Born simulations """
+    print_levels = {'BOND': 2, 'ANGLE': 2, 'DIHED': 2, 'VDWAALS': 1, 'EEL': 1, '1-4 VDW': 2, '1-4 EEL': 2,
+                    'ESURF': 1}
+
+    # Ordered list of keys in the data dictionary
+
+    def __init__(self, mol, INPUT, chamber=False, **kwargs):
+        AmberOutput.__init__(self, mol, INPUT, chamber, **kwargs)
+        # As the MM terms will be updated, in order to maintain order, we need to initialize these keys
+        self.data_keys.extend(['EPB', 'ENPOLAR', 'EDISPER'])
+
+    def _get_energies(self, outfile):
+        """ Parses the mdout files for the GB potential terms """
+        while rawline := outfile.readline():
+            if rawline[:5] == ' BOND':
+                words = rawline.split()
+                self['BOND'][self.frame_idx] = float(words[2])
+                self['ANGLE'][self.frame_idx] = float(words[5])
+                self['DIHED'][self.frame_idx] = float(words[8])
+                words = outfile.readline().split()
+                if self.chamber:
+                    self['UB'][self.frame_idx] = float(words[2])
+                    self['IMP'][self.frame_idx] = float(words[5])
+                    self['CMAP'][self.frame_idx] = float(words[8])
+                    words = outfile.readline().split()
+                self['VDWAALS'][self.frame_idx] = float(words[2])
+                self['EEL'][self.frame_idx] = float(words[5])
+                self['EPB'][self.frame_idx] = float(words[8])
+                words = outfile.readline().split()
+                self['1-4 VDW'][self.frame_idx] = float(words[3])
+                self['1-4 EEL'][self.frame_idx] = float(words[7])
+                words = outfile.readline().split()
+                self['ENPOLAR'][self.frame_idx] = float(words[2])
+                self['EDISPER'][self.frame_idx] = float(words[5])
                 self.frame_idx += 1
 
 class MMout(AmberOutput):

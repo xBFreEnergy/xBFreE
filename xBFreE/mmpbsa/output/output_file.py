@@ -147,7 +147,7 @@ def write_outputs(app):
             final_output.writeline('ENTROPY RESULTS (QH APPROXIMATION):')
             final_output.add_section(app.calc_types.mut_norm['qh'].summary_output())
 
-    allowed_met = ['gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6']
+    allowed_met = ['gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6', 'pbcuda']
     ie_dict = {'normal': {}, 'mutant': {}, 'mut_norm': {}}
     c2_dict = {'normal': {}, 'mutant': {}, 'mut_norm': {}}
     if not stability:
@@ -266,12 +266,12 @@ def write_outputs(app):
             final_output.add_section(nm_sys_mut_norm.summary_output())
 
     # end if INPUT['nmoderun']
-    nmls = ('gb', 'pb', 'rism', 'rism', 'rism', 'gbnsr6')
-    triggers = ('gbrun', 'pbrun', 'rismrun_std', 'rismrun_gf', 'rismrun_pcplus', 'gbnsr6run')
-    outkeys = ('gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6')
+    nmls = ('gb', 'pb', 'rism', 'rism', 'rism', 'gbnsr6', 'pbcuda')
+    triggers = ('gbrun', 'pbrun', 'rismrun_std', 'rismrun_gf', 'rismrun_pcplus', 'gbnsr6run', 'pbcudarun')
+    outkeys = ('gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6', 'pbcuda')
     headers = ('\nGENERALIZED BORN:\n\n', '\nPOISSON BOLTZMANN:\n\n',
                '\n3D-RISM:\n\n', '\n3D-RISM (Gauss. Fluct.):\n\n', '\n3D-RISM (PC+):\n\n',
-               '\nGENERALIZED BORN (GBNSR6):\n\n')
+               '\nGENERALIZED BORN (GBNSR6):\n\n', '\nPOISSON BOLTZMANN (pbsa.cuda):\n\n')
     # Now print out the Free Energy results
     for i, key in enumerate(outkeys):
         if not INPUT.get(nmls[i]) or not INPUT[nmls[i]].get(triggers[i]) or not INPUT[nmls[i]][triggers[i]]:

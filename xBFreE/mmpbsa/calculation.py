@@ -59,7 +59,7 @@ def pb(output_basename, nframes=1, mpi_size=1, nmode=False):
         sleep(ctime)
         frames = 0
         for i in range(mpi_size):
-            if 'gbnsr6' in output_basename:
+            if 'gbnsr6' in output_basename or 'pbcuda' in output_basename:
                 _output_folder, _output_filename = output_basename.split('/')
                 output_folder = Path(_output_folder % i)
                 output_filename = Path(_output_filename)
@@ -150,7 +150,7 @@ class CalculationList(list):
 
 class MultiCalculation(object):
     def __init__(self):
-        self.list_calc = []
+        self.list_calc = {}
 
     def run(self, rank, stdout=sys.stdout, stderr=sys.stderr):
         """ Runs the program. All command-line arguments must be set before
@@ -187,19 +187,20 @@ class MultiCalculation(object):
         # everything to a string here. And if it appears to need the rank
         # substituted into the file name, substitute that in here
         try:
-            for command_args in self.list_calc:
-                for i in range(len(command_args)):
-                    command_args[i] = str(command_args[i])
-                    if '%d' in command_args[i]:
-                        command_args[i] %= rank
-                process = Popen(command_args, stdin=None, stdout=process_stdout, stderr=process_stderr)
-                calc_failed = bool(process.wait())
-                if calc_failed:
-                    raise CalcError(f'{command_args[0]} failed with prmtop {command_args[1]}!')
-                # Each file of gbnsr6 with decomp is huge, so we need to reduce it. Here we transform the file to json
-                # to make it small
-                if 'gbnsr6' in command_args[0]:
-                    mdout2json(command_args)
+            for calc, c_args in self.list_calc.items():
+                for command_args in c_args:
+                    for i in range(len(command_args)):
+                        command_args[i] = str(command_args[i])
+                        if '%d' in command_args[i]:
+                            command_args[i] %= rank
+                    process = Popen(command_args, stdin=None, stdout=process_stdout, stderr=process_stderr)
+                    calc_failed = bool(process.wait())
+                    if calc_failed:
+                        raise CalcError(f'{command_args[0]} failed with prmtop {command_args[1]}!')
+                    # Each file of gbnsr6 with decomp is huge, so we need to reduce it. Here we transform the file to json
+                    # to make it small
+                    if calc in ['gbnsr6', 'pbcuda']:
+                        mdout2json(command_args, calc)
         finally:
             if own_handleo: process_stdout.close()
             if own_handlee: process_stdout.close()
@@ -332,14 +333,15 @@ class EnergyCalculation(Calculation):
 
 
 class ListEnergyCalculation(MultiCalculation):
-    def __init__(self, prog, prmtop, input_file, incrds, outputs, xvv=None):
+    def __init__(self, calcl, prog, prmtop, input_file, incrds, outputs):
         super().__init__()
+        self.calcl = calcl
         self.program = prog
         self.prmtop = prmtop
         self.incrds = incrds
         self.input_file = input_file
         self.outputs = outputs
-        self.xvv = xvv
+        self.xvv = None
 
     def setup(self):
         """
@@ -347,20 +349,22 @@ class ListEnergyCalculation(MultiCalculation):
         for the MPI version (since one is *always* written and you don't want 2
         threads fighting to write the same dumb file)
         """
+        lc = []
         for c, o in zip(self.incrds, self.outputs):
             command_args = [self.program,
+                            '-O',       # overwrite existing files
                             '-i', self.input_file,  # input file flag
                             '-p', self.prmtop  # prmtop flag
                             ]
             command_args.extend(('-c', c))  # input coordinate flag
             command_args.extend(('-o', o))  # output file flag
-            self.list_calc.append(command_args)
+            lc.append(command_args)
+        self.list_calc[self.calcl] = lc
 
             # Now test to make sure that the input file exists, since that's the only
             # one that may be absent (due to the use of -use-mdins)
             # if not os.path.exists(self.input_file):
             #     raise IOError("Input file (%s) doesn't exist" % self.input_file)
-
         self.calc_setup = True
 
 
@@ -726,7 +730,8 @@ class CopyCalc(Calculation):
 
 
 class MergeOut(Calculation):
-    def __init__(self, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose):
+    def __init__(self, prog, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose):
+        self.prog = prog
         self.topology = topology
         self.output_filename = output_filename
         self.mm_filename = mm_filename
@@ -739,7 +744,7 @@ class MergeOut(Calculation):
         # Do rank-substitution if necessary
         out_filename = self.output_filename % rank if '%d' in self.output_filename else self.output_filename
         mm_filename = self.mm_filename % rank if '%d' in self.mm_filename else self.mm_filename
-        MergeGBNSR6Output(self.topology, out_filename, mm_filename, self.mdouts, self.idecomp, self.dec_verbose)
+        MergeOutput(self.prog, self.topology, out_filename, mm_filename, self.mdouts, self.idecomp, self.dec_verbose)
 
 
 class PrintCalc(Calculation):
@@ -925,8 +930,9 @@ def _get_decomp(pw, idecomp, dec_verbose, t):
     return decomp
 
 
-class MergeGBNSR6Output():
-    def __init__(self, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose):
+class MergeOutput():
+    def __init__(self, prog, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose):
+        self.prog = prog
         self.topology = topology
         self.output_filename = output_filename
         self.mm_filename = mm_filename
@@ -934,9 +940,9 @@ class MergeGBNSR6Output():
         self.idecomp = idecomp
 
         self.dec_verbose = dec_verbose
-        self.header = '''
+        self.header = f'''
           -------------------------------------------------------
-          SANDER + GBNSR6
+          SANDER + {self.prog.upper()}
           -------------------------------------------------------\n\n
           '''
         self.resource = ('--------------------------------------------------------------------------------\n'
@@ -1068,7 +1074,7 @@ class MergeGBNSR6Output():
                 break
         return {'energy': energy, 'decomp':decomp}
 
-    def read_gbnsr6_output(self, res2print):
+    def read_energy_output(self, res2print):
 
         energy = {}
         decomp = {}
@@ -1154,7 +1160,7 @@ class MergeGBNSR6Output():
 
     def write_output(self):
         mm = self.read_mm_output()
-        gbnsr6 = self.read_gbnsr6_output(mm['res2print'])
+        energy = self.read_energy_output(mm['res2print'])
 
         with open(self.output_filename, 'w') as output_file:
             output_file.write(self.header)
@@ -1162,16 +1168,16 @@ class MergeGBNSR6Output():
             output_file.write(' MM:\n')
             for l in mm['file_assignments']:
                 output_file.write(l)
-            output_file.write(' GBNSR6:\n')
-            for l in gbnsr6['file_assignments']:
+            output_file.write(f' {self.prog.upper}:\n')
+            for l in energy['file_assignments']:
                 output_file.write(l)
 
             output_file.write(' Here is the input file:\n')
             output_file.write(' MM:\n')
             for l in mm['inputfile']:
                 output_file.write(l)
-            output_file.write(' GBNSR6:\n')
-            for l in gbnsr6['inputfile']:
+            output_file.write(f' {self.prog.upper}:\n')
+            for l in energy['inputfile']:
                 output_file.write(l)
 
             output_file.write(self.resource)
@@ -1187,27 +1193,33 @@ class MergeGBNSR6Output():
             output_file.write(self.results)
 
             mmenergy, mmdecomp = mm['results_section'].values()
-            gbenergy, gbdecomp = gbnsr6['results_section'].values()
+            solenergy, gbdecomp = energy['results_section'].values()
 
-            k2print = [['BOND', 'ANGLE', 'DIHED'], ['VDWAALS', 'EEL', 'EGB'], ['1-4 VDW', '1-4 EEL', 'RESTRAINT'],
-                       ['ESURF']]
+            if self.prog in ['gbnsr6']:
+                k2print = [['BOND', 'ANGLE', 'DIHED'], ['VDWAALS', 'EEL', 'EGB'], ['1-4 VDW', '1-4 EEL', 'RESTRAINT'],
+                           ['ESURF']]
+            else: # PB format
+                k2print = [['BOND', 'ANGLE', 'DIHED'], ['VDWAALS', 'EEL', 'EPB'], ['1-4 VDW', '1-4 EEL', 'RESTRAINT'],
+                           ['ENPOLAR', 'EDISPER']]
             for i, _ in enumerate(range(len(mmenergy)), start=1):
                 output_file.write(f'minimizing coord set #       {i}\n\n')
                 mmenergy[i].pop('EGB')
                 mmenergy[i].pop('EEL')
                 mmenergy[i].pop('1-4 EEL')
-                for e, ev in gbenergy[i].items():
+                for e, ev in solenergy[i].items():
                     mmenergy[i][e] = ev
-                for kl in k2print:
-                    if len(kl) == 3:
-                        f = []
-                        for klk in kl:
-                            f.extend((klk, mmenergy[i][klk]))
-                        output_file.write(' {:8s}={:>14.4f}  {:8s}={:>14.4f}  {:11s}={:>14.4f}\n'.format(*f))
+                for k, kl in enumerate(k2print):
+                    text = ' '
+                    for c, klk in enumerate(kl):
+                        if c in [0, 1]:
+                            text += f'{klk:8s}={mmenergy[i][klk]:>14.4f}  '
+                        else:
+                            text += f'{klk:11s}={mmenergy[i][klk]:>14.4f}  '
+                    if k == len(k2print) - 1:
+                        text += '\n\n'
                     else:
-                        f = [kl[0], mmenergy[i][kl[0]]]
-                        output_file.write(' {:8s}={:>14.4f}\n\n'.format(*f))
-
+                        text += '\n'
+                    output_file.write(text)
                 if self.idecomp:
                     for term in mmdecomp[i]:
                         if self.idecomp in [1, 2]:

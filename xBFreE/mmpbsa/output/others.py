@@ -17,7 +17,7 @@ from pathlib import Path
 import json
 
 
-def mdout2json(ca):
+def mdout2json(ca, prog):
     mdout_file = Path(ca[ca.index('-o') + 1])
     output_file = mdout_file.parent.joinpath(f'{mdout_file.stem}.json')
     topology = ca[ca.index('-p') + 1]
@@ -54,7 +54,7 @@ def mdout2json(ca):
                     decomp = True
                 else:
                     current_section.append(line)
-        energy = _get_energy_gbnsr6(results_section)
+        energy = _get_energy_gbnsr6_pbcuda(results_section, prog)
         results = {'energy': energy}
         if decomp:
             results['decomp'] = pw
@@ -81,7 +81,7 @@ def get_gbnsr6_out(dgij, pw, t):
         pw[res2_idx][res_idx]['TDC'] += float(energy)
     return pw
 
-def _get_energy_gbnsr6(results_section):
+def _get_energy_gbnsr6_pbcuda(results_section, prog):
     energy = {}
 
     store = False
@@ -97,11 +97,19 @@ def _get_energy_gbnsr6(results_section):
             line = results_section[c]
             words = line.split()
             energy['EEL'] = float(words[2])
-            energy['EGB'] = float(words[5])
+            if prog in ['gbnsr6']:
+                energy['EGB'] = float(words[5])
+            else:
+                energy['EPB'] = float(words[5])
             c += 1
             line = results_section[c]
             words = line.split()
-            energy[words[0].strip()] = float(words[2])
+            # FIXME: check if is CAVITY (pbsa) o not (gbnsr6), them the value is 1 or 2
+            if 'CAVITY' in words[0]:
+                energy['ENPOLAR'] = float(words[1])
+                energy['EDISPER'] = float(words[4])
+            else:
+                energy[words[0].strip()] = float(words[2])
         c += 1
         if c == len(results_section):
             break
