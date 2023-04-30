@@ -353,7 +353,7 @@ class BuildTopGromacs(BuildTop):
             gmx_lig_top = self.molstr(gmx_com_top)
             gmx_lig_top.strip(f':{rec_indexes_string}')
 
-        gmx_lig_top.save(f"{self.FILES.prefix}LIG.inpcrd", format='rst7', overwrite=True)
+        gmx_lig_top.save("LIG.inpcrd", format='rst7', overwrite=True)
         gmx_lig_top.box = None
 
         logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Normal topologies...")
@@ -381,7 +381,7 @@ class BuildTopGromacs(BuildTop):
             # get mutation index in complex
             self.com_mut_index, self.part_mut, self.part_index = self.getMutationInfo()
             gmx_mut_com_top = self.makeMutTop(gmx_com_top, self.com_mut_index)
-            gmx_mut_com_top.save(f"{self.FILES.prefix}MUT_COM.inpcrd", format='rst7', overwrite=True)
+            gmx_mut_com_top.save("MUT_COM.inpcrd", format='rst7', overwrite=True)
             gmx_mut_com_top.box = None
 
             if self.part_mut == 'REC':
@@ -417,7 +417,7 @@ class BuildTopGromacs(BuildTop):
             mut_amb_prm = top_class.from_structure(mut_gmx_top)
             self.fixparm2amber(mut_amb_prm)
             mut_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
-            mut_amb_prm.write_parm(f"{out_prmtop}")
+            mut_amb_prm.write_parm(out_prmtop)
         else:
             self.mutant_complex_prmtop = None
 
@@ -588,7 +588,7 @@ class BuildTopGromacs(BuildTop):
                 c5 = subprocess.Popen(trjconv_echo_args, stdout=subprocess.PIPE)
                 # we get only first trajectory to extract a pdb file and make amber topology for complex
                 trjconv_args = self.trjconv + ['-f', self.FILES.receptor_trajs[i], '-s', self.FILES.receptor_tpr,
-                                               '-o', 'REC_traj_{}.xtc'.format(i), '-n', self.FILES.receptor_index]
+                                               '-o', f'REC_traj_{i}.xtc', '-n', self.FILES.receptor_index]
                 logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                               (' '.join(trjconv_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' +
                               '| ' + ' '.join(trjconv_args))
@@ -608,7 +608,7 @@ class BuildTopGromacs(BuildTop):
                 c5 = subprocess.Popen(trjconv_echo_args, stdout=subprocess.PIPE)
                 # we get only first trajectory to extract a pdb file and make amber topology for complex
                 trjconv_args = self.trjconv + ['-f', self.FILES.ligand_trajs[i], '-s', self.FILES.ligand_tpr, '-o',
-                                               'LIG_traj_{}.xtc'.format(i), '-n', self.FILES.ligand_index]
+                                               f'LIG_traj_{i}.xtc', '-n', self.FILES.ligand_index]
                 logging.debug('Running command: ' + ' '.join(echo_command) + ' "' +
                               (' '.join(trjconv_echo_args[len(echo_command):]).replace('\n', '\\n')) + '"' +
                               '| ' + ' '.join(trjconv_args))
@@ -616,7 +616,7 @@ class BuildTopGromacs(BuildTop):
                 log_subprocess_output(c6)
                 if c6.wait():  # if it quits with return code != 0
                     xBFreEErrorLogging('%s failed when querying %s' % (' '.join(self.trjconv), self.FILES.ligand_trajs[i]))
-                new_trajs.append('LIG_traj_{}.xtc'.format(i))
+                new_trajs.append(f'LIG_traj_{i}.xtc')
             self.FILES.ligand_trajs = new_trajs
 
     def check_structures(self, com_str, rec_str=None, lig_str=None):
