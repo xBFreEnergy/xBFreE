@@ -209,14 +209,14 @@ input_file.addNamelist('pbcuda', 'pbcuda', '(AMBER) Possion-Boltzmann namelist v
                            ['inp', int, 1, 'Nonpolar solvation method'],
 
                            # Options to define the physical constants
-                           ['indi', float, 1, 'Internal dielectric constant'],
-                           ['exdi', float, 80, 'External dielectric constant'],
-                           ['emem', float, 4.0, 'Membrane dielectric constant'],
+                           ['epsin', float, 1, 'Internal dielectric constant'],
+                           ['epsout', float, 80, 'External dielectric constant'],
+                           ['epsmem', float, 1.0, 'Membrane dielectric constant'],
                            ['smoothopt', int, 1, 'Set up dielectric values for finite-difference grid edges that are '
                                                  'located across the solute/solvent dielectric boundary'],
                            ['istrng', float, 0.0, 'Ionic strength (M)'],
                            ['radiopt', int, 1, 'Use optimized radii?'],
-                           ['prbrad', float, 1.4, 'Probe radius'],
+                           ['dprob', float, 1.4, 'Probe radius'],
                            ['iprob', float, 2.0, 'Mobile ion probe radius (Angstroms) for ion accessible surface used '
                                                  'to define the Stern layer'],
                            # FIXME: set up to 2 by default. Change it in create input
@@ -235,11 +235,10 @@ input_file.addNamelist('pbcuda', 'pbcuda', '(AMBER) Possion-Boltzmann namelist v
                            ['solvopt', int, 2, 'Select iterative solver'],
                            ['accept', float, 0.001, 'Sets the iteration convergence criterion (relative to the initial '
                                                     'residue)'],
-                           ['linit', int, 1000, 'Number of SCF iterations'],
-                           ['fillratio', float, 4, 'Ratio between the longest dimension of the rectangular '
+                           ['maxitn', int, 100, 'Number of SCF iterations'],
+                           ['fillratio', float, 2.0, 'Ratio between the longest dimension of the rectangular '
                                                    'finite-difference grid and that of the solute'],
-                           ['scale', float, 2.0, '1/scale = grid spacing for the finite difference solver (default = '
-                                                 '1/2 Å)'],
+                           ['space', float, 0.5, 'grid spacing for the finite difference solver (default = 0.5 Å)'],
                            ['nbuffer', float, 0, 'Sets how far away (in grid units) the boundary of the finite '
                                                  'difference grid is away from the solute surface'],
                            ['nfocus', int, 2, 'Electrostatic focusing calculation'],
@@ -248,10 +247,9 @@ input_file.addNamelist('pbcuda', 'pbcuda', '(AMBER) Possion-Boltzmann namelist v
                            ['npbgrid', int, 1, 'Sets how often the finite-difference grid is regenerated'],
 
                             # Options to compute energy and forces
-                           # FIXME: In amber manual strongly recommend BCOPT=1 for NBC
-                           ['bcopt', int, 1, 'Boundary condition option'],
+                           # FIXME: In amber manual strongly recommend BCOPT=1 for NBC. reset it in amber
+                           ['bcopt', int, 2, 'Boundary condition option'],
                            ['eneopt', int, 2, 'Compute electrostatic energy and forces'],
-                           ['frcopt', int, 0, 'Output for computing electrostatic forces'],
                            ['scalec', int, 0, 'Option to compute reaction field energy and forces'],
                            ['cutfd', float, 5.0, 'Cutoff for finite-difference interactions'],
                            ['cutnb', float, 0.0, 'Cutoff for nonbonded interations'],

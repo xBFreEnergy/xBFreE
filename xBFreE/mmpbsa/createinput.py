@@ -210,6 +210,16 @@ def create_inputs(INPUT, prmtop_system):
             mm_mdin.make_mdin()
             mm_mdin.write_input('mm_gbnsr6.mdin')
 
+        if INPUT['pbcuda']['pbcudarun']:
+            mm_mdin = SanderMMInput(INPUT)
+            mm_mdin.make_mdin()
+            mm_mdin.write_input('mm_pbcuda.mdin')
+
+            pbcuda_mdin = PBSACUDAInput(INPUT)
+            print(f"{INPUT['pbcuda']['ipb'] = }")
+            pbcuda_mdin.make_mdin()
+            pbcuda_mdin.write_input('pbcuda.mdin')
+
         if INPUT['pb']['pbrun']:
             pb_prog = 'sander.APBS' if INPUT['pb']['sander_apbs'] else 'sander'
             if pb_prog == 'sander.APBS':
@@ -634,6 +644,82 @@ class SanderPBSAInput(SanderInput):
                        # Options for output
                        'npbverb': 'pb'}
         self.namelist = 'pb'
+
+
+    # def __init__(self, INPUT):
+    #     # We need to change istrng to mM (from M).
+    #     SanderInput.__init__(self, INPUT)
+    #     self.mdin.change('pb', 'istrng', INPUT['pb']['istrng'] * 1000)
+
+
+class PBSACUDAInput(SanderInput):
+    """ PB sander input file """
+    def __init__(self, INPUT):
+        super().__init__(INPUT)
+        self.input_items = {
+            'imin': 1, 'ntx': 1,
+            # Basic input options
+            'ipb': 6, 'inp': 1,
+            # Options to define the physical constants
+            'epsin': 1.0, 'epsout': 80.0, 'epsmem': 1.0, 'smoothopt': 1, 'istrng': 0.0, 'pbtemp': 300,
+            'radiopt': 1, 'dprob': 1.4, 'iprob': 2.0, 'sasopt': 2, 'arcres': 0.25,
+            # Options for Implicit Membranes
+            'membraneopt': 0, 'mprob': 2.70, 'mthick': 40, 'mctrdz': 0.0, 'poretype': 1,
+            # Options to select numerical procedures
+            'npbopt': 0, 'solvopt': 2, 'accept': 0.001, 'maxitn': 100, 'fillratio': 4.0, 'space': 0.5, 'nbuffer': 0,
+            'nfocus': 2, 'fscale': 8, 'npbgrid': 1,
+            # Options to compute energy and forces
+            'bcopt': 1, 'eneopt': 2, 'scalec': 0, 'cutfd': 5.0, 'cutnb': 0.0,
+            # Options to select a non-polar solvation treatment
+            'decompopt': 2, 'use_rmin': 1, 'sprob': 0.557, 'vprob': 1.300, 'rhow_effect': 1.129, 'use_sav': 1,
+            'cavity_surften': 0.0378, 'cavity_offset': -0.5692, 'maxsph': 400, 'maxarcdot': 1500,
+            # Options for output
+            'npbverb': 0}
+
+        self.name_map = {
+            'imin': 'imin', 'ntx': 'ntx',
+            # Basic input options
+            'ipb': 'ipb', 'inp': 'inp',
+            # Options to define the physical constants
+            'epsin': 'epsin', 'epsout': 'epsout', 'epsmem': 'epsmem', 'smoothopt': 'smoothopt', 'istrng': 'istrng',
+            'pbtemp': 'temperature', 'radiopt': 'radiopt', 'dprob': 'dprob', 'iprob': 'iprob', 'sasopt': 'sasopt',
+            'arcres': 'arcres',
+            # Options for Implicit Membranes
+            'membraneopt': 'memopt', 'mprob': 'mprob', 'mthick': 'mthick', 'mctrdz': 'mctrdz', 'poretype': 'poretype',
+            # Options to select numerical procedures
+            'npbopt': 'npbopt', 'solvopt': 'solvopt', 'accept': 'accept', 'maxitn': 'maxitn',
+            'fillratio': 'fillratio', 'space': 'space', 'nbuffer': 'nbuffer', 'nfocus': 'nfocus', 'fscale': 'fscale',
+            'npbgrid': 'npbgrid',
+            # Options to compute energy and forces
+            'bcopt': 'bcopt', 'eneopt': 'eneopt', 'frcopt': 'frcopt', 'scalec': 'scalec', 'cutfd': 'cutfd',
+            'cutnb': 'cutnb', 'nsnba': 'nsnba',
+            # Options to select a non-polar solvation treatment
+            'decompopt': 'decompopt', 'use_rmin': 'use_rmin', 'sprob': 'sprob', 'vprob': 'vprob',
+            'rhow_effect': 'rhow_effect', 'use_sav': 'use_sav', 'cavity_surften': 'cavity_surften',
+            'cavity_offset': 'cavity_offset', 'maxsph': 'maxsph', 'maxarcdot': 'maxarcdot',
+            # Options for output
+            'npbverb': 'npbverb'}
+
+        self.parent_namelist = {
+            'imin': 'cntrl', 'ntx': 'cntrl',
+            # Basic input options
+            'ipb': 'cntrl', 'inp': 'cntrl',
+            # Options to define the physical constants
+            'epsin': 'pb', 'epsout': 'pb', 'epsmem': 'pb', 'smoothopt': 'pb', 'istrng': 'pb', 'pbtemp': 'pb',
+            'radiopt': 'pb', 'dprob': 'pb', 'iprob': 'pb', 'sasopt': 'pb', 'arcres': 'pb',
+            # Options for Implicit Membranes
+            'membraneopt': 'pb', 'mprob': 'pb', 'mthick': 'pb', 'mctrdz': 'pb', 'poretype': 'pb',
+            # Options to select numerical procedures
+            'npbopt': 'pb', 'solvopt': 'pb', 'accept': 'pb', 'maxitn': 'pb', 'fillratio': 'pb', 'space': 'pb',
+            'nbuffer': 'pb', 'nfocus': 'pb', 'fscale': 'pb', 'npbgrid': 'pb',
+            # Options to compute energy and forces
+            'bcopt': 'pb', 'eneopt': 'pb', 'frcopt': 'pb', 'scalec': 'pb', 'cutfd': 'pb', 'cutnb': 'pb', 'nsnba': 'pb',
+            # Options to select a non-polar solvation treatment
+            'decompopt': 'pb', 'use_rmin': 'pb', 'sprob': 'pb', 'vprob': 'pb', 'rhow_effect': 'pb', 'use_sav': 'pb',
+            'cavity_surften': 'pb', 'cavity_offset': 'pb', 'maxsph': 'pb', 'maxarcdot': 'pb',
+            # Options for output
+            'npbverb': 'pb'}
+        self.namelist = 'pbcuda'
 
 
     # def __init__(self, INPUT):
