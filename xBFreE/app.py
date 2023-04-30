@@ -84,7 +84,7 @@ def run_xbfree():
     """
 
     xbfree_log = Path("xBFreE.log")
-    if xbfree_log.exists():
+    if _rank == 0 and xbfree_log.exists():
         xbfree_log.rename(f"xBFreE-{datetime.now().strftime('%Y-%m-%d-%H:%M:%S')}.log")
 
     stream_handler = logging.StreamHandler()

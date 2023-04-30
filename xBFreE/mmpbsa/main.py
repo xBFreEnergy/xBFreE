@@ -94,7 +94,7 @@ class MMPBSA_App(object):
         # create the mmpbsa folder
         if self.master:
             if self.mmpbsa_folder.exists():
-                self.remove()
+                self.remove(-1)
             self.mmpbsa_folder.mkdir()
 
         # Set up timers
@@ -1323,11 +1323,11 @@ class MMPBSA_App(object):
 
         logging.info(f'Checking {self.FILES.input_file} input file... Done.\n')
 
-    def remove(self, removetemp=0):
+    def remove(self, keeptemp=1):
         """ Removes temporary files """
         if not self.master:
             return
-        misc.remove('mmpbsa', removetemp)
+        misc.remove('mmpbsa', keeptemp)
 
     def sync_mpi(self):
         """ Throws up a barrier """
