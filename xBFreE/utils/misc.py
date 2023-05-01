@@ -96,7 +96,6 @@ def find_progs(INPUT, md_prog, mpi_size=0):
                   # 'rism3d.snglpnt': INPUT['rism']['rismrun']
                   'elsize': INPUT['gb']['alpb'],
                   'gbnsr6': INPUT['gbnsr6']['gbnsr6run'],
-                  'pbsa.cuda': INPUT['pbcuda']['pbcudarun']
                   }
     # look for any available gromacs executable
     # FIXME: We should use gmx_mpi? It seems to have problem with mpi4py

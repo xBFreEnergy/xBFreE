@@ -31,7 +31,7 @@ from xBFreE.utils import misc
 from xBFreE.mmpbsa.output.amber import (QHout, NMODEout, QMMMout, GBout, PBout, PolarRISM_std_Out, RISM_std_Out,
                                         PolarRISM_gf_Out, RISM_gf_Out, PolarRISM_pcplus_Out, RISM_pcplus_Out,
                                         BindingStatistics, IEout, C2out, DeltaDeltaStatistics, DeltaIEC2Statistic,
-                                        DeltaDeltaQH, GBNSR6out, MMout, PBCUDAout)
+                                        DeltaDeltaQH, GBNSR6out, MMout)
 from xBFreE.mmpbsa.calculation import (CalculationList, EnergyCalculation, PBEnergyCalculation,
                                    NmodeCalc, QuasiHarmCalc, CopyCalc, PrintCalc, LcpoCalc, MolsurfCalc,
                                    InteractionEntropyCalc, C2EntropyCalc, MergeOut, ListEnergyCalculation)
@@ -136,7 +136,7 @@ class MMPBSA_App(object):
             logging.info('Preparing trajectories for simulation...\n')
             (self.numframes, rec_frames,
              lig_frames, self.numframes_nmode) = make_trajectories(INPUT, FILES, self.external_progs['cpptraj'],
-                                                                   self.mpi_size, self.devices_rank)
+                                                                   self.mpi_size)
             if self.traj_protocol == 'MT' and not self.numframes == rec_frames == lig_frames:
                 xBFreEErrorLogging('The complex, receptor, and ligand trajectories must be the same length. Since v1.5.0 '
                                 'we have simplified a few things to make the code easier to maintain. Please check the '
@@ -171,8 +171,6 @@ class MMPBSA_App(object):
             self.timer.add_timer('gbnsr6', 'Total GBNSR6 calculation time:')
         if INPUT['pb']['pbrun']:
             self.timer.add_timer('pb', 'Total PB calculation time:')
-        if INPUT['pbcuda']['pbcudarun']:
-            self.timer.add_timer('pbcuda', 'Total PB-Cuda calculation time:')
         if INPUT['rism']['rismrun']:
             self.timer.add_timer('rism', 'Total 3D-RISM calculation time:')
         if INPUT['nmode']['nmoderun']:
@@ -220,9 +218,7 @@ class MMPBSA_App(object):
         nmframes = self.numframes_nmode if self.master else 0
         self.calc_list = CalculationList(self.timer, nframes, nmframes, self.mpi_size)
         if self.master:
-            gpu_size = sum([1 for d in self.devices_rank.values() if d])
-            gpu_size_text = f' and {gpu_size} GPUs' if gpu_size else ''
-            text = f"Starting calculations in {self.mpi_size} CPUs{gpu_size_text}..."
+            text = f"Starting calculations in {self.mpi_size} CPUs..."
             logging.info(text)
             if (self.INPUT['pb']['pbrun'] or self.INPUT['rism']['rismrun'] or
                 self.INPUT['nmode']['nmoderun']) and self.mpi_size > 1:
@@ -245,7 +241,6 @@ class MMPBSA_App(object):
                  'gbnsr6': self.external_progs.get('gbnsr6'),
                  'sa': self.external_progs.get('cpptraj'),
                  'pb': self.external_progs.get('sander'),
-                 'pbcuda': self.external_progs.get('pbsa.cuda'),
                  'rism': self.external_progs.get('sander'),
                  'qh': self.external_progs.get('cpptraj'),
                  'nmode': self.external_progs.get('mmpbsa_py_nabnmode')
@@ -568,142 +563,6 @@ class MMPBSA_App(object):
                                           timer_key='pb', output_basename='%sligand_pb.mdout.%%d' % (prefix))
         # end if self.INPUT['pb']['pbrun']
 
-        # PB-cuda calculation
-        if self.INPUT['pbcuda']['pbcudarun']:
-            incrd = '%sdummy%%s.inpcrd' % prefix
-            mdin = 'pbcuda.mdin'
-
-            # Mdin depends on decomp or not
-            if self.INPUT['decomp']['decomprun']:
-                mdin_template = 'mm_pbcuda_decomp_%s.mdin'
-            else:
-                mdin_template = 'mm_pbcuda.mdin'
-
-            # Now do complex-specific stuff
-            try:
-                mm_mdin = mdin_template % 'com'
-            except TypeError:
-                mm_mdin = mdin_template
-
-            self.calc_list.append(PrintCalc(f"Beginning PB-cuda calculations with {progs['pbcuda']}"),
-                                  timer_key='pbcuda')
-            if not mm_com_calculated:
-                self.calc_list.append(PrintCalc("  calculating complex contribution..."),
-                                      timer_key='pbcuda')
-                c = EnergyCalculation(progs['gb'], parm_system.complex_prmtop,
-                                      incrd % 'complex',
-                                      '%scomplex.%s.%%d' % (prefix, trj_sfx),
-                                      mm_mdin,
-                                      f'{prefix}complex_mm.mdout.%d',
-                                      'restrt.%d')
-                self.calc_list.append(c, '    calculating MM...', timer_key='pbcuda',
-                                      output_basename=f'{prefix}complex_mm.mdout.%d')
-            # use pre directly to have only one folder per rank
-            files = sorted(list(Path(f"inpcrd_gpu_{self.mpi_rank}").glob(f"{prefix}complex*.inpcrd")),
-                           key=lambda x: int(x.stem.split('.')[1]))
-            mdouts = [
-                file.parent.joinpath(f"{file.name.split('.')[0]}_pbcuda{file.suffixes[0]}.mdout").as_posix()
-                for file in files]
-            inpcrds = [file.as_posix() for file in files]
-
-            c = ListEnergyCalculation('pbcuda', progs['pbcuda'], parm_system.complex_prmtop, mdin, inpcrds, mdouts)
-            self.calc_list.append(c, '    calculating PB...', timer_key='pbcuda',
-                                  output_basename=f"inpcrd_gpu_%d/{prefix}complex_pbcuda.mdout")
-
-            c = MergeOut('pbcuda', self.FILES.complex_prmtop, f"{prefix}complex_pbcuda.mdout.%d",
-                         f'{prefix}complex_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
-                         self.INPUT['decomp']['dec_verbose'])
-            self.calc_list.append(c, '', timer_key='pbcuda')
-
-            if not self.stability:
-                try:
-                    mm_mdin = mdin_template % 'rec'
-                except TypeError:
-                    mm_mdin = mdin_template
-                # Either copy the existing receptor if the mutation is in the ligand
-                # or perform a receptor calculation
-                if copy_receptor:
-                    c = CopyCalc('receptor_mm.mdout.%d',
-                                 f'{prefix}receptor_mm.mdout.%d')
-                    self.calc_list.append(c, '  no mutation found in receptor; '
-                                             'using unmutated files', timer_key='pbcuda')
-                    c = CopyCalc('receptor_pbcuda.mdout.%d',
-                                 f'{prefix}receptor_pbcuda.mdout.%d')
-                    self.calc_list.append(c, '', timer_key='pbcuda')
-                else:
-                    if not mm_rec_calculated:
-                        self.calc_list.append(PrintCalc("  calculating receptor contribution..."),
-                                              timer_key='pbcuda')
-                        c = EnergyCalculation(progs['gb'], parm_system.receptor_prmtop,
-                                              incrd % 'receptor',
-                                              f'{prefix}receptor.{trj_sfx}.%d',
-                                              mm_mdin,
-                                              f'{prefix}receptor_mm.mdout.%d',
-                                              'restrt.%d')
-
-                        self.calc_list.append(c, '    calculating MM...', timer_key='pbcuda',
-                                              output_basename=f'{prefix}receptor_mm.mdout.%d')
-                    files = sorted(list(Path(f"inpcrd_gpu_{self.mpi_rank}").glob(f"{prefix}receptor*.inpcrd")),
-                                   key=lambda x: int(x.stem.split('.')[1]))
-                    mdouts = [
-                        file.parent.joinpath(
-                            f"{file.name.split('.')[0]}_pbcuda{file.suffixes[0]}.mdout").as_posix()
-                        for file in files]
-                    inpcrds = [file.as_posix() for file in files]
-
-                    c = ListEnergyCalculation('pbcuda', progs['pbcuda'], parm_system.receptor_prmtop, mdin, inpcrds,
-                                              mdouts)
-                    self.calc_list.append(c, '    calculating PB...', timer_key='pbcuda',
-                                          output_basename=f"inpcrd_gpu_%d/{prefix}receptor_pbcuda.mdout")
-
-                    c = MergeOut('pbcuda', self.FILES.receptor_prmtop, f"{prefix}receptor_pbcuda.mdout.%d",
-                                 f'{prefix}receptor_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
-                                 self.INPUT['decomp']['dec_verbose'])
-                    self.calc_list.append(c, '', timer_key='pbcuda')
-
-                try:
-                    mm_mdin = mdin_template % 'lig'
-                except TypeError:
-                    mm_mdin = mdin_template
-                # Either copy the existing ligand if the mutation is in the receptor
-                # or perform a ligand calculation
-                if copy_ligand:
-                    c = CopyCalc('ligand_mm.mdout.%d',
-                                 f'{prefix}ligand_mm.mdout.%d')
-                    self.calc_list.append(c, '  no mutation found in ligand; '
-                                             'using unmutated files', timer_key='pbcuda')
-                    c = CopyCalc('ligand_pbcuda.mdout.%d',
-                                 f'{prefix}ligand_pbcuda.mdout.%d')
-                    self.calc_list.append(c, '', timer_key='pbcuda')
-                else:
-                    if not mm_lig_calculated:
-                        self.calc_list.append(PrintCalc("  calculating ligand contribution..."),
-                                              timer_key='pbcuda')
-                        c = EnergyCalculation(progs['gb'], parm_system.ligand_prmtop,
-                                              incrd % 'ligand',
-                                              f'{prefix}ligand.{trj_sfx}.%d',
-                                              mm_mdin,
-                                              f'{prefix}ligand_mm.mdout.%d',
-                                              'restrt.%d')
-
-                        self.calc_list.append(c, '    calculating MM...', timer_key='pbcuda',
-                                              output_basename=f'{prefix}ligand_mm.mdout.%d')
-                    files = sorted(list(Path(f"inpcrd_gpu_{self.mpi_rank}").glob(f"{prefix}ligand*.inpcrd")),
-                                   key=lambda x: int(x.stem.split('.')[1]))
-                    mdouts = [
-                        file.parent.joinpath(
-                            f"{file.name.split('.')[0]}_pbcuda{file.suffixes[0]}.mdout").as_posix()
-                        for file in files]
-                    inpcrds = [file.as_posix() for file in files]
-
-                    c = ListEnergyCalculation('pbcuda', progs['pbcuda'], parm_system.ligand_prmtop, mdin, inpcrds, mdouts)
-                    self.calc_list.append(c, '    calculating PB...', timer_key='pbcuda',
-                                          output_basename=f"inpcrd_gpu_%d/{prefix}ligand_pbcuda.mdout")
-                    c = MergeOut('pbcuda', self.FILES.ligand_prmtop, f"{prefix}ligand_pbcuda.mdout.%d",
-                                 f'{prefix}ligand_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
-                                 self.INPUT['decomp']['dec_verbose'])
-                    self.calc_list.append(c, '', timer_key='pbcuda')
-
         if self.INPUT['rism']['rismrun']:
             mdin = 'rism.mdin'
             # get xvv file from INPUT
@@ -997,9 +856,6 @@ class MMPBSA_App(object):
         if self.INPUT['pb']['pbrun']:
             self.timer.print_('pb')
 
-        if self.INPUT['pbcuda']['pbcudarun']:
-            self.timer.print_('pbcuda')
-
         if self.INPUT['nmode']['nmoderun']:
             self.timer.print_('nmode')
 
@@ -1091,37 +947,6 @@ class MMPBSA_App(object):
 
         # Default temperature
         # self.INPUT['temp'] = 298.15
-
-        # check for cuda if any calculation require it
-        if self.INPUT['pbcuda']['pbcudarun']:
-            from xBFreE.utils.cuda_check import get_cuda_devices
-            # create new communicators for each node according to the rank type shared (for size > 1)
-            if self.mpi_size > 1:
-                nodes_comm = self.MPI.COMM_WORLD.Split_type(self.MPI.COMM_TYPE_SHARED, key=self.mpi_rank)
-                nodes_rank = nodes_comm.Get_rank()
-                if nodes_rank == 0:
-                    dds = [self.mpi_rank, {'nodes_rank': nodes_rank, 'host_name': self.MPI.Get_processor_name(),
-                                           'devices': get_cuda_devices()}]
-                else:
-                    dds = [self.mpi_rank]
-                self.devices = self.MPI.COMM_WORLD.gather(dds)
-            else:
-                self.devices = [[self.mpi_rank, {'nodes_rank': 0, 'host_name': 'host', 'devices': get_cuda_devices()}]]
-
-            self.devices_rank = {}
-            if self.master:
-                for d in self.devices:
-                    if len(d) > 1:
-                        self.devices_rank[d[0]] = d[1]
-                    else:
-                        self.devices_rank[d[0]] = None
-
-            self.devices_rank = self.MPI.COMM_WORLD.bcast(self.devices_rank)
-            self.sync_mpi()
-            # print(f"{self.mpi_rank = }, {self.devices_rank = }, {all(self.devices_rank.values()) = }")
-            # if self.mpi_rank == 7:
-            # print(f"{self.devices_rank = }")
-
 
     def check_for_bad_input(self, INPUT=None):
         """ Checks for bad user input """
@@ -1266,7 +1091,6 @@ class MMPBSA_App(object):
                 and not INPUT['nmode']['nmoderun']
                 and not INPUT['general']['qh_entropy']
                 and not INPUT['gbnsr6']['gbnsr6run']
-                and not INPUT['pbcuda']['pbcudarun']
         ):
             xBFreEErrorLogging('You did not specify any type of calculation!', InputError)
 
@@ -1318,7 +1142,6 @@ class MMPBSA_App(object):
         # Assigning variables
         # set the pbtemp = temperature
         self.INPUT['pb']['pbtemp'] = self.INPUT['general']['temperature']
-        self.INPUT['pbcuda']['pbtemp'] = self.INPUT['general']['temperature']
         # self.INPUT['gbnsr6']['istrng'] = self.INPUT['gbnsr6']['istrng'] * 1000
 
         logging.info(f'Checking {self.FILES.input_file} input file... Done.\n')
@@ -1370,13 +1193,13 @@ class MMPBSA_App(object):
         # their key in the calc_types dict, the base name of their output files
         # without the prefix (with %s-substitution for complex, receptor, or
         # ligand), and the class for their output
-        nmls = ('nmode', 'gb', 'pb', 'rism', 'rism', 'rism', 'gbnsr6', 'pbcuda')
+        nmls = ('nmode', 'gb', 'pb', 'rism', 'rism', 'rism', 'gbnsr6')
         triggers = ('nmoderun', 'gbrun', 'pbrun', 'rismrun_std', 'rismrun_gf', 'rismrun_pcplus',
-                    'gbnsr6run', 'pbcudarun')
-        outclass = (NMODEout, GBClass, PBout, RISM_Std, RISM_GF, RISM_PCplus, GBNSR6out, PBCUDAout)
-        outkey = ('nmode', 'gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6', 'pbcuda')
+                    'gbnsr6run')
+        outclass = (NMODEout, GBClass, PBout, RISM_Std, RISM_GF, RISM_PCplus, GBNSR6out)
+        outkey = ('nmode', 'gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6')
         basename = ('%s_nm.out', '%s_gb.mdout', '%s_pb.mdout', '%s_rism.mdout', '%s_rism.mdout', '%s_rism.mdout',
-                    '%s_gbnsr6.mdout', '%s_pbcuda.mdout')
+                    '%s_gbnsr6.mdout')
 
         for i, key in enumerate(outkey):
             if not INPUT.get(nmls[i]) or not INPUT[nmls[i]].get(triggers[i]) or not INPUT[nmls[i]][triggers[i]]:

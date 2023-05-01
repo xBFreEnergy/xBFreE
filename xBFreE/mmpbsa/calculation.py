@@ -59,7 +59,7 @@ def pb(output_basename, nframes=1, mpi_size=1, nmode=False):
         sleep(ctime)
         frames = 0
         for i in range(mpi_size):
-            if 'gbnsr6' in output_basename or 'pbcuda' in output_basename:
+            if 'gbnsr6' in output_basename:
                 _output_folder, _output_filename = output_basename.split('/')
                 output_folder = Path(_output_folder % i)
                 output_filename = Path(_output_filename)
@@ -199,7 +199,7 @@ class MultiCalculation(object):
                         raise CalcError(f'{command_args[0]} failed with prmtop {command_args[1]}!')
                     # Each file of gbnsr6 with decomp is huge, so we need to reduce it. Here we transform the file to json
                     # to make it small
-                    if calc in ['gbnsr6', 'pbcuda']:
+                    if calc in ['gbnsr6']:
                         mdout2json(command_args, calc)
         finally:
             if own_handleo: process_stdout.close()

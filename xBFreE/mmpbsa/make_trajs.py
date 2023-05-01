@@ -40,7 +40,7 @@ from pathlib import Path
 strip_mask = ':WAT,Cl*,CIO,Cs+,IB,K*,Li+,MG*,Na+,Rb+,CS,RB,NA,F,CL'
 
 
-def make_trajectories(INPUT, FILES, cpptraj, size, devices=None):
+def make_trajectories(INPUT, FILES, cpptraj, size):
     """
     This function creates the necessary trajectory files, and creates thread-specific trajectories for parallel
     calculations
@@ -93,26 +93,6 @@ def make_trajectories(INPUT, FILES, cpptraj, size, devices=None):
             traj.Outtraj(f"inpcrd_{i}/complex.inpcrd", frames=frame_string, filetype='restart', options=['keepext'])
         last_frame += frame_count[i]
 
-    if devices:
-        # FIXME: we make this here because there is not support for md in gpu processes
-        devices_size = sum([1 for d in devices.values() if d is not None])
-        frames_per_rank_gpu = traj.processed_frames // devices_size
-        extras_gpu = traj.processed_frames - frames_per_rank_gpu * devices_size
-        frame_count_gpu = {r: frames_per_rank_gpu for r, d in devices.items() if d}
-        for i in range(devices_size):
-            if i < extras_gpu: frame_count_gpu[i] += 1
-
-        last_frame_gpu = 1
-        for r, d in devices.items():
-            if d:
-                frame_string = '%d-%d' % (last_frame_gpu, last_frame_gpu + frame_count_gpu[r] - 1)
-                # TODO: only for pbsa.cuda?
-                temp_dir = Path(f"inpcrd_gpu_{r}")
-                temp_dir.mkdir()
-                traj.Outtraj(f"inpcrd_gpu_{r}/complex.inpcrd", frames=frame_string, filetype='restart',
-                             options=['keepext'])
-                last_frame_gpu += frame_count_gpu[r]
-
     # Now create the receptor/ligand trajectories if we're taking them from
     # the complex trajectory
 
@@ -133,16 +113,6 @@ def make_trajectories(INPUT, FILES, cpptraj, size, devices=None):
                              options=['keepext'])
             last_frame += frame_count[i]
 
-        if devices:
-            last_frame_gpu = 1
-            for r, d in devices.items():
-                if d:
-                    frame_string = '%d-%d' % (last_frame_gpu, last_frame_gpu + frame_count_gpu[r] - 1)
-                    # TODO: only for pbsa.cuda?
-                    traj.Outtraj(f"inpcrd_gpu_{r}/receptor.inpcrd", frames=frame_string, filetype='restart',
-                                 options=['keepext'])
-                    last_frame_gpu += frame_count_gpu[r]
-
         traj.Unstrip(restrip_solvent=True)
         traj.rms('!(%s)' % strip_mask)
 
@@ -162,16 +132,6 @@ def make_trajectories(INPUT, FILES, cpptraj, size, devices=None):
                 traj.Outtraj(f"inpcrd_{i}/ligand.inpcrd", frames=frame_string, filetype='restart',
                              options=['keepext'])
             last_frame += frame_count[i]
-
-        if devices:
-            last_frame_gpu = 1
-            for r, d in devices.items():
-                if d:
-                    frame_string = '%d-%d' % (last_frame_gpu, last_frame_gpu + frame_count_gpu[r] - 1)
-                    # TODO: only for pbsa.cuda?
-                    traj.Outtraj(f"inpcrd_gpu_{r}/ligand.inpcrd", frames=frame_string, filetype='restart',
-                                 options=['keepext'])
-                    last_frame_gpu += frame_count_gpu[r]
 
         traj.Unstrip(restrip_solvent=True)
         traj.rms('!(%s)' % strip_mask)

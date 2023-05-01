@@ -54,7 +54,7 @@ def mdout2json(ca, prog):
                     decomp = True
                 else:
                     current_section.append(line)
-        energy = _get_energy_gbnsr6_pbcuda(results_section, prog)
+        energy = _get_energy_gbnsr6(results_section, prog)
         results = {'energy': energy}
         if decomp:
             results['decomp'] = pw
@@ -81,7 +81,7 @@ def get_gbnsr6_out(dgij, pw, t):
         pw[res2_idx][res_idx]['TDC'] += float(energy)
     return pw
 
-def _get_energy_gbnsr6_pbcuda(results_section, prog):
+def _get_energy_gbnsr6(results_section, prog):
     energy = {}
 
     store = False
