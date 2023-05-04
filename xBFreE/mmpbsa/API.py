@@ -246,7 +246,7 @@ class MMPBSA_API():
                 raise NoFileExists(f"cannot find {self.fname}!")
             os.chdir(self.fname.parent)
 
-        if self.fname.suffix == '.mmxsa':
+        if self.fname.suffix in ['.xbfree', '.mmxsa']:
             self._get_fromBinary(self.fname)
         else:
             self._get_fromApp(self.fname)
