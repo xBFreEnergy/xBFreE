@@ -91,12 +91,6 @@ class MMPBSA_App(object):
         if not self.master:
             self.stdout = open(os.devnull, 'w')
 
-        # create the mmpbsa folder
-        if self.master:
-            if self.mmpbsa_folder.exists():
-                self.remove(-1)
-            self.mmpbsa_folder.mkdir()
-
         # Set up timers
         timers = [Timer() for _ in range(self.mpi_size)]
         self.timer = timers[self.mpi_rank]
@@ -869,6 +863,12 @@ class MMPBSA_App(object):
             self.FILES = parser
         else:
             self.FILES = object()
+
+        # create the mmpbsa folder
+        if self.master:
+            if self.mmpbsa_folder.exists():
+                self.remove(-1)
+            self.mmpbsa_folder.mkdir()
 
         # Broadcast the FILES
         self.FILES = self.MPI.COMM_WORLD.bcast(self.FILES)
