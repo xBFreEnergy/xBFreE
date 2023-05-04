@@ -770,7 +770,7 @@ class MMPBSA_App(object):
         write_outputs(self)
         if self.INPUT['decomp']['decomprun']:
             write_decomp_output(self)
-        if self.INPUT['general']['keep_files'] in [0, 2]:
+        if self.INPUT['general']['keep_files']:
             data2pkl(self)
 
         info = InfoFile(self)

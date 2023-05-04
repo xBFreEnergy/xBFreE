@@ -63,7 +63,7 @@ input_file.addNamelist('general', 'general', 'General namelist variables',
                            ['exe_path', list[str], [], 'Add a custom path to search executables (i.e, gmx, apbs)'],
                            ['radii_path', str, '', 'Add a custom path to search radii file'],
 
-                           ['keep_files', int, 2, 'How many files to keep after successful completion'],
+                           ['keep_files', int, 1, 'How many files to keep after successful completion'],
 
                            ['netcdf', int, 0, 'Use NetCDF intermediate trajectories'],
                            ['solvated_trajectory', int, 1, 'Define if it is necessary to cleanup the trajectories'],
