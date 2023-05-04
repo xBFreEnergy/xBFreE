@@ -26,7 +26,7 @@ All data is stored in a special class derived from the list.
 import logging
 from copy import deepcopy
 from math import sqrt
-from xBFreE.exceptions import (OutputError, LengthError, DecompError)
+from xBFreE.exceptions import (OutputError, LengthError, DecompError, xBFreEErrorLogging)
 from xBFreE.mmpbsa.utils.energy import EnergyVector, get_std
 import numpy as np
 import re
@@ -218,7 +218,7 @@ class AmberOutput(dict):
 
         for key in self.data_keys:
             for component in data_key_owner[key]:
-                self[component] = self[key] + self[component]
+                self[component] = EnergyVector(np.round(self[key] + self[component], decimals=3))
 
 
 class IEout(dict):
@@ -472,6 +472,7 @@ class QHout(dict):
             self['delta']['VIBRATIONAL'] = (self['complex']['VIBRATIONAL'] - self['receptor']['VIBRATIONAL'] -
                                             self['ligand']['VIBRATIONAL'])
 
+
 class DeltaDeltaQH(dict):
     def __init__(self, mut, norm, **kwargs):
         super(DeltaDeltaQH, self).__init__(**kwargs)
@@ -595,6 +596,16 @@ class NMODEout(AmberOutput):
                             '    sander (maxcyc)...\n')
 
 
+def conv_float(word):
+    if '*' in word or 'nan' in word.lower():
+        xBFreEErrorLogging('Some energy terms are undefined. Please, check the input structure and trajectory. Check '
+                         'this '
+                        'section the docs for more info '
+                        'https://valdes-tresanco-ms.github.io/gmx_MMPBSA/dev/Q%26A/calculations/#possible-solutions')
+    else:
+        return round(float(word), 3)
+
+
 class GBout(AmberOutput):
     """ Amber output class for normal generalized Born simulations """
     print_levels = {'BOND': 2, 'ANGLE': 2, 'DIHED': 2, 'VDWAALS': 1, 'EEL': 1, '1-4 VDW': 2, '1-4 EEL': 2, 'EGB': 1,
@@ -611,21 +622,21 @@ class GBout(AmberOutput):
         while rawline := outfile.readline():
             if rawline[:5] == ' BOND':
                 words = rawline.split()
-                self['BOND'][self.frame_idx] = float(words[2])
-                self['ANGLE'][self.frame_idx] = float(words[5])
-                self['DIHED'][self.frame_idx] = float(words[8])
+                self['BOND'][self.frame_idx] = conv_float(words[2])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
                 if self.chamber:
-                    self['UB'][self.frame_idx] = float(words[2])
-                    self['IMP'][self.frame_idx] = float(words[5])
-                    self['CMAP'][self.frame_idx] = float(words[8])
+                    self['UB'][self.frame_idx] = conv_float(words[2])
+                    self['IMP'][self.frame_idx] = conv_float(words[5])
+                    self['CMAP'][self.frame_idx] = conv_float(words[8])
                     words = outfile.readline().split()
-                self['VDWAALS'][self.frame_idx] = float(words[2])
-                self['EEL'][self.frame_idx] = float(words[5])
-                self['EGB'][self.frame_idx] = float(words[8])
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[5])
+                self['EGB'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
-                self['1-4 VDW'][self.frame_idx] = float(words[3])
-                self['1-4 EEL'][self.frame_idx] = float(words[7])
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[3])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[7])
                 self.frame_idx += 1
 
     def _extra_reading(self, fileno):
@@ -636,6 +647,7 @@ class GBout(AmberOutput):
         for sd in surf_data:
             self['ESURF'][self.extraframe_idx] = sd * self.INPUT['gb']['surften'] + self.INPUT['gb']['surfoff']
             self.extraframe_idx += 1
+
 
 class GBNSR6out(AmberOutput):
     """ Amber output class for normal generalized Born simulations """
@@ -654,24 +666,25 @@ class GBNSR6out(AmberOutput):
         while rawline := outfile.readline():
             if rawline[:5] == ' BOND':
                 words = rawline.split()
-                self['BOND'][self.frame_idx] = float(words[2])
-                self['ANGLE'][self.frame_idx] = float(words[5])
-                self['DIHED'][self.frame_idx] = float(words[8])
+                self['BOND'][self.frame_idx] = conv_float(words[2])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
                 if self.chamber:
-                    self['UB'][self.frame_idx] = float(words[2])
-                    self['IMP'][self.frame_idx] = float(words[5])
-                    self['CMAP'][self.frame_idx] = float(words[8])
+                    self['UB'][self.frame_idx] = conv_float(words[2])
+                    self['IMP'][self.frame_idx] = conv_float(words[5])
+                    self['CMAP'][self.frame_idx] = conv_float(words[8])
                     words = outfile.readline().split()
-                self['VDWAALS'][self.frame_idx] = float(words[2])
-                self['EEL'][self.frame_idx] = float(words[5])
-                self['EGB'][self.frame_idx] = float(words[8])
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[5])
+                self['EGB'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
-                self['1-4 VDW'][self.frame_idx] = float(words[3])
-                self['1-4 EEL'][self.frame_idx] = float(words[7])
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[3])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[7])
                 words = outfile.readline().split()
-                self['ESURF'][self.frame_idx] = float(words[2])
+                self['ESURF'][self.frame_idx] = conv_float(words[2])
                 self.frame_idx += 1
+
 
 class MMout(AmberOutput):
     """ Amber output class for normal MM simulations """
@@ -687,20 +700,21 @@ class MMout(AmberOutput):
         while rawline := outfile.readline():
             if rawline[:5] == ' BOND':
                 words = rawline.split()
-                self['BOND'][self.frame_idx] = float(words[2])
-                self['ANGLE'][self.frame_idx] = float(words[5])
-                self['DIHED'][self.frame_idx] = float(words[8])
+                self['BOND'][self.frame_idx] = conv_float(words[2])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
                 if self.chamber:
-                    self['UB'][self.frame_idx] = float(words[2])
-                    self['IMP'][self.frame_idx] = float(words[5])
-                    self['CMAP'][self.frame_idx] = float(words[8])
+                    self['UB'][self.frame_idx] = conv_float(words[2])
+                    self['IMP'][self.frame_idx] = conv_float(words[5])
+                    self['CMAP'][self.frame_idx] = conv_float(words[8])
                     words = outfile.readline().split()
-                self['VDWAALS'][self.frame_idx] = float(words[2])
-                self['EEL'][self.frame_idx] = float(words[5])
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[5])
                 words = outfile.readline().split()
-                self['1-4 VDW'][self.frame_idx] = float(words[3])
-                self['1-4 EEL'][self.frame_idx] = float(words[7])
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[3])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[7])
+
 
 class PBout(AmberOutput):
 
@@ -718,26 +732,27 @@ class PBout(AmberOutput):
         while rawline := outfile.readline():
             if rawline[:5] == ' BOND':
                 words = rawline.split()
-                self['BOND'][self.frame_idx] = float(words[2])
-                self['ANGLE'][self.frame_idx] = float(words[5])
-                self['DIHED'][self.frame_idx] = float(words[8])
+                self['BOND'][self.frame_idx] = conv_float(words[2])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
                 if self.chamber:
-                    self['UB'][self.frame_idx] = float(words[2])
-                    self['IMP'][self.frame_idx] = float(words[5])
-                    self['CMAP'][self.frame_idx] = float(words[8])
+                    self['UB'][self.frame_idx] = conv_float(words[2])
+                    self['IMP'][self.frame_idx] = conv_float(words[5])
+                    self['CMAP'][self.frame_idx] = conv_float(words[8])
                     words = outfile.readline().split()
-                self['VDWAALS'][self.frame_idx] = float(words[2])
-                self['EEL'][self.frame_idx] = float(words[5])
-                self['EPB'][self.frame_idx] = float(words[8])
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[5])
+                self['EPB'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
-                self['1-4 VDW'][self.frame_idx] = float(words[3])
-                self['1-4 EEL'][self.frame_idx] = float(words[7])
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[3])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[7])
                 words = outfile.readline().split()
-                self['ENPOLAR'][self.frame_idx] = float(words[2])
+                self['ENPOLAR'][self.frame_idx] = conv_float(words[2])
                 if self.INPUT['pb']['inp'] == 2 and not self.apbs:
-                    self['EDISPER'][self.frame_idx] = float(words[5])
+                    self['EDISPER'][self.frame_idx] = conv_float(words[5])
                 self.frame_idx += 1
+
 
 class RISMout(AmberOutput):
     # Which of those keys belong to the gas phase energy contributions
@@ -763,22 +778,22 @@ class RISMout(AmberOutput):
 
             if re.match(r'(solute_epot|solutePotentialEnergy)', rawline):
                 words = rawline.split()
-                self['VDWAALS'][self.frame_idx] = float(words[2])
-                self['EEL'][self.frame_idx] = float(words[3])
-                self['BOND'][self.frame_idx] = float(words[4])
-                self['ANGLE'][self.frame_idx] = float(words[5])
-                self['DIHED'][self.frame_idx] = float(words[6])
-                self['1-4 VDW'][self.frame_idx] = float(words[7])
-                self['1-4 EEL'][self.frame_idx] = float(words[8])
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[3])
+                self['BOND'][self.frame_idx] = conv_float(words[4])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[6])
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[7])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[8])
 
             elif self.solvtype == 0 and re.match(r'(rism_exchem|rism_excessChemicalPotential)\s', rawline):
-                self['ERISM'][self.frame_idx] = float(rawline.split()[1])
+                self['ERISM'][self.frame_idx] = conv_float(rawline.split()[1])
                 self.frame_idx += 1
             elif self.solvtype == 1 and re.match(r'(rism_exchGF|rism_excessChemicalPotentialGF)\s', rawline):
-                self['ERISM'][self.frame_idx] = float(rawline.split()[1])
+                self['ERISM'][self.frame_idx] = conv_float(rawline.split()[1])
                 self.frame_idx += 1
             elif self.solvtype == 2 and re.match(r'(rism_exchPCPLUS|rism_excessChemicalPotentialPCPLUS)\s', rawline):
-                self['ERISM'][self.frame_idx] = float(rawline.split()[1])
+                self['ERISM'][self.frame_idx] = conv_float(rawline.split()[1])
                 self.frame_idx += 1
 
 
@@ -794,6 +809,7 @@ class RISM_gf_Out(RISMout):
 
     def __init__(self, mol, INPUT, chamber=False):
         RISMout.__init__(self, mol, INPUT, chamber, 1)
+
 
 class RISM_pcplus_Out(RISMout):
     """ No polar decomp RISM output file for PC+ free energy """
@@ -824,34 +840,34 @@ class PolarRISMout(RISMout):
 
             if re.match(r'(solute_epot|solutePotentialEnergy)', rawline):
                 words = rawline.split()
-                self['VDWAALS'][self.frame_idx] = float(words[2])
-                self['EEL'][self.frame_idx] = float(words[3])
-                self['BOND'][self.frame_idx] = float(words[4])
-                self['ANGLE'][self.frame_idx] = float(words[5])
-                self['DIHED'][self.frame_idx] = float(words[6])
-                self['1-4 VDW'][self.frame_idx] = float(words[8])
-                self['1-4 EEL'][self.frame_idx] = float(words[8])
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[3])
+                self['BOND'][self.frame_idx] = conv_float(words[4])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[6])
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[8])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[8])
 
             elif self.solvtype == 0 and re.match(
                     r'(rism_polar|rism_polarExcessChemicalPotential)\s', rawline):
-                self['POLAR SOLV'][self.frame_idx] = float(rawline.split()[1])
+                self['POLAR SOLV'][self.frame_idx] = conv_float(rawline.split()[1])
             elif self.solvtype == 0 and re.match(
                     r'(rism_apolar|rism_apolarExcessChemicalPotential)\s', rawline):
-                self['APOLAR SOLV'][self.frame_idx] = float(rawline.split()[1])
+                self['APOLAR SOLV'][self.frame_idx] = conv_float(rawline.split()[1])
                 self.frame_idx += 1
             elif self.solvtype == 1 and re.match(
                     r'(rism_polGF|rism_polarExcessChemicalPotentialGF)\s', rawline):
-                self['POLAR SOLV'][self.frame_idx] = float(rawline.split()[1])
+                self['POLAR SOLV'][self.frame_idx] = conv_float(rawline.split()[1])
             elif self.solvtype == 1 and re.match(
                     r'(rism_apolGF|rism_apolarExcessChemicalPotentialGF)\s', rawline):
-                self['APOLAR SOLV'][self.frame_idx] = float(rawline.split()[1])
+                self['APOLAR SOLV'][self.frame_idx] = conv_float(rawline.split()[1])
                 self.frame_idx += 1
             elif self.solvtype == 2 and re.match(
                     r'(rism_polPCPLUS|rism_polarExcessChemicalPotentialPCPLUS)\s', rawline):
-                self['POLAR SOLV'][self.frame_idx] = float(rawline.split()[1])
+                self['POLAR SOLV'][self.frame_idx] = conv_float(rawline.split()[1])
             elif self.solvtype == 2 and re.match(
                     r'(rism_apolPCPLUS|rism_apolarExcessChemicalPotentialPCPLUS)\s', rawline):
-                self['APOLAR SOLV'][self.frame_idx] = float(rawline.split()[1])
+                self['APOLAR SOLV'][self.frame_idx] = conv_float(rawline.split()[1])
                 self.frame_idx += 1
 
 
@@ -867,6 +883,7 @@ class PolarRISM_gf_Out(PolarRISMout):
 
     def __init__(self, mol, INPUT, chamber=False):
         PolarRISMout.__init__(self, mol, INPUT, chamber, 1)
+
 
 class PolarRISM_pcplus_Out(PolarRISMout):
     """ Polar decomp RISM output file for PC+ free energy """
@@ -895,32 +912,32 @@ class QMMMout(GBout):
         while rawline := outfile.readline():
             if rawline[:5] == ' BOND':
                 words = rawline.split()
-                self['BOND'][self.frame_idx] = float(words[2])
-                self['ANGLE'][self.frame_idx] = float(words[5])
-                self['DIHED'][self.frame_idx] = float(words[8])
+                self['BOND'][self.frame_idx] = conv_float(words[2])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
 
                 if self.chamber:
-                    self['UB'][self.frame_idx] = float(words[2])
-                    self['IMP'][self.frame_idx] = float(words[5])
-                    self['CMAP'][self.frame_idx] = float(words[8])
+                    self['UB'][self.frame_idx] = conv_float(words[2])
+                    self['IMP'][self.frame_idx] = conv_float(words[5])
+                    self['CMAP'][self.frame_idx] = conv_float(words[8])
                     words = outfile.readline().split()
 
-                self['VDWAALS'][self.frame_idx] = float(words[2])
-                self['EEL'][self.frame_idx] = float(words[5])
-                self['EGB'][self.frame_idx] = float(words[8])
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[5])
+                self['EGB'][self.frame_idx] = conv_float(words[8])
                 words = outfile.readline().split()
-                self['1-4 VDW'][self.frame_idx] = float(words[3])
-                self['1-4 EEL'][self.frame_idx] = float(words[7])
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[3])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[7])
                 words = outfile.readline().split()
                 # This is where ESCF will be. Since ESCF can differ based on which
                 # qmtheory was chosen, we just check to see if it's != ESURF:
                 if words[0] == 'minimization':
                     continue
                 elif words[0].endswith('='):
-                    self['ESCF'][self.frame_idx] = float(words[1])
+                    self['ESCF'][self.frame_idx] = conv_float(words[1])
                 else:
-                    self['ESCF'][self.frame_idx] = float(words[2])
+                    self['ESCF'][self.frame_idx] = conv_float(words[2])
                 self.frame_idx += 1
 
 
@@ -972,9 +989,9 @@ class BindingStatistics(dict):
         for key in self.com.data_keys:
             if self.traj_protocol == 'ST':
                 temp = self.com[key].corr_sub(self.rec[key])
-                self[key] = temp.corr_sub(self.lig[key])
+                self[key] = EnergyVector(np.round(temp.corr_sub(self.lig[key]), decimals=3))
             else:
-                self[key] = self.com[key] - self.rec[key] - self.lig[key]
+                self[key] = EnergyVector(np.round(self.com[key] - self.rec[key] - self.lig[key], decimals=3))
         for key in self.com.composite_keys:
             self[key] = EnergyVector(self.numframes)
             self.composite_keys.append(key)
@@ -982,7 +999,7 @@ class BindingStatistics(dict):
             if self.traj_protocol == 'ST' and key in self.st_null:
                 continue
             for component in data_key_owner[key]:
-                self[component] = self[key] + self[component]
+                self[component] = EnergyVector(np.round(self[key] + self[component], decimals=3))
 
     def _print_vectors(self, csvwriter):
         """ Output all of the energy terms including the differences if we're
@@ -1136,7 +1153,7 @@ class DeltaDeltaStatistics(dict):
             # self.composite_keys.append(key)
         for key in self.data_keys:
             for component in data_key_owner[key]:
-                self[component] = self[key] + self[component]
+                self[component] = EnergyVector(np.round(self[key] + self[component], decimals=3))
 
     def _print_vectors(self, csvwriter):
         """ Output all of the energy terms including the differences if we're
