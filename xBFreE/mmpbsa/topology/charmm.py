@@ -162,8 +162,8 @@ class BuildTopCHARMM(BuildTop):
 
             if self.part_mut == 'REC':
                 logging.debug('Detecting mutation in Receptor. Building Mutant Receptor topology...')
-                out_prmtop = self.mutant_receptor_pmrtop
-                self.mutant_ligand_pmrtop = None
+                out_prmtop = self.mutant_receptor_prmtop
+                self.mutant_ligand_prmtop = None
                 if self.FILES.receptor_top:
                     mut_namd_top = self.makeMutTop(namd_rec_top, self.part_index)
                 else:
@@ -171,8 +171,8 @@ class BuildTopCHARMM(BuildTop):
                     mut_namd_top.strip(f'!:{rec_indexes_string}')
             else:
                 logging.debug('Detecting mutation in Ligand. Building Mutant Ligand topology...')
-                out_prmtop = self.mutant_ligand_pmrtop
-                self.mutant_receptor_pmrtop = None
+                out_prmtop = self.mutant_ligand_prmtop
+                self.mutant_receptor_prmtop = None
                 if self.FILES.ligand_top:
                     mut_namd_top = self.makeMutTop(namd_lig_top, self.part_index)
                 else:
@@ -188,16 +188,16 @@ class BuildTopCHARMM(BuildTop):
             mut_com_amb_prm = top_class.from_structure(namd_mut_com_top)
             self.fixparm2amber(mut_com_amb_prm)
             mut_com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
-            mut_com_amb_prm.write_parm(self.mutant_complex_pmrtop)
+            mut_com_amb_prm.write_parm(self.mutant_complex_prmtop)
             mut_amb_prm = top_class.from_structure(mut_namd_top)
             self.fixparm2amber(mut_amb_prm)
             mut_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
             mut_amb_prm.write_parm(out_prmtop)
         else:
-            self.mutant_complex_pmrtop = None
+            self.mutant_complex_prmtop = None
 
-        return (self.complex_prmtop, self.receptor_prmtop, self.ligand_prmtop, self.mutant_complex_pmrtop,
-                self.mutant_receptor_pmrtop, self.mutant_ligand_pmrtop)
+        return (self.complex_prmtop, self.receptor_prmtop, self.ligand_prmtop, self.mutant_complex_prmtop,
+                self.mutant_receptor_prmtop, self.mutant_ligand_prmtop)
 
     def read_psf(self, top_file, molid='complex'):
         # load topology

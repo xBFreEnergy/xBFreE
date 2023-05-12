@@ -151,13 +151,13 @@ class BuildTopAmber(BuildTop):
 
             if self.part_mut == 'REC':
                 logging.info('Detecting mutation in Receptor. Building Mutant Receptor topology...')
-                out_prmtop = self.mutant_receptor_pmrtop
-                self.mutant_ligand_pmrtop = None
+                out_prmtop = self.mutant_receptor_prmtop
+                self.mutant_ligand_prmtop = None
                 mut_amb_prm = self.makeMutTop(rec_amb_prm, self.part_index)
             else:
                 logging.info('Detecting mutation in Ligand. Building Mutant Ligand topology...')
-                out_prmtop = self.mutant_ligand_pmrtop
-                self.mutant_receptor_pmrtop = None
+                out_prmtop = self.mutant_ligand_prmtop
+                self.mutant_receptor_prmtop = None
                 mut_amb_prm = self.makeMutTop(lig_amb_prm, self.part_index)
 
             mut_amb_prm.box = None
@@ -165,15 +165,15 @@ class BuildTopAmber(BuildTop):
             logging.info(f"Assigning PBRadii {self.INPUT['general']['PBRadii']} to Mutant topologies...")
             self.radii.assign_radii(mut_com_amb_prm)
             mut_com_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
-            mut_com_amb_prm.write_parm(self.mutant_complex_pmrtop)
+            mut_com_amb_prm.write_parm(self.mutant_complex_prmtop)
             self.radii.assign_radii(mut_amb_prm)
             mut_amb_prm.parm_data['RADIUS_SET'][0] = self.radii.radius_set_text
             mut_amb_prm.write_parm(out_prmtop)
         else:
-            self.mutant_complex_pmrtop = None
+            self.mutant_complex_prmtop = None
 
-        return (self.complex_prmtop, self.receptor_prmtop, self.ligand_prmtop, self.mutant_complex_pmrtop,
-                self.mutant_receptor_pmrtop, self.mutant_ligand_pmrtop)
+        return (self.complex_prmtop, self.receptor_prmtop, self.ligand_prmtop, self.mutant_complex_prmtop,
+                self.mutant_receptor_prmtop, self.mutant_ligand_prmtop)
 
 
     def cleantop(self, top_file, masks, id='complex'):
