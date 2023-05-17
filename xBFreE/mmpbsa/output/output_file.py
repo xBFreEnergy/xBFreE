@@ -27,29 +27,42 @@ from math import sqrt, ceil
 from os import linesep as ls
 import pickle
 from xBFreE import __prog__, __version__
+import hashlib
+from pathlib import Path
+
 
 
 def data2pkl(app):
     info_file = SimpleNamespace(
         INPUT=app.INPUT,
         FILES=app.FILES,
-        size=app.mpi_size,
-        numframes=app.numframes,
-        numframes_nmode=app.numframes_nmode,
-        mutant_index=app.mutant_index,
-        mut_str=app.mut_str,
-        using_chamber=app.using_chamber,
-        input_file=app.input_file_text,
-        COM_PDB=''.join(open(app.FILES.complex_fixed).readlines()),
-        output_file=''.join(open(app.FILES.output_file).readlines()),
-        decomp_output_file=''.join(open(app.FILES.decompout).readlines()) if app.INPUT['decomp']['decomprun']
-        else None
+        INFO=dict(
+            size=app.mpi_size,
+            numframes=app.numframes,
+            numframes_nmode=app.numframes_nmode,
+            mutant_index=app.mutant_index,
+            mut_str=app.mut_str,
+            using_chamber=app.using_chamber,
+            input_file=app.input_file_text,
+            COM_PDB=''.join(open(app.FILES.complex_fixed).readlines()),
+            output_file=''.join(open(app.FILES.output_file).readlines()),
+            decomp_output_file=''.join(open(app.FILES.decompout).readlines()) if app.INPUT['decomp']['decomprun']
+            else None)
     )
 
-    with open('../../COMPACT_RESULTS_MMPBSA.xbfree', "wb") as f:
+    ofile = Path(app.FILES.output_file).parent.joinpath('COMPACT_RESULTS_MMPBSA.xbfree')
+    with ofile.open("wb") as f:
+        pickle.dump({'version': __version__, 'hash': get_file_hash(app.FILES.complex_structure), 'method': 'mmpbsa',
+                     'name': app.INPUT['general']['sys_name']}, f)
         pickle.dump(info_file, f)
         pickle.dump(app.calc_types, f)
 
+def get_file_hash(file_path):
+    with open(file_path, 'rb') as f:
+        file_hash = hashlib.md5()
+        while chunk := f.read(8192):
+            file_hash.update(chunk)
+    return file_hash.hexdigest()
 
 def write_outputs(app):
     """ Writes stability or binding output file """
