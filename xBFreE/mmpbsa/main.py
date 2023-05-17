@@ -865,7 +865,7 @@ class MMPBSA_App(object):
             self.FILES = object()
 
         # create the mmpbsa folder
-        if self.master:
+        if self.master and not self.FILES.rewrite_output:
             if self.mmpbsa_folder.exists():
                 self.remove(-1)
             self.mmpbsa_folder.mkdir()
