@@ -24,6 +24,7 @@ re-supplying all of the information again.
 
 import re
 import warnings
+from pathlib import Path
 from types import SimpleNamespace
 
 class InfoFile(object):
@@ -171,7 +172,7 @@ class InfoFile(object):
         Wrapper to return a string in which str vars are enclosed in quotes and
         numeric types (int and float) are not
         """
-        return "'%s'" % var if isinstance(var, str) else f"{var}"
+        return "'%s'" % var if isinstance(var, (str, Path)) else f"{var}"
 
 
 def _determine_type(thing):
@@ -203,7 +204,24 @@ def _determine_type(thing):
 
     # Check for list
     if thing.startswith('[') and thing.endswith(']'):
-        return eval(thing)
+        t = thing[1:-1]
+        tl = t.split(',')
+        ptl = []
+        for e in tl:
+            if e.startswith('"') and e.endswith('"') or e.startswith("'") and e.endswith("'"):
+                ptl.append(e[1:-1])
+            else:
+                ptl.append(e)
+        # Check for int, then check for float
+        try:
+            return [int(e) for e in ptl]
+        except ValueError:
+            pass
+        try:
+            return [float(e) for e in ptl]
+        except ValueError:
+            pass
+        return [str(e) for e in ptl]
 
     # No idea what else it could be! Return string, but warn
     warnings.warn('Encountered unknown type in info file.\n' +
