@@ -38,9 +38,9 @@ setup(
     description="xBFreE",
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
-    python_requires='>=3.8, <3.11',
-    keywords=['xBFreE', 'xBFreEnergy', 'MMPBSA', 'MMGBSA', 'LIE', 'GROMACS', 'AMBER', 'NAMD', 'CHARMM', 'AmberTools'],
-    install_requires=['pandas>=1.2.2', 'seaborn>=0.11.2', 'mpi4py>=3.1.3', 'scipy>=1.6.1', 'matplotlib>=3.5.1'],
+    python_requires='>=3.9, <3.11',
+    keywords=['xBFreE', 'xBFreEnergy', 'MMPBSA', 'MMGBSA', 'GROMACS', 'AMBER', 'NAMD', 'CHARMM', 'AmberTools'],
+    install_requires=['numpy', 'argcomplete'],
     entry_points={
         "console_scripts": [
             "xbfree=xBFreE.app:run_xbfreex",

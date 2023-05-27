@@ -204,7 +204,7 @@ input_file.addNamelist('pb', 'pb', '(AMBER) Possion-Boltzmann namelist variables
 
 input_file.addNamelist('rism', 'rism', '3D-RISM namelist variables',
                        [
-                           ['xvv', str, 'spc', 'XVV file for 3D-RISM'],
+                           ['xvv', str, 'tip3p', 'XVV file for 3D-RISM'],
                            ['closure', list[str], ['kh'], 'Closure equation to use'],
                            ['gfcorrection', int, 0, 'Compute the Gaussian fluctuation excess chemical potential '
                                                     'functional'],
