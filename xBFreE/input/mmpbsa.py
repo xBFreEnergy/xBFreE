@@ -202,6 +202,82 @@ input_file.addNamelist('pb', 'pb', '(AMBER) Possion-Boltzmann namelist variables
                            ['npbverb', int, 0, 'Option to turn on verbose mode']
                        ], trigger='pbrun')
 
+int2fbool = ['autoc'
+'chebit'
+'clcsrf'
+'exitun'
+'fcrg'
+'loggrp'
+'logpot'
+'membranedata'
+'msigmag'
+'pbx'
+'pby'
+'pbz'
+'phicon'
+'solvpb']
+
+input_file.addNamelist('delphi', 'delphi', '(DelPhi) Possion-Boltzmann namelist variables',
+                       [
+
+                           # ['autoc', bool, 1, ''],
+                           # ['atpods', float, 0.5, ''],
+                           ['bndcon', int, 2, ''],
+                           ['perfil', int, 70, ''],
+                           # ['chebit', int, 0, ''],
+                           # ['clcsrf', int, 0, ''],
+                           # ['confra', int, 1, ''],
+                           # ['conint', int, 10, ''],
+                           # ['cutoff', int, 0, ''],
+                           # ['dencut', float, -1.0, ''],
+                           # ['exdi2', float, 1.00, ''],
+                           # ['exitun', int, 0, ''],
+                           ['exdi', int, 80, ''],
+                           # ['fcrg', int, 0, ''],
+                           # ['framefirst', int, 1, ''],
+                           # ['framelast', int, 1, ''],
+                           # ['framestride', int, 1, ''],
+                           # ['grdcon', float, 0.0, ''],
+                           # ['gsize', int, automatic, ''],
+                           # ['gaussian', int, 0, ''],
+                           # ['gexpmultiplier', int, 1, ''],
+                           # ['gapdi', int, 80, ''],
+                           ['indi', float, 2.0, ''],
+                           ['salt', float, 0.0, ''],
+                           # ['ionrad', int, 0.0 / 2.0, ''],
+                           ['linit', int, 100, ''],
+                           # ['loggrp', int, 0, ''],
+                           # ['logpot', int, 0, ''],
+                           ['maxc', int, 0.01, ''],
+                           # ['membranedata', int, 0, ''],
+                           # ['maxwarn', int, 3, ''],
+                           # ['msigmag', int, 0, ''],
+                           # ['nonit', int, 0, ''],
+                           # ['pbx', int, 0, ''],
+                           # ['pby', int, 0, ''],
+                           # ['pbz', int, 0, ''],
+                           # ['phicon', int, 0, ''],
+                           # ['pressurecoeff', float, 1.0, ''],
+                           ['prbrad', float, 1.4, ''],
+                           # ['radipz', float, -1.0, ''],
+                           # ['radpolextrl', float, 1.0, ''],
+                           # ['radpr2', int, prbrad, ''],
+                           # ['relfac', float, 0.9975, ''],
+                           # ['relpar', float, 1.0, ''],
+                           # ['rmsc', float, 0.0, ''],
+                           # ['salt2', float, 0.0, ''],
+                           ['scale', float, 2, ''],
+                           # ['solvpb', int, 1, ''],
+                           # ['sigma', float, 1.00, ''],
+                           # ['srfcut', float, 20.0, ''],
+                           # ['surfpot', int, 0, ''],
+                           # ['surfdist', float, 0.0, ''],
+                           # ['temperature', int, 297.3342119, ''],
+
+
+
+                       ], trigger='delphirun')
+
 input_file.addNamelist('rism', 'rism', '3D-RISM namelist variables',
                        [
                            ['xvv', str, 'tip3p', 'XVV file for 3D-RISM'],
