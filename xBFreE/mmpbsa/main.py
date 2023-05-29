@@ -106,8 +106,6 @@ class MMPBSA_App(object):
         # If we are rewriting the output file only, bail out here
         if self.FILES.rewrite_output:
             return
-        # This work belongs to the 'setup' timer
-        self.timer.start_timer('setup')
         if not hasattr(self, 'normal_system'):
             xBFreEErrorLogging('MMPBSA_App not set up and parms not checked!', InternalError)
         # Set up some local refs for convenience
@@ -117,10 +115,7 @@ class MMPBSA_App(object):
         # elif master and not FILES.rewrite_output:
         #     self.remove(0)
 
-        # Create input files based on INPUT dict
-        if master:
-            create_inputs(INPUT, self.normal_system)
-        self.timer.stop_timer('setup')
+
 
         # Now create our trajectory files
 
@@ -157,6 +152,15 @@ class MMPBSA_App(object):
                 logging.info('%d frames were processed by cpptraj for nmode calculations.' % self.numframes_nmode)
 
         self.timer.stop_timer('muttraj')
+
+        # This work belongs to the 'setup' timer
+        self.timer.start_timer('setup')
+
+        # Create input files based on INPUT dict
+        if master:
+            create_inputs(INPUT, self.normal_system, self.mpi_size, self.numframes)
+        self.timer.stop_timer('setup')
+
 
         # Add all of the calculation timers
         self.timer.add_timer('calc', 'Total calculation time:')
