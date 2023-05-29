@@ -33,8 +33,9 @@ from xBFreE.mmpbsa.output.amber import (QHout, NMODEout, QMMMout, GBout, PBout, 
                                         BindingStatistics, IEout, C2out, DeltaDeltaStatistics, DeltaIEC2Statistic,
                                         DeltaDeltaQH, GBNSR6out, MMout)
 from xBFreE.mmpbsa.calculation import (CalculationList, EnergyCalculation, PBEnergyCalculation,
-                                   NmodeCalc, QuasiHarmCalc, CopyCalc, PrintCalc, LcpoCalc, MolsurfCalc,
-                                   InteractionEntropyCalc, C2EntropyCalc, MergeOut, ListEnergyCalculation)
+                                       NmodeCalc, QuasiHarmCalc, CopyCalc, PrintCalc, LcpoCalc, MolsurfCalc,
+                                       InteractionEntropyCalc, C2EntropyCalc, MergeOut, ListEnergyCalculation,
+                                       DelPhiCalc)
 from xBFreE.mmpbsa.createinput import create_inputs
 from xBFreE.exceptions import (xBFreE_Error, InternalError, InputError, xBFreEErrorLogging)
 from xBFreE.mmpbsa.infofile import InfoFile

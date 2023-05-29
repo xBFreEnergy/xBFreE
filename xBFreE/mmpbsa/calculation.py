@@ -64,6 +64,12 @@ def pb(output_basename, nframes=1, mpi_size=1, nmode=False):
                 output_folder = Path(_output_folder % i)
                 output_filename = Path(_output_filename)
                 frames += len(list(output_folder.glob(f"{output_filename.stem}*")))
+            elif 'output_delphi' in output_basename:
+                if Path(output_basename % i).exists():
+                    lines = len(Path(output_basename % i).open().readlines())
+                    frames += lines - 1 if lines > 2 else 0
+                else:
+                    frames += 0
             else:
                 obasename = Path(output_basename % i)
                 if not obasename.exists():
@@ -127,8 +133,8 @@ class CalculationList(list):
                     self.timer.start_timer(self.timer_keys[i])
                 if self.labels[i] and rank == 0:
                     logging.info(self.labels[i])
-                    if isinstance(calc, (EnergyCalculation, ListEnergyCalculation, NmodeCalc)):
-                        if isinstance(calc, (EnergyCalculation, ListEnergyCalculation)):
+                    if isinstance(calc, (EnergyCalculation, ListEnergyCalculation, NmodeCalc, DelPhiCalc)):
+                        if isinstance(calc, (EnergyCalculation, ListEnergyCalculation, DelPhiCalc)):
                             nframes = self.nframes
                             nmode = False
                         else:
@@ -223,8 +229,8 @@ class Calculation(object):
 
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-    def __init__(self, prog, prmtop, incrd, inptraj, input_file, output, xvv=None):
-        self.prmtop = str(prmtop)
+    def __init__(self, prog, prmtop=None, incrd=None, inptraj=None, input_file=None, output=None, xvv=None):
+        self.prmtop = str(prmtop) if prmtop else None
         self.incrd = incrd
         self.input_file = input_file
         self.inptraj = inptraj
@@ -245,8 +251,7 @@ class Calculation(object):
         # If this has not been set up yet
         # then raise a stink
         if not self.calc_setup:
-            raise CalcError('Cannot run a calculation without calling its' +
-                            ' its setup() function!')
+            raise CalcError('Cannot run a calculation without calling its its setup() function!')
 
             # Here, make sure that we could pass a file *OR* a string as stdout/stderr.
         # If they are strings, then open files up with that name, and make sure to
@@ -282,7 +287,13 @@ class Calculation(object):
             calc_failed = bool(process.wait())
 
             if calc_failed:
-                raise CalcError(f'{self.program} failed with prmtop {self.prmtop}!')
+                if 'sander' in self.program or 'mmpbsa_py_nmode' in self.program or 'gbnsr6' in self.program:
+                    raise CalcError(f'{self.program} failed with prmtop {self.prmtop}!\nPlease, check the '
+                                    f'{self.output} file!')
+                elif 'delphi' in self.program:
+                    raise CalcError(f'{self.program} failed!\n')
+                else:
+                    raise CalcError(f"{self.program} failed!")
         finally:
             if own_handleo: process_stdout.close()
             if own_handlee: process_stdout.close()
@@ -298,12 +309,33 @@ class Calculation(object):
         self.calc_setup = True
 
 
+
+class DelPhiCalc(Calculation):
+    """ Quasi-harmonic entropy calculation class """
+
+    def __init__(self, prog, input_file):
+        """ Initializes the Quasi-harmonic calculation class """
+        Calculation.__init__(self, prog=prog, input_file=input_file)
+
+        self.calc_setup = False
+
+    # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+
+    def setup(self):
+        """ Sets up a Quasi-harmonic calculation """
+        self.command_args.append(self.input_file)
+        self.calc_setup = True
+
+    def run(self, rank, *args, **kwargs):
+        Calculation.run(self, rank, stdout=open(f"delphi_{rank}.log", 'a'))
+
+
 class EnergyCalculation(Calculation):
     """ Uses mmpbsa_py_energy to evaluate energies """
 
-    def __init__(self, prog, prmtop, incrd, inptraj, input_file, output, restrt, xvv=None):
-        Calculation.__init__(self, prog, prmtop, incrd, inptraj,
-                             input_file, output, xvv)
+    def __init__(self, prog=None, prmtop=None, incrd=None, inptraj=None, input_file=None, output=None, restrt=None,
+                 xvv=None):
+        Calculation.__init__(self, prog, prmtop, incrd, inptraj, input_file, output, xvv)
         self.restrt = restrt
 
     def setup(self):
@@ -730,7 +762,9 @@ class CopyCalc(Calculation):
 
 
 class MergeOut(Calculation):
-    def __init__(self, prog, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose):
+    def __init__(self, prog=None, topology=None, output_filename=None, mm_filename=None, mdout_filenames=None,
+                 idecomp=None, dec_verbose=None, input_file=None):
+        Calculation.__init__(self, prog=prog)
         self.prog = prog
         self.topology = topology
         self.output_filename = output_filename
@@ -738,13 +772,20 @@ class MergeOut(Calculation):
         self.mdouts = mdout_filenames
         self.idecomp = idecomp
         self.dec_verbose = dec_verbose
+        self.inputfile = input_file
 
 
     def run(self, rank, stdout=None, stderr=None):
         # Do rank-substitution if necessary
         out_filename = self.output_filename % rank if '%d' in self.output_filename else self.output_filename
         mm_filename = self.mm_filename % rank if '%d' in self.mm_filename else self.mm_filename
-        MergeOutput(self.prog, self.topology, out_filename, mm_filename, self.mdouts, self.idecomp, self.dec_verbose)
+        mdout_filename = self.mdouts % rank if '%d' in self.mdouts else self.mdouts
+        if self.inputfile:
+            input_filename = self.inputfile % rank if '%d' in self.inputfile else self.inputfile
+        else:
+            input_filename = None
+        MergeOutput(self.prog, self.topology, out_filename, mm_filename, mdout_filename, self.idecomp, self.dec_verbose,
+                    input_filename)
 
 
 class PrintCalc(Calculation):
@@ -931,13 +972,14 @@ def _get_decomp(pw, idecomp, dec_verbose, t):
 
 
 class MergeOutput():
-    def __init__(self, prog, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose):
+    def __init__(self, prog, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose, input_file):
         self.prog = prog
         self.topology = topology
         self.output_filename = output_filename
         self.mm_filename = mm_filename
         self.mdout_filenames = mdout_filenames
         self.idecomp = idecomp
+        self.inputfile = input_file
 
         self.dec_verbose = dec_verbose
         self.header = f'''
@@ -1074,20 +1116,39 @@ class MergeOutput():
                 break
         return {'energy': energy, 'decomp':decomp}
 
-    def read_energy_output(self, res2print):
+    def read_energy_output(self, res2print=None):
 
         energy = {}
         decomp = {}
-        for i, filename in enumerate(self.mdout_filenames, start=1):
-            jsonfilename = Path(filename).with_suffix('.json')
-            with open(jsonfilename, 'r') as openfile:
-                data = json.load(openfile)
-                if i == 1:
-                    file_assignments = data['file_assignments']
-                    inputfile = data['inputfile']
-                energy[i] = data['results_section']['energy']
-            if self.idecomp:
-                decomp[i] = self.get_decomp(data['results_section']['decomp'], res2print)
+
+        if self.prog == 'delphi':
+            file_assignments = []
+            inputfile = open(self.inputfile).readlines()
+            energy['EPB'] = {}
+            frame = 1
+            with open(self.mdout_filenames) as of:
+                for l, line in enumerate(of):
+                    if not l:
+                        continue
+                    nc_solv, nc_eel, nc_nonp, nc_edisp = line.strip('\n').split()[1:-1]
+                    # 1 kT = 0.5922 kcal/mol
+                    energy[frame] = {'EPB': float(nc_solv.strip()) * 0.5922,
+                                     'EEL': float(nc_eel.strip()) * 0.5922,
+                                     'ENPOLAR': float(nc_nonp.strip()) * 0.5922,
+                                     'EDISPER': float(nc_edisp.strip()) * 0.5922}
+                    frame += 1
+
+        else:   # at the moment we can keep gbnsr6 as default. Eventually, pbsa and pbsa.cuda has the same structure
+            for i, filename in enumerate(self.mdout_filenames, start=1):
+                jsonfilename = Path(filename).with_suffix('.json')
+                with open(jsonfilename, 'r') as openfile:
+                    data = json.load(openfile)
+                    if i == 1:
+                        file_assignments = data['file_assignments']
+                        inputfile = data['inputfile']
+                    energy[i] = data['results_section']['energy']
+                if self.idecomp:
+                    decomp[i] = self.get_decomp(data['results_section']['decomp'], res2print)
 
         results = {'energy': energy, 'decomp':decomp}
         return {'file_assignments': file_assignments, 'inputfile': inputfile, 'results_section': results}
@@ -1205,7 +1266,8 @@ class MergeOutput():
                 output_file.write(f'minimizing coord set #       {i}\n\n')
                 mmenergy[i].pop('EGB')
                 mmenergy[i].pop('EEL')
-                mmenergy[i].pop('1-4 EEL')
+                if '1-4 EEL' in solenergy[i]:
+                    mmenergy[i].pop('1-4 EEL')
                 for e, ev in solenergy[i].items():
                     mmenergy[i][e] = ev
                 for k, kl in enumerate(k2print):
