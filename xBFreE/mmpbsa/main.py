@@ -166,6 +166,8 @@ class MMPBSA_App(object):
             self.timer.add_timer('gbnsr6', 'Total GBNSR6 calculation time:')
         if INPUT['pb']['pbrun']:
             self.timer.add_timer('pb', 'Total PB calculation time:')
+        if INPUT['delphi']['delphirun']:
+            self.timer.add_timer('delphi', 'Total DelPhi calculation time:')
         if INPUT['rism']['rismrun']:
             self.timer.add_timer('rism', 'Total 3D-RISM calculation time:')
         if INPUT['nmode']['nmoderun']:
@@ -234,6 +236,7 @@ class MMPBSA_App(object):
 
         progs = {'gb': self.external_progs.get('sander'),
                  'gbnsr6': self.external_progs.get('gbnsr6'),
+                 'delphi': self.external_progs.get('delphi'),
                  'sa': self.external_progs.get('cpptraj'),
                  'pb': self.external_progs.get('sander'),
                  'rism': self.external_progs.get('sander'),
@@ -558,6 +561,98 @@ class MMPBSA_App(object):
                                           timer_key='pb', output_basename='%sligand_pb.mdout.%%d' % (prefix))
         # end if self.INPUT['pb']['pbrun']
 
+        # Delphi calculation
+        if self.INPUT['delphi']['delphirun']:
+            incrd = '%sdummy%%s.inpcrd' % prefix
+
+            self.calc_list.append(PrintCalc(f"Beginning DelPhi calculations with {progs['delphi']}"),
+                                  timer_key='delphi')
+            self.calc_list.append(PrintCalc("  calculating complex contribution..."),
+                                  timer_key='delphi')
+            c = EnergyCalculation(progs['gb'], parm_system.complex_prmtop,
+                                  incrd % 'complex',
+                                  '%scomplex.%s.%%d' % (prefix, trj_sfx),
+                                  'mm_delphi.mdin',
+                                  f'{prefix}complex_mm_delphi.mdout.%d',
+                                  'restrt.%d')
+            self.calc_list.append(c, '    calculating MM...', timer_key='delphi',
+                                  output_basename=f'{prefix}complex_mm_delphi.mdout.%d')
+
+            c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}complex.parm.%d')
+            self.calc_list.append(c, '    calculating PB...', timer_key='delphi',
+                                  output_basename=f'{prefix}complex_output_delphi.mdout.%d')
+            c = MergeOut(prog='delphi', topology=self.FILES.complex_prmtop,
+                         output_filename=f"{prefix}complex_delphi.mdout.%d",
+                         mm_filename=f'{prefix}complex_mm_delphi.mdout.%d',
+                         mdout_filenames=f'{prefix}complex_output_delphi.mdout.%d',
+                         input_file=f'delphi_{prefix}complex.parm.%d')
+            self.calc_list.append(c, '', timer_key='delphi')
+
+            if not self.stability:
+                # Either copy the existing receptor if the mutation is in the ligand
+                # or perform a receptor calculation
+                if copy_receptor:
+                    c = CopyCalc('receptor_mm_delphi.mdout.%d', f'{prefix}receptor_mm_delphi.mdout.%d')
+                    self.calc_list.append(c, '  no mutation found in receptor; '
+                                             'using unmutated files', timer_key='delphi')
+                    c = CopyCalc('receptor_delphi.mdout.%d', f'{prefix}receptor_delphi.mdout.%d')
+                    self.calc_list.append(c, '', timer_key='delphi')
+                else:
+
+                    self.calc_list.append(PrintCalc("  calculating receptor contribution..."),
+                                          timer_key='delphi')
+                    c = EnergyCalculation(progs['gb'], parm_system.receptor_prmtop,
+                                          incrd % 'receptor',
+                                          f'{prefix}receptor.{trj_sfx}.%d',
+                                          'mm_delphi.mdin',
+                                          f'{prefix}receptor_mm_delphi.mdout.%d',
+                                          'restrt.%d')
+
+                    self.calc_list.append(c, '    calculating MM...', timer_key='delphi',
+                                          output_basename=f'{prefix}receptor_mm_delphi.mdout.%d')
+
+                    c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}receptor.parm.%d')
+                    self.calc_list.append(c, '    calculating PB...', timer_key='delphi',
+                                          output_basename=f'{prefix}receptor_output_delphi.mdout.%d')
+                    c = MergeOut(prog='delphi', topology=self.FILES.receptor_prmtop,
+                                 output_filename=f"{prefix}receptor_delphi.mdout.%d",
+                                 mm_filename=f'{prefix}receptor_mm_delphi.mdout.%d',
+                                 mdout_filenames=f'{prefix}receptor_output_delphi.mdout.%d',
+                                 input_file=f'delphi_{prefix}receptor.parm.%d')
+                    self.calc_list.append(c, '', timer_key='delphi')
+
+
+                # Either copy the existing ligand if the mutation is in the receptor
+                # or perform a ligand calculation
+                if copy_ligand:
+                    c = CopyCalc('ligand_mm_delphi.mdout.%d', f'{prefix}ligand_mm.mdout.%d')
+                    self.calc_list.append(c, '  no mutation found in ligand; '
+                                             'using unmutated files', timer_key='delphi')
+                    c = CopyCalc('ligand_delphi.mdout.%d', f'{prefix}ligand_delphi.mdout.%d')
+                    self.calc_list.append(c, '', timer_key='delphi')
+                else:
+                    self.calc_list.append(PrintCalc("  calculating ligand contribution..."),
+                                          timer_key='delphi')
+                    c = EnergyCalculation(progs['gb'], parm_system.ligand_prmtop,
+                                          incrd % 'ligand',
+                                          f'{prefix}ligand.{trj_sfx}.%d',
+                                          'mm_delphi.mdin',
+                                          f'{prefix}ligand_mm_delphi.mdout.%d',
+                                          'restrt.%d')
+
+                    self.calc_list.append(c, '    calculating MM...', timer_key='delphi',
+                                          output_basename=f'{prefix}ligand_mm_delphi.mdout.%d')
+
+                    c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}ligand.parm.%d')
+                    self.calc_list.append(c, '    calculating PB...', timer_key='delphi',
+                                          output_basename=f'{prefix}ligand_output_delphi.mdout.%d')
+                    c = MergeOut(prog='delphi', topology=self.FILES.ligand_prmtop,
+                                 output_filename=f"{prefix}ligand_delphi.mdout.%d",
+                                 mm_filename=f'{prefix}ligand_mm_delphi.mdout.%d',
+                                 mdout_filenames=f'{prefix}ligand_output_delphi.mdout.%d',
+                                 input_file=f'delphi_{prefix}ligand.parm.%d')
+                    self.calc_list.append(c, '', timer_key='delphi')
+
         if self.INPUT['rism']['rismrun']:
             mdin = 'rism.mdin'
             # get xvv file from INPUT
@@ -851,6 +946,9 @@ class MMPBSA_App(object):
         if self.INPUT['pb']['pbrun']:
             self.timer.print_('pb')
 
+        if self.INPUT['delphi']['delphirun']:
+            self.timer.print_('delphi')
+
         if self.INPUT['nmode']['nmoderun']:
             self.timer.print_('nmode')
 
@@ -1092,6 +1190,7 @@ class MMPBSA_App(object):
                 and not INPUT['nmode']['nmoderun']
                 and not INPUT['general']['qh_entropy']
                 and not INPUT['gbnsr6']['gbnsr6run']
+                and not INPUT['delphi']['delphirun']
         ):
             xBFreEErrorLogging('You did not specify any type of calculation!', InputError)
 
@@ -1143,6 +1242,7 @@ class MMPBSA_App(object):
         # Assigning variables
         # set the pbtemp = temperature
         self.INPUT['pb']['pbtemp'] = self.INPUT['general']['temperature']
+        self.INPUT['delphi']['temperature'] = self.INPUT['general']['temperature']
         # self.INPUT['gbnsr6']['istrng'] = self.INPUT['gbnsr6']['istrng'] * 1000
 
         logging.info(f'Checking {self.FILES.input_file} input file... Done.\n')
@@ -1194,13 +1294,13 @@ class MMPBSA_App(object):
         # their key in the calc_types dict, the base name of their output files
         # without the prefix (with %s-substitution for complex, receptor, or
         # ligand), and the class for their output
-        nmls = ('nmode', 'gb', 'pb', 'rism', 'rism', 'rism', 'gbnsr6')
+        nmls = ('nmode', 'gb', 'pb', 'rism', 'rism', 'rism', 'gbnsr6', 'delphi')
         triggers = ('nmoderun', 'gbrun', 'pbrun', 'rismrun_std', 'rismrun_gf', 'rismrun_pcplus',
-                    'gbnsr6run')
-        outclass = (NMODEout, GBClass, PBout, RISM_Std, RISM_GF, RISM_PCplus, GBNSR6out)
-        outkey = ('nmode', 'gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6')
+                    'gbnsr6run', 'delphirun')
+        outclass = (NMODEout, GBClass, PBout, RISM_Std, RISM_GF, RISM_PCplus, GBNSR6out, PBout)
+        outkey = ('nmode', 'gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6', 'delphi')
         basename = ('%s_nm.out', '%s_gb.mdout', '%s_pb.mdout', '%s_rism.mdout', '%s_rism.mdout', '%s_rism.mdout',
-                    '%s_gbnsr6.mdout')
+                    '%s_gbnsr6.mdout', '%s_delphi.mdout')
 
         for i, key in enumerate(outkey):
             if not INPUT.get(nmls[i]) or not INPUT[nmls[i]].get(triggers[i]) or not INPUT[nmls[i]][triggers[i]]:
@@ -1272,7 +1372,7 @@ class MMPBSA_App(object):
             self._get_decomp()
 
     def get_iec2entropy(self, from_calc):
-        allowed_met = ['gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6']
+        allowed_met = ['gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6', 'delphi']
         if self.INPUT['general']['interaction_entropy']:
             self.calc_types.normal['ie'] = {}
         if self.INPUT['general']['c2_entropy']:
