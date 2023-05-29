@@ -51,7 +51,25 @@ def _get_arad(prmtop, arad_method):
     stdoutdata = subprocess.getoutput(f"elsize COM.pqr -hea")
     return stdoutdata.split()[arad_method * -1]
 
-def create_inputs(INPUT, prmtop_system):
+def save_size(prmtop, mol):
+    top = parmed.load_file(f"{prmtop}.prmtop")
+    siz = open(f"{mol}_size.siz", 'w')
+    siz.write('atom__res_radius_\n')
+
+    vdw = open(f"{mol}_vdw.vdw", 'w')
+    vdw.write('atom__sigma___epsilon_gamma___\n')
+    for at in top.atoms:
+        if len(at.residue.name) == 4:
+            at.residue.name = at.residue.name[1:]
+        siz.write(f"{at.name:<6s}{at.residue.name:<6}{at.solvent_radius:.3f}\n")
+        vdw.write(f"{at.name:<6s}{at.sigma:>8.4f}{at.epsilon:8.4f}{1.0000:>8.4f}\n")
+    siz.close()
+    vdw.close()
+    # we need to save this top because delphi end in error when terminal residues (N* or C*) exists
+    top.save(f"{prmtop}_delphi.prmtop")
+
+
+def create_inputs(INPUT, prmtop_system, mpisize=None, num_frames=1):
     """ Creates the input files for all necessary calculations """
     stability = prmtop_system.stability
 
@@ -224,8 +242,29 @@ def create_inputs(INPUT, prmtop_system):
             rism_mdin = SanderRISMInput(INPUT)
             rism_mdin.make_mdin()
             rism_mdin.write_input('rism.mdin')
+    # We need to manage delphi independent since parameters and files are defined in the parm file
+    if INPUT['delphi']['delphirun']:
+        mm_mdin = SanderMMInput(INPUT)
+        mm_mdin.set_delphi_param()
+        mm_mdin.make_mdin()
+        mm_mdin.write_input('mm_delphi.mdin')
 
-    # end if decomprun
+        pb_mdin = DelPhiInput(INPUT, mpisize, num_frames)
+        pb_mdin.write_input("complex")
+        save_size('COM', 'complex')
+        if INPUT['ala']['alarun']:
+            pb_mdin.write_input("mutant_complex")
+            save_size('MUT_COM', 'mutant_complex')
+        if not stability:
+            pb_mdin.write_input("receptor")
+            save_size('REC', 'receptor')
+            pb_mdin.write_input("ligand")
+            save_size('LIG', 'ligand')
+            if INPUT['ala']['alarun']:
+                pb_mdin.write_input("mutant_receptor")
+                save_size('MUT_REC', 'mutant_receptor')
+                pb_mdin.write_input("mutant_ligand")
+                save_size('MUT_LIG', 'mutant_ligand')
 
     if INPUT['general']['qh_entropy']:  # quasi-harmonic approximation input file
         trj_suffix = 'nc' if INPUT['general']['netcdf'] else 'mdcrd'
@@ -238,6 +277,56 @@ def create_inputs(INPUT, prmtop_system):
             qh_in = QuasiHarmonicInput(com_mask, rec_mask, lig_mask, temperature=INPUT['temperature'],
                                        stability=stability, prefix='mutant_', trj_suffix=trj_suffix)
             qh_in.write_input('mutant_cpptrajentropy.in')
+
+
+class DelPhiInput(object):
+    def __init__(self, INPUT, mpisize, num_frames):
+        self.INPUT = INPUT
+        self.mpisize = mpisize
+        self.num_frames = num_frames
+
+        self.input_items = {
+            'perfil': 70,'bndcon':2, 'linit': 1000,'maxc': 0.01,'prbrad': 1.4, 'scale': 2.5,
+            'exdi': 80,
+            'indi': 2,
+            }
+
+        self.name_map = {
+            'perfil': 'perfil', 'bndcon': 'bndcon', 'linit': 'linit', 'maxc': 'maxc',
+            'prbrad': 'prbrad', 'scale': 'scale', 'framelast': 'framelast', 'exdi': 'exdi', 'indi': 'indi',
+        }
+
+    def write_input(self, mol):
+        """ Write the input file """
+
+        suffix = 'nc' if self.INPUT['general']['netcdf'] else 'mdcrd'
+        if mol.startswith('mutant'):
+            top_name = 'MUT_' + mol.split('_')[1][:3].upper()
+        else:
+            top_name = mol[:3].upper()
+        frames_per_rank = self.num_frames // self.mpisize
+        extras = self.num_frames % self.mpisize
+
+        for rank in range(self.mpisize):
+            with open(f"delphi_{mol}.parm.{rank}", 'w') as of:
+                for k, v in self.input_items.items():
+                    of.write(f"{k}={v}\n")
+                if rank == self.mpisize - 1:
+                    of.write(f"framelast={extras or frames_per_rank}\n")
+                else:
+                    of.write(f"framelast={frames_per_rank}\n")
+
+                # energy computation
+                of.write('energy(n,s,c)\n')
+                of.write(f'out(energy,file="{mol}_output_delphi.mdout.{rank}")\n\n')
+
+                of.write(f'in(topol,file="{top_name}_delphi.prmtop",format=prmtop)\n')
+                of.write(f'in(traj,file="{mol}.{suffix}.{rank}",format={suffix})\n')
+                # generated from selected radii
+                of.write(f'in(siz,file="{mol}_size.siz")\n')
+                of.write(f'in(vdw,file="{mol}_vdw.vdw")\n\n')
+
+
 
 
 class SanderInput(object):
@@ -369,6 +458,13 @@ class SanderMMInput(SanderInput):
         transferable = {'epsin': 'intdiel', 'epsout': 'extdiel', 'istrng': 'saltcon', 'cavity_surften': 'surften'}
         for gbnsr6k, gbk in transferable.items():
             self.input_items[gbk] = self.INPUT['gbnsr6'][gbnsr6k]
+
+    def set_delphi_param(self):
+        transferable = {'indi': 'intdiel', 'exdi': 'extdiel', 'salt': 'saltcon'}
+        for delphik, gbk in transferable.items():
+            self.input_items[gbk] = self.INPUT['delphi'][delphik]
+
+
 
 
 class SanderMMDecomp(SanderMMInput):
