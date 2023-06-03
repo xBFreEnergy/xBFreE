@@ -63,30 +63,18 @@ theme:
 
   palette:
     - scheme: default
-      primary: black
-      accent: black
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
     - scheme: slate
-      primary: black
-      accent: black
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/weather-night
         name: Switch to light mode
 
-#    - scheme: default
-#      primary: black
-#      accent: black
-#      toggle:
-#        icon: material/weather-sunny
-#        name: Switch to dark mode
-#    - scheme: slate
-#      primary: black
-#      accent: black
-#      toggle:
-#        icon: material/weather-night
-#        name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono
@@ -102,6 +90,9 @@ plugins:
   - git-revision-date-localized:
       type: timeago
       enable_creation_date: true
+  - git-committers:
+      repository: xBFreEnergy/xBFreEnergy.github.io
+      branch: master
   - minify:
       minify_html: true
 
@@ -123,7 +114,7 @@ extra:
           data: 0
           note: >-
             Thanks for your feedback! Help us improve this page by
-            using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+            using our <a href="https://github.com/xBFreEnergy/xBFreE/issues/new" target="_blank" rel="noopener">feedback form</a>.
 
   social:
     - icon: fontawesome/brands/github
@@ -134,8 +125,9 @@ extra:
     title: Cookie consent
     description: >-
       We use Google Analytics as a third party tracking service. We do not share, sell, rent, or trade this information 
-      with third parties for their commercial purposes; and we only use it as this Privacy Policy describes. This helps
-      us improve documentation and have usage statistics to apply for financing. Thank you.
+      with third parties for their commercial purposes; and we only use it as this 
+      <a href="/help/private_policy/">Privacy Policy</a> describes. This helps us improve documentation and have 
+      usage statistics to apply for financing. Thank you.
     actions:
       - accept
 # Extensions
