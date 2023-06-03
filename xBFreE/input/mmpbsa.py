@@ -274,6 +274,8 @@ input_file.addNamelist('delphi', 'delphi', '(DelPhi) Possion-Boltzmann namelist 
                            # ['surfdist', float, 0.0, ''],
                            # ['temperature', int, 297.3342119, ''],
 
+                        # SA calcualtions
+                           ['molsurf', int, 0, ''],
 
 
                        ], trigger='delphirun')
