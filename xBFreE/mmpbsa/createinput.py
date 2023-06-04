@@ -224,7 +224,8 @@ def create_inputs(INPUT, prmtop_system, mpisize=None, num_frames=1):
         # We only need to run it once for the GBNSR6, pbsa.cuda and APBS calculations.
         if INPUT['gbnsr6']['gbnsr6run']:
             mm_mdin = SanderMMInput(INPUT)
-            mm_mdin.set_gbnsr6_param()
+            # Avoid to run GB in sander when no decomp is calculated since all electrostatic terms are calc by GBNSR6
+            # mm_mdin.set_gbnsr6_param()
             mm_mdin.make_mdin()
             mm_mdin.write_input('mm_gbnsr6.mdin')
 
@@ -435,7 +436,7 @@ class SanderMMInput(SanderInput):
         self.input_items = {'ntb': 0, 'cut': 999.0, 'nsnb': 99999, 'idecomp': 0, 'offset': -999999.0,
                    'imin': 5, 'maxcyc': 1, 'ncyc': 0, 'gbsa': 0, 'ioutfm': 0, 'dec_verbose': 0,
                    # Basic options
-                   'igb': 5, 'intdiel': 1.0, 'extdiel': 78.5, 'saltcon': 0.0, 'surften': 0.0072,
+                   'igb': 0, 'intdiel': 1.0, 'extdiel': 78.5, 'saltcon': 0.0, 'surften': 0.0072,
                    }
 
         self.parent_namelist = {'ntb': 'cntrl', 'cut': 'cntrl', 'nsnb': 'cntrl', 'idecomp': 'cntrl', 'offset': 'cntrl',
@@ -458,6 +459,7 @@ class SanderMMInput(SanderInput):
         transferable = {'epsin': 'intdiel', 'epsout': 'extdiel', 'istrng': 'saltcon', 'cavity_surften': 'surften'}
         for gbnsr6k, gbk in transferable.items():
             self.input_items[gbk] = self.INPUT['gbnsr6'][gbnsr6k]
+        self.input_items['igb'] = 5
 
     def set_delphi_param(self):
         transferable = {'indi': 'intdiel', 'exdi': 'extdiel', 'salt': 'saltcon'}
@@ -487,10 +489,10 @@ class SanderMMDecomp(SanderMMInput):
         for card in cards:
             self.mdin.AddCard(card[0], card[1])
 
-    def set_gbnsr6_param(self):
-        transferable = {'epsin': 'intdiel', 'epsout': 'extdiel', 'istrng':'saltcon', 'cavity_surften': 'surften'}
-        for gbnsr6k, gbk in transferable.items():
-            self.input_items[gbk] = self.INPUT['gbnsr6'][gbnsr6k]
+    # def set_gbnsr6_param(self):
+    #     transferable = {'epsin': 'intdiel', 'epsout': 'extdiel', 'istrng':'saltcon', 'cavity_surften': 'surften'}
+    #     for gbnsr6k, gbk in transferable.items():
+    #         self.input_items[gbk] = self.INPUT['gbnsr6'][gbnsr6k]
 
 
 class SanderRISMInput(SanderInput):
