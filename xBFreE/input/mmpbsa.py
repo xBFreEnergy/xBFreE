@@ -275,7 +275,11 @@ input_file.addNamelist('delphi', 'delphi', '(DelPhi) Possion-Boltzmann namelist 
                            # ['temperature', int, 297.3342119, ''],
 
                         # SA calcualtions
-                           ['molsurf', int, 0, ''],
+                           ['surften', float, 0.005, 'Surface tension'],
+                           ['surfoff', float, 0.0, 'Surface tension offset'],
+                           ['molsurf', int, 0, 'Use Connelly surface (\'molsurf\' program)'],
+                           ['msoffset', float, 0.0, 'Offset for molsurf calculation'],
+
 
 
                        ], trigger='delphirun')
