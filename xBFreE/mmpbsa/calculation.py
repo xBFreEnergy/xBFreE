@@ -729,8 +729,7 @@ class MolsurfCalc(SurfCalc):
     def _get_instring(self, rank):
         inptraj = self.inptraj % rank
         output = self.output % rank
-        return "trajin %s\nmolsurf :* out %s probe %s offset %s" % (inptraj,
-                                                                    output, self.probe, self.offset)
+        return "trajin %s\nmolsurf :* out %s probe %s offset %s" % (inptraj, output, self.probe, self.offset)
 
 
 class CopyCalc(Calculation):
@@ -1127,9 +1126,9 @@ class MergeOutput():
                     nc_solv, nc_eel, nc_nonp, nc_edisp = line.strip('\n').split()[1:-1]
                     # 1 kT = 0.5922 kcal/mol
                     energy[frame] = {'EPB': float(nc_solv.strip()) * 0.5922,
-                                     'EEL': float(nc_eel.strip()) * 0.5922,
-                                     'ENPOLAR': float(nc_nonp.strip()) * 0.5922,
-                                     'EDISPER': float(nc_edisp.strip()) * 0.5922}
+                                     # 'EEL': float(nc_eel.strip()) * 0.5922,
+                                     'ENPOLAR': 0.0,
+                                     'EDISPER': 0.0}
                     frame += 1
 
         else:   # at the moment we can keep gbnsr6 as default. Eventually, pbsa and pbsa.cuda has the same structure
@@ -1259,10 +1258,16 @@ class MergeOutput():
 
             for i, _ in enumerate(range(len(mmenergy)), start=1):
                 output_file.write(f'minimizing coord set #       {i}\n\n')
-                mmenergy[i].pop('EGB')
-                mmenergy[i].pop('EEL')
-                if '1-4 EEL' in solenergy[i]:
-                    mmenergy[i].pop('1-4 EEL')
+                if self.prog == 'delphi':
+                    # scale EEL according to indi
+                    mmenergy[i]['EEL'] = mmenergy[i]['EEL'] / self.INPUT['delphi']['indi']
+                    mmenergy[i]['1-4 EEL'] = mmenergy[i]['1-4 EEL'] / self.INPUT['delphi']['indi']
+                else:
+                    # gbnsr6
+                    for tt in ['EGB', 'EEL', '1-4 EEL']:
+                        if tt in solenergy[i] and tt in mmenergy[i]:
+                            mmenergy[i].pop(tt)
+
                 for e, ev in solenergy[i].items():
                     mmenergy[i][e] = ev
                 for k, kl in enumerate(k2print):
