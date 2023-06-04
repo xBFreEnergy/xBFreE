@@ -690,14 +690,12 @@ class SurfCalc(Calculation):
         # If this has not been set up yet
         # then raise a stink
         if not self.calc_setup:
-            raise CalcError('Cannot run a calculation without calling its' +
-                            ' its setup() function!')
+            raise CalcError('Cannot run a calculation without calling its its setup() function!')
 
             # Make sure the inptraj and output are rank-substituted
         instring = self._get_instring(rank)
-
-        process = Popen([self.program, self.prmtop], stdin=PIPE, stdout=PIPE,
-                        stderr=PIPE)
+        output = self.output.replace('.dat.', '.cpptrajout.') % rank
+        process = Popen([self.program, self.prmtop], stdin=PIPE, stdout=open(output, 'w'), stderr=PIPE)
 
         out, err = process.communicate(instring.encode())
 
