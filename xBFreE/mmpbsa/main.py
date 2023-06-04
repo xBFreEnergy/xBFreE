@@ -406,9 +406,12 @@ class MMPBSA_App(object):
             self.calc_list.append(c, '    calculating GB...', timer_key='gbnsr6',
                                       output_basename=f"inpcrd_%d/{prefix}complex_gbnsr6.mdout")
 
-            c = MergeOut('gbnsr6', self.FILES.complex_prmtop, f"{prefix}complex_gbnsr6.mdout.%d",
-                         f'{prefix}complex_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
-                         self.INPUT['decomp']['dec_verbose'])
+            c = MergeOut(prog='gbnsr6',
+                         topology=self.FILES.complex_prmtop,
+                         output_filename=f"{prefix}complex_gbnsr6.mdout.%d",
+                         mm_filename=f'{prefix}complex_mm.mdout.%d',
+                         mdout_filenames=mdouts,
+                         INPUT=self.INPUT)
             self.calc_list.append(c, '', timer_key='gbnsr6')
 
             if not self.stability:
@@ -450,9 +453,12 @@ class MMPBSA_App(object):
                     self.calc_list.append(c, '    calculating GB...', timer_key='gbnsr6',
                                           output_basename=f"inpcrd_%d/{prefix}receptor_gbnsr6.mdout")
 
-                    c = MergeOut('gbnsr6', self.FILES.receptor_prmtop, f"{prefix}receptor_gbnsr6.mdout.%d",
-                                 f'{prefix}receptor_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
-                                 self.INPUT['decomp']['dec_verbose'])
+                    c = MergeOut(prog='gbnsr6',
+                                 topology=self.FILES.receptor_prmtop,
+                                 output_filename=f"{prefix}receptor_gbnsr6.mdout.%d",
+                                 mm_filename=f'{prefix}receptor_mm.mdout.%d',
+                                 mdout_filenames=mdouts,
+                                 INPUT=self.INPUT)
                     self.calc_list.append(c, '', timer_key='gbnsr6')
 
                 try:
@@ -492,9 +498,12 @@ class MMPBSA_App(object):
                     c = ListEnergyCalculation('gbnsr6', progs['gbnsr6'], parm_system.ligand_prmtop, mdin, inpcrds, mdouts)
                     self.calc_list.append(c, '    calculating GB...', timer_key='gbnsr6',
                                           output_basename=f"inpcrd_%d/{prefix}ligand_gbnsr6.mdout")
-                    c = MergeOut('gbnsr6', self.FILES.ligand_prmtop, f"{prefix}ligand_gbnsr6.mdout.%d",
-                                 f'{prefix}ligand_mm.mdout.%d', mdouts, self.INPUT['decomp']['idecomp'],
-                                 self.INPUT['decomp']['dec_verbose'])
+                    c = MergeOut(prog='gbnsr6',
+                                 topology=self.FILES.ligand_prmtop,
+                                 output_filename=f"{prefix}ligand_gbnsr6.mdout.%d",
+                                 mm_filename=f'{prefix}ligand_mm.mdout.%d',
+                                 mdout_filenames=mdouts,
+                                 INPUT=self.INPUT)
                     self.calc_list.append(c, '', timer_key='gbnsr6')
 
         # Next load the PB calculations
@@ -601,7 +610,8 @@ class MMPBSA_App(object):
                          output_filename=f"{prefix}complex_delphi.mdout.%d",
                          mm_filename=f'{prefix}complex_mm_delphi.mdout.%d',
                          mdout_filenames=f'{prefix}complex_output_delphi.mdout.%d',
-                         input_file=f'delphi_{prefix}complex.parm.%d')
+                         input_file=f'delphi_{prefix}complex.parm.%d',
+                         INPUT=self.INPUT)
             self.calc_list.append(c, '', timer_key='delphi')
 
             if not self.stability:
@@ -639,7 +649,8 @@ class MMPBSA_App(object):
                                  output_filename=f"{prefix}receptor_delphi.mdout.%d",
                                  mm_filename=f'{prefix}receptor_mm_delphi.mdout.%d',
                                  mdout_filenames=f'{prefix}receptor_output_delphi.mdout.%d',
-                                 input_file=f'delphi_{prefix}receptor.parm.%d')
+                                 input_file=f'delphi_{prefix}receptor.parm.%d',
+                                 INPUT=self.INPUT)
                     self.calc_list.append(c, '', timer_key='delphi')
 
 
@@ -676,7 +687,8 @@ class MMPBSA_App(object):
                                  output_filename=f"{prefix}ligand_delphi.mdout.%d",
                                  mm_filename=f'{prefix}ligand_mm_delphi.mdout.%d',
                                  mdout_filenames=f'{prefix}ligand_output_delphi.mdout.%d',
-                                 input_file=f'delphi_{prefix}ligand.parm.%d')
+                                 input_file=f'delphi_{prefix}ligand.parm.%d',
+                                 INPUT=self.INPUT)
                     self.calc_list.append(c, '', timer_key='delphi')
 
         if self.INPUT['rism']['rismrun']:
