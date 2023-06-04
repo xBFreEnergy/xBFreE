@@ -761,16 +761,15 @@ class CopyCalc(Calculation):
 
 class MergeOut(Calculation):
     def __init__(self, prog=None, topology=None, output_filename=None, mm_filename=None, mdout_filenames=None,
-                 idecomp=None, dec_verbose=None, input_file=None):
+                 input_file=None, INPUT=None):
         Calculation.__init__(self, prog=prog)
         self.prog = prog
         self.topology = topology
         self.output_filename = output_filename
         self.mm_filename = mm_filename
         self.mdouts = mdout_filenames
-        self.idecomp = idecomp
-        self.dec_verbose = dec_verbose
         self.inputfile = input_file
+        self.INPUT = INPUT
 
 
     def run(self, rank, stdout=None, stderr=None):
@@ -782,8 +781,7 @@ class MergeOut(Calculation):
             input_filename = self.inputfile % rank if '%d' in self.inputfile else self.inputfile
         else:
             input_filename = None
-        MergeOutput(self.prog, self.topology, out_filename, mm_filename, mdout_filename, self.idecomp, self.dec_verbose,
-                    input_filename)
+        MergeOutput(self.prog, self.topology, out_filename, mm_filename, mdout_filename, input_filename, self.INPUT)
 
 
 class PrintCalc(Calculation):
@@ -970,16 +968,15 @@ def _get_decomp(pw, idecomp, dec_verbose, t):
 
 
 class MergeOutput():
-    def __init__(self, prog, topology, output_filename, mm_filename, mdout_filenames, idecomp, dec_verbose, input_file):
+    def __init__(self, prog, topology, output_filename, mm_filename, mdout_filenames, input_file, INPUT):
         self.prog = prog
         self.topology = topology
         self.output_filename = output_filename
         self.mm_filename = mm_filename
         self.mdout_filenames = mdout_filenames
-        self.idecomp = idecomp
         self.inputfile = input_file
+        self.INPUT = INPUT
 
-        self.dec_verbose = dec_verbose
         self.header = f'''
           -------------------------------------------------------
           SANDER + {self.prog.upper()}
@@ -1122,7 +1119,6 @@ class MergeOutput():
         if self.prog == 'delphi':
             file_assignments = []
             inputfile = open(self.inputfile).readlines()
-            energy['EPB'] = {}
             frame = 1
             with open(self.mdout_filenames) as of:
                 for l, line in enumerate(of):
@@ -1145,7 +1141,7 @@ class MergeOutput():
                         file_assignments = data['file_assignments']
                         inputfile = data['inputfile']
                     energy[i] = data['results_section']['energy']
-                if self.idecomp:
+                if self.INPUT['decomp']['idecomp']:
                     decomp[i] = self.get_decomp(data['results_section']['decomp'], res2print)
 
         results = {'energy': energy, 'decomp':decomp}
@@ -1153,19 +1149,19 @@ class MergeOutput():
 
     def get_decomp(self, decomp, res2print):
         d = {}
-        if self.idecomp in [1, 2]:
+        if self.INPUT['decomp']['idecomp'] in [1, 2]:
             for res1, v1 in decomp.items():
                 res1 = int(res1)
                 if res1 not in res2print:
                     continue
                 d[res1] = {'TDC': 0.0}
-                if self.dec_verbose in [1, 3]:
+                if self.INPUT['decomp']['dec_verbose'] in [1, 3]:
                     d[res1]['BDC'] = 0.0
                     d[res1]['SDC'] = 0.0
                 for res2, de in v1.items():
                     res2 = int(res2)
                     for t, e in de.items():
-                        if t in ['BDC', 'SDC'] and self.dec_verbose not in [1, 3]:
+                        if t in ['BDC', 'SDC'] and self.INPUT['decomp']['dec_verbose'] not in [1, 3]:
                             continue
                         d[res1][t] += e if res1 == res2 else e/2
         else:
@@ -1181,11 +1177,11 @@ class MergeOutput():
                     # if res1 == res2:
                     #     continue
                     d[res1][res2] = {'TDC': 0.0}
-                    if self.dec_verbose in [1, 3]:
+                    if self.INPUT['decomp']['dec_verbose'] in [1, 3]:
                         d[res1][res2]['BDC'] = 0.0
                         d[res1][res2]['SDC'] = 0.0
                     for t, e in de.items():
-                        if t in ['BDC', 'SDC'] and self.dec_verbose not in [1, 3]:
+                        if t in ['BDC', 'SDC'] and self.INPUT['decomp']['dec_verbose'] not in [1, 3]:
                             continue
                         d[res1][res2][t] = e if res1 == res2 else e/2
         return d
@@ -1260,6 +1256,7 @@ class MergeOutput():
             else: # PB format
                 k2print = [['BOND', 'ANGLE', 'DIHED'], ['VDWAALS', 'EEL', 'EPB'], ['1-4 VDW', '1-4 EEL', 'RESTRAINT'],
                            ['ENPOLAR', 'EDISPER']]
+
             for i, _ in enumerate(range(len(mmenergy)), start=1):
                 output_file.write(f'minimizing coord set #       {i}\n\n')
                 mmenergy[i].pop('EGB')
@@ -1280,9 +1277,10 @@ class MergeOutput():
                     else:
                         text += '\n'
                     output_file.write(text)
-                if self.idecomp:
+
+                if self.INPUT['decomp']['idecomp']:
                     for term in mmdecomp[i]:
-                        if self.idecomp in [1, 2]:
+                        if self.INPUT['decomp']['idecomp'] in [1, 2]:
                             output_file.write(self.decomp_headers['pr'].format(self.decomp_labels[term]))
                             for c, l in enumerate(mmdecomp[i][term]):
                                 r1 = mmdecomp[i][term][c][1]
