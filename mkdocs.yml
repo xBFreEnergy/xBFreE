@@ -49,7 +49,7 @@ theme:
     - navigation.footer
     - navigation.indexes
     # - navigation.instant
-    - navigation.expand
+#    - navigation.expand
     - navigation.sections
     - navigation.tabs
     - navigation.top
@@ -184,12 +184,23 @@ nav:
     - Installation: getting-started/installation.md
     - Command-line: getting-started/command-line.md
   - MMPBSA:
-      - Introduction: mmpbsa/introduction.md
+      - MMPBSA: mmpbsa/index.md
       - xBFreE vs other program: mmpbsa/versus.md
       - How it works: mmpbsa/howworks.md
       - Command-line: mmpbsa/command-line.md
       - Running MMPBSA calculations: mmpbsa/running_mmpbsa.md
-      - The input file: mmpbsa/input_file.md
+      - The input file:
+          - Input file: mmpbsa/input_file/index.md
+          - Name List:
+              - General: mmpbsa/input_file/general.md
+              - GB: mmpbsa/input_file/gb.md
+              - GBNSR6: mmpbsa/input_file/gbnsr6.md
+              - PB: mmpbsa/input_file/pb.md
+              - DelPhi: mmpbsa/input_file/delphi.md
+              - 3D-RISM: mmpbsa/input_file/rism.md
+              - Decomposition: mmpbsa/input_file/decomp.md
+              - Alanine Scanning: mmpbsa/input_file/cas.md
+              - Nmodes: mmpbsa/input_file/nmodes.md
       - PBRadii: mmpbsa/pbradii.md
       - The output file: mmpbsa/output.md
 #  - LIE:

@@ -205,9 +205,9 @@ combined. See the formats below:
 
 ## Namelists
 
-### **`&general` namelist variables**
+## **`&general` namelist variables**
 
-#### **Basic input options**
+### **Basic input options**
 
 [`sys_name`](#mmpbsa_ifv_sys_name){#mmpbsa_ifv_sys_name} (Default = None)
 :   Define the System Name. This is useful when trying to analyze several systems at the same time or calculating 
@@ -230,7 +230,7 @@ trajectory file supplied on the command-line.
 :   The offset from which to choose frames from each trajectory file. For example, an interval of 2 will pull
 every 2nd frame beginning at startframe and ending less than or equal to endframe.
 
-#### **Parameter options**
+### **Parameter options**
 
 [`temperature`](#mmpbsa_ifv_temperature){#mmpbsa_ifv_temperature} (Default = 298.15)  
 :   Specify the temperature (in K) used in the calculations.
@@ -436,7 +436,7 @@ the solvation energy. You can combine multiple PBRadii for the same system!
     [255]: https://pubs.acs.org/doi/10.1021/jp063479b
     [256]: https://doi.org/10.1002/jcc.23728
 
-#### **Entropy options**
+### **Entropy options**
 
 [`qh_entropy`](#mmpbsa_ifv_qh_entropy){#mmpbsa_ifv_qh_entropy} (Default = 0)
 :    It specifies whether to perform a quasi-harmonic entropy (QH) approximation with `cpptraj` or not.
@@ -507,7 +507,7 @@ Interaction Entropy, _e.g._: `ie_segment = 25` means that the last quartile of t
   [10]: https://pubs.acs.org/doi/full/10.1021/acs.jctc.1c00374
   [11]: https://pubs.acs.org/doi/full/10.1021/acs.jctc.8b00418
 
-#### **Miscellaneous options**
+### **Miscellaneous options**
 
 [`assign_chainID`](#mmpbsa_ifv_assign_chainID){#mmpbsa_ifv_assign_chainID} (Default = 0) 
 :   Defines the chains ID assignment mode. _It is ignored when defining a reference structure
@@ -578,7 +578,7 @@ However, this option is incompatible with alanine scanning.
     * 0: Print only difference terms
     * 1: Print all complex, receptor, ligand, and difference terms
 
-### **`&gb` namelist variables**
+## **`&gb` namelist variables**
 
 !!! note "Keep in mind"
     * A default GB input file can be created as follows:
@@ -605,7 +605,7 @@ However, this option is incompatible with alanine scanning.
     * A tutorial on binding free energy calculation with GB model is available 
     [here](examples/Protein_ligand/ST/README.md)
 
-#### **Basic input options**
+### **Basic input options**
 
 [`igb`](#mmpbsa_ifv_igb){#mmpbsa_ifv_igb} (Default = 5)
 :   Generalized Born method to use (see [§4](https://ambermd.org/doc12/Amber21.pdf#chapter.4) for more info).
@@ -683,7 +683,7 @@ molecular surface.
     !!! note
         only applicable when `molsurf` is set to 1
 
-#### **QM options**
+### **QM options**
 
 [`ifqnt`](#mmpbsa_ifv_ifqnt){#mmpbsa_ifv_ifqnt} (Default = 0)
 :   Specifies whether a part of the system is treated with quantum mechanics.
@@ -805,7 +805,7 @@ on the very first step to a file named qmmm_region.pdb.
     
   [4]: https://ambermd.org/doc12/Amber21.pdf#subsection.34.11.49
 
-### **`&gbnsr6` namelist variables**
+## **`&gbnsr6` namelist variables**
 
 !!! note "Keep in mind"
     * GBNSR6 is an implementation of the Generalized Born (GB) model in which the effective Born radii are computed 
@@ -839,7 +839,7 @@ on the very first step to a file named qmmm_region.pdb.
 
   [222]: https://pubs.acs.org/doi/abs/10.1021/ct200786m
 
-#### **Basic input options**
+### **Basic input options**
 
 [`epsin`](#mmpbsa_ifv_epsin){#mmpbsa_ifv_epsin} (Default = 1.0)
 :   Dielectric constant of the solute region.
@@ -856,7 +856,7 @@ on the very first step to a file named qmmm_region.pdb.
 [`cavity_surften`](#mmpbsa_ifv_cavity_surften){#mmpbsa_ifv_cavity_surften} (Default = 0.005)
 :   Surface tension parameter for nonpolar solvation calculation.
 
-#### **Options to select numerical procedures**
+### **Options to select numerical procedures**
 
 [`space`](#mmpbsa_ifv_space){#mmpbsa_ifv_space} (Default = 0.5)
 :   Sets the grid spacing that determines the resolution of the solute molecular surface. 
@@ -882,7 +882,7 @@ less than 50), B=0 is recommended. With -chagb option, B is calculated automatic
     * 0: Canonical GB is used.
     * 1: ALPB is used (default)
 
-#### **Options for CHAGB model**
+### **Options for CHAGB model**
 
 [`chagb`](#mmpbsa_ifv_chagb){#mmpbsa_ifv_chagb} (Default = 0)
 :   Define if CHAGB is used.
@@ -919,7 +919,7 @@ options for `roh` are:
 :   Value of τ in the CHAGB model. This dimensionless parameter controls the effective range of the neighboring 
 charges (_j_) affecting the CHA of atom (_i_), see ([ref.][215]) for details.
 
-### **`&pb` namelist variables**
+## **`&pb` namelist variables**
 
 !!! note "Keep in mind"
     * **xBFreE** uses **_sander_** to perform PB calculations. **_sander_** offers access to all [pbsa][5] 
@@ -950,7 +950,7 @@ charges (_j_) affecting the CHA of atom (_i_), see ([ref.][215]) for details.
     * A tutorial on binding free energy calculation with PB model is available 
     [here](examples/Linear_PB_solver/README.md)
 
-#### **Basic input options**
+### **Basic input options**
 
 [`ipb`](#mmpbsa_ifv_ipb){#mmpbsa_ifv_ipb} (Default = 2)
 :   Option to set up a dielectric model for all numerical PB procedures. `ipb = 1` corresponds to a classical geometric 
@@ -1012,7 +1012,7 @@ method, while a level-set based algebraic method is used when `ipb > 2`.
     * 0: Don’t use `APBS`
     * 1: Use `sander.APBS`
 
-#### **Options to define the physical constants**
+### **Options to define the physical constants**
 
 [`indi`](#mmpbsa_ifv_indi){#mmpbsa_ifv_indi} (Default = 1.0)
 :   Internal dielectric constant. This corresponds to `epsin` in [pbsa][5].
@@ -1074,7 +1074,7 @@ solute/solvent dielectric boundary.
 :   The `arcres` keyword gives the resolution (in Å) of dots used to represent solvent accessible arcs. More
 generally, `arcres` should be set to max(0.125 Å, 0.5h) (h is the grid spacing). ([ref.][239])
 
-#### **Options for implicit membranes**
+### **Options for implicit membranes**
 
 [`memopt`](#mmpbsa_ifv_memopt){#mmpbsa_ifv_memopt} (Default = 0)
 :   Option to turn the implicit membrane on and off. The membrane is implemented as a slab like region with a uniform 
@@ -1121,7 +1121,7 @@ that of the water. ([ref.][248])
     * 0: Do not turn on the pore searching algorithm.
     * 1: Turn on the pore searching algorithm.
 
-#### **Options to select numerical procedures**
+### **Options to select numerical procedures**
 
 [`npbopt`](#mmpbsa_ifv_npbopt){#mmpbsa_ifv_npbopt} (Default = 0)
 :   Option to select the linear, or the full nonlinear PB equation.
@@ -1184,7 +1184,7 @@ molecule. When `nfocus` = 1, no focusing is used. It is recommended that `nfocus
 [`npbgrid`](#mmpbsa_ifv_npbgrid){#mmpbsa_ifv_npbgrid} (Default = 1)
 :   Sets how often the finite-difference grid is regenerated.
 
-#### **Options to compute energy and forces**
+### **Options to compute energy and forces**
 
 [`bcopt`](#mmpbsa_ifv_bcopt){#mmpbsa_ifv_bcopt} (Default = 5)
 :   Boundary condition options.
@@ -1262,7 +1262,7 @@ Waals interactions only. The particle-particle portion of the Coulombic interact
 :   Sets how often (steps) atom-based pairlist is generated.
 
 
-#### **Options to select a non-polar solvation treatment**
+### **Options to select a non-polar solvation treatment**
 
 [`decompopt`](#mmpbsa_ifv_decompopt){#mmpbsa_ifv_decompopt} (Default = 2)
 :   Option to select different decomposition schemes when `inp = 2`. See ([ref.][227]) for a detailed discussion
@@ -1345,7 +1345,7 @@ summation of the atomic SASA’s. A molecular SASA is used for both PB dielectri
 [`maxarcdot`](#mmpbsa_ifv_maxarcdot){#mmpbsa_ifv_maxarcdot} (Default = 1500)
 :   Number of dots used to store arc dots per atom.
 
-#### **Options for output**
+### **Options for output**
 
 [`npbverb`](#mmpbsa_ifv_npbverb){#mmpbsa_ifv_npbverb} (Default = 0)
 :   Verbose mode.
@@ -1354,7 +1354,7 @@ summation of the atomic SASA’s. A molecular SASA is used for both PB dielectri
     * 1: On
 
 
-### **`&rism` namelist variables**
+## **`&rism` namelist variables**
 
 !!! note "Keep in mind"
     * A default 3drism input file can be created as follows:
@@ -1409,7 +1409,7 @@ new one simply adding the file path.
     * spc_mmpbsa_py
 
 
-#### **Closure approximations**
+### **Closure approximations**
 
 [`closure`](#mmpbsa_ifv_closure){#mmpbsa_ifv_closure} (Default = "kh")
 :   Comma separate list of closure approximations. If more than one closure is provided, the 3D-RISM solver will use 
@@ -1428,7 +1428,7 @@ pdf#subsection.7.3.1))
         === "Several closures"
                  closure = kh, pse3
 
-#### **Solvation free energy corrections**
+### **Solvation free energy corrections**
 
 [`gfcorrection`](#mmpbsa_ifv_gfcorrection){#mmpbsa_ifv_gfcorrection} (Default = 0)
 :    Compute the Gaussian fluctuation excess chemical potential functional. 
@@ -1444,7 +1444,7 @@ See [§7.2.4](https://ambermd.org/doc12/Amber21.pdf#subsection.7.2.4)
     * 0: Off
     * 1: On
 
-#### **Long-range asymptotics**
+### **Long-range asymptotics**
 
 !!! info
     Long-range asymptotics are used to analytically account for solvent distribution beyond the solvent box. 
@@ -1520,7 +1520,7 @@ long-range asymptotic correction. This sets the depth of the hierarchical octtre
 sets the depth of the hierarchical octtree.
 
 
-#### **Solvation box**
+### **Solvation box**
 
 !!! info
     The non-periodic solvation box super-cell can be defined as variable or fixed in size. When a
@@ -1581,7 +1581,7 @@ and `grdspc` above, and paired with `ng` above.
 0 and specify `ng` and `solvbox` instead, you must set `solvcut` to a nonzero value; otherwise the program will quit in 
 error.
 
-#### **Solution convergence**
+### **Solution convergence**
 
 [`tolerance`](#mmpbsa_ifv_tolerance){#mmpbsa_ifv_tolerance} (Default = 0.00001)
 :   A comma-separated list of maximum residual values for solution convergence. This has a strong effect on the 
@@ -1663,7 +1663,7 @@ help convergence.
     the solution (_e.g._, energy drift).
 
 
-#### **Output**
+### **Output**
 
 [`polardecomp`](#mmpbsa_ifv_polardecomp){#mmpbsa_ifv_polardecomp} (Default = 0)
 :   Decomposes solvation free energy into polar and non-polar components. Note that this typically requires 80% more 
@@ -1690,7 +1690,7 @@ See [§7.1.3](https://ambermd.org/doc12/Amber21.pdf#subsection.7.1.3) and
     * 2: additionally prints the residual for each iteration and details of the MDIIS solver (useful for debugging 
     and convergence analyses)
 
-### **`&alanine_scanning` namelist variables**
+## **`&alanine_scanning` namelist variables**
 
 !!! note "Keep in mind"
     * A default alanine scanning input file can be created as follows:
@@ -1792,7 +1792,7 @@ mutated.
 :   Define the `intdiel`(GB)/`indi`(PB) value for negative charged residues (`GLU`, `ASP`)
     
 
-### **`&decomp` namelist variables**
+## **`&decomp` namelist variables**
 
 !!! note "Keep in mind"
     * A default decomp input file can be created as follows:
@@ -1920,7 +1920,7 @@ spreadsheets.
     * 1: data to be written out in a CSV file, and standard error of the mean will be calculated and included for all 
     data.
 
-### **`&nmode` namelist variables**
+## **`&nmode` namelist variables**
 
 !!! note "Keep in mind"
     * A default nmode input file can be created as follows:
@@ -1945,7 +1945,7 @@ spreadsheets.
     * A sample nmode input file is shown [here](input_file.md#entropy-with-nmode)
     * A tutorial on normal mode analysis is available [here](examples/Entropy_calculations/nmode/README.md)
 
-#### **Basic input options**
+### **Basic input options**
 
 [`nmstartframe`](#mmpbsa_ifv_nmstartframe){#mmpbsa_ifv_nmstartframe}
 :   Frame number to begin performing `nmode` calculations on 
@@ -1971,7 +1971,7 @@ spreadsheets.
         the "trajectory" from which snapshots will be chosen for `nmode` calculations will be the collection of 
         snapshots upon which the other calculations were performed.
 
-#### **Parameter options**
+### **Parameter options**
 
 [`nmode_igb`](#mmpbsa_ifv_nmode_igb){#mmpbsa_ifv_nmode_igb} (Default = 1)
 :   Value for Generalized Born model to be used in calculations. Options are:
@@ -2001,7 +2001,7 @@ is 0 above.
     These are illustrative examples, please, don't use it for production. Create a new one using 
     the instructions provides above in the section [Generation of input files with **xBFreE**](#generation-of-input-files-with-xbfree)
 
-### GB
+## GB
 
 ``` linenums="1"
 Sample input file for GB calculation building the Amber topologies
@@ -2016,7 +2016,7 @@ igb=5, saltcon=0.150,
 /
 ```
 
-### GBNSR6
+## GBNSR6
 
 ``` linenums="1"
 Sample input file for GBNSR6 calculation building the Amber topologies
@@ -2031,7 +2031,7 @@ epsin=1.0, istrng=0.150,
 /
 ```
 
-### QM/MMGBSA
+## QM/MMGBSA
 
 ``` linenums="1"
 Sample input file for QM/MMGBSA
@@ -2046,7 +2046,7 @@ qm_residues="A/240-251 B/297", qm_theory="PM3"
 /
 ```
 
-### PB
+## PB
 
 ``` linenums="1"
 Sample input file for PB calculation building the Amber topologies
@@ -2061,7 +2061,7 @@ istrng=0.15, fillratio=4.0
 /
 ```
 
-### MMPBSA with membrane proteins
+## MMPBSA with membrane proteins
 
 ``` linenums="1"
 Sample input file for MMPBSA with membrane proteins
@@ -2080,7 +2080,7 @@ maxarcdot=1500,
 /
 ```
 
-### MM/3D-RISM
+## MM/3D-RISM
 
 ``` linenums="1"
 Sample input file for 3D-RISM
@@ -2094,7 +2094,7 @@ polardecomp=1, thermo="gf"
 /
 ```
 
-### Alanine scanning
+## Alanine scanning
 
 ``` linenums="1"
 Sample input file for Alanine scanning
@@ -2112,7 +2112,7 @@ mutant='ALA', mutant_res='B:12'
 /
 ```
 
-### Decomposition analysis
+## Decomposition analysis
 
 ``` linenums="1"
 Sample input file for decomposition analysis
@@ -2137,7 +2137,7 @@ print_res="within 4"
 /
 ```
 
-### Entropy with NMODE
+## Entropy with NMODE
 
 ``` linenums="1"
 Sample input file for entropy calculations
@@ -2157,7 +2157,7 @@ maxcyc=50000, drms=0.0001,
 /
 ```
 
-### Interaction Entropy
+## Interaction Entropy
 
 ``` linenums="1"
 Sample input file for entropy calculations
