@@ -580,10 +580,12 @@ class MMPBSA_App(object):
             # See whether we are doing molsurf or LCPO. Reduce # of arguments needed to 3, filling in the others here
             if self.INPUT['delphi']['molsurf']:
                 SAClass = lambda a1, a2, a3: MolsurfCalc(progs['sa'], a1, a2, a3,
-                                                         self.INPUT['gb']['probe'], self.INPUT['gb']['msoffset'])
+                                                         self.INPUT['delphi']['prbrad'],
+                                                         self.INPUT['delphi']['msoffset'])
             else:
                 SAClass = lambda a1, a2, a3: LcpoCalc(progs['sa'], a1, a2, a3,
-                                                      self.INPUT['gb']['probe'], self.INPUT['gb']['msoffset'])
+                                                      self.INPUT['delphi']['prbrad'],
+                                                      self.INPUT['delphi']['msoffset'])
 
             self.calc_list.append(PrintCalc(f"Beginning DelPhi calculations with {progs['delphi']}"),
                                   timer_key='delphi')
