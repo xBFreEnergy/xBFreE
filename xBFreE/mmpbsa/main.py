@@ -639,7 +639,7 @@ class MMPBSA_App(object):
                     self.calc_list.append(c, '    calculating MM...', timer_key='delphi',
                                           output_basename=f'{prefix}receptor_mm_delphi.mdout.%d')
 
-                    c = SAClass(parm_system.complex_prmtop,
+                    c = SAClass(parm_system.receptor_prmtop,
                                 f'{prefix}receptor.{trj_sfx}.%d',
                                 f'{prefix}receptor_delphi_surf.dat.%d')
                     self.calc_list.append(c, '', timer_key='delphi')
@@ -677,7 +677,7 @@ class MMPBSA_App(object):
                     self.calc_list.append(c, '    calculating MM...', timer_key='delphi',
                                           output_basename=f'{prefix}ligand_mm_delphi.mdout.%d')
 
-                    c = SAClass(parm_system.complex_prmtop,
+                    c = SAClass(parm_system.ligand_prmtop,
                                 f'{prefix}ligand.{trj_sfx}.%d',
                                 f'{prefix}ligand_delphi_surf.dat.%d')
                     self.calc_list.append(c, '', timer_key='delphi')
