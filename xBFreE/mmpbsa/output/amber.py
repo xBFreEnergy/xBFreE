@@ -649,6 +649,50 @@ class GBout(AmberOutput):
             self.extraframe_idx += 1
 
 
+class DelPhiOut(AmberOutput):
+    """ Amber output class for normal generalized Born simulations """
+    # What the value of verbosity must be to print out this data
+    print_levels = {'BOND': 2, 'ANGLE': 2, 'DIHED': 2, 'VDWAALS': 1, 'EEL': 1,
+                    '1-4 VDW': 2, '1-4 EEL': 2, 'EPB': 1, 'ENPOLAR': 1, 'EDISPER': 1}
+
+    def __init__(self, mol, INPUT, chamber=False, **kwargs):
+        AmberOutput.__init__(self, mol, INPUT, chamber, **kwargs)
+        # FIXME: include Non linear PB
+        self.data_keys.extend(['EPB', 'ENPOLAR', 'EDISPER'])
+
+    def _get_energies(self, outfile):
+        """ Parses the mdout files for the GB potential terms """
+        while rawline := outfile.readline():
+            if rawline[:5] == ' BOND':
+                words = rawline.split()
+                self['BOND'][self.frame_idx] = conv_float(words[2])
+                self['ANGLE'][self.frame_idx] = conv_float(words[5])
+                self['DIHED'][self.frame_idx] = conv_float(words[8])
+                words = outfile.readline().split()
+                if self.chamber:
+                    self['UB'][self.frame_idx] = conv_float(words[2])
+                    self['IMP'][self.frame_idx] = conv_float(words[5])
+                    self['CMAP'][self.frame_idx] = conv_float(words[8])
+                    words = outfile.readline().split()
+                self['VDWAALS'][self.frame_idx] = conv_float(words[2])
+                self['EEL'][self.frame_idx] = conv_float(words[5])
+                self['EPB'][self.frame_idx] = conv_float(words[8])
+                words = outfile.readline().split()
+                self['1-4 VDW'][self.frame_idx] = conv_float(words[3])
+                self['1-4 EEL'][self.frame_idx] = conv_float(words[7])
+                self.frame_idx += 1
+
+    def _extra_reading(self, fileno):
+        # Load the ESURF data from the cpptraj output
+        fname = '%s.%d' % (self.basename, fileno)
+        fname = fname.replace('delphi.mdout', 'delphi_surf.dat')
+        surf_data = _get_cpptraj_surf(fname)
+        for sd in surf_data:
+            self['ENPOLAR'][self.extraframe_idx] = (
+                    sd * self.INPUT['delphi']['surften'] + self.INPUT['delphi']['surfoff']
+            )
+            self.extraframe_idx += 1
+
 class GBNSR6out(AmberOutput):
     """ Amber output class for normal generalized Born simulations """
     print_levels = {'BOND': 2, 'ANGLE': 2, 'DIHED': 2, 'VDWAALS': 1, 'EEL': 1, '1-4 VDW': 2, '1-4 EEL': 2,

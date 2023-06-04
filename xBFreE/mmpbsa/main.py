@@ -31,7 +31,7 @@ from xBFreE.utils import misc
 from xBFreE.mmpbsa.output.amber import (QHout, NMODEout, QMMMout, GBout, PBout, PolarRISM_std_Out, RISM_std_Out,
                                         PolarRISM_gf_Out, RISM_gf_Out, PolarRISM_pcplus_Out, RISM_pcplus_Out,
                                         BindingStatistics, IEout, C2out, DeltaDeltaStatistics, DeltaIEC2Statistic,
-                                        DeltaDeltaQH, GBNSR6out, MMout)
+                                        DeltaDeltaQH, GBNSR6out, MMout, DelPhiOut)
 from xBFreE.mmpbsa.calculation import (CalculationList, EnergyCalculation, PBEnergyCalculation,
                                        NmodeCalc, QuasiHarmCalc, CopyCalc, PrintCalc, LcpoCalc, MolsurfCalc,
                                        InteractionEntropyCalc, C2EntropyCalc, MergeOut, ListEnergyCalculation,
@@ -1323,7 +1323,7 @@ class MMPBSA_App(object):
         nmls = ('nmode', 'gb', 'pb', 'rism', 'rism', 'rism', 'gbnsr6', 'delphi')
         triggers = ('nmoderun', 'gbrun', 'pbrun', 'rismrun_std', 'rismrun_gf', 'rismrun_pcplus',
                     'gbnsr6run', 'delphirun')
-        outclass = (NMODEout, GBClass, PBout, RISM_Std, RISM_GF, RISM_PCplus, GBNSR6out, PBout)
+        outclass = (NMODEout, GBClass, PBout, RISM_Std, RISM_GF, RISM_PCplus, GBNSR6out, DelPhiOut)
         outkey = ('nmode', 'gb', 'pb', 'rism std', 'rism gf', 'rism pcplus', 'gbnsr6', 'delphi')
         basename = ('%s_nm.out', '%s_gb.mdout', '%s_pb.mdout', '%s_rism.mdout', '%s_rism.mdout', '%s_rism.mdout',
                     '%s_gbnsr6.mdout', '%s_delphi.mdout')
