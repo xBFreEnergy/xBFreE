@@ -53,18 +53,13 @@ def _get_arad(prmtop, arad_method):
 
 def save_size(prmtop, mol):
     top = parmed.load_file(f"{prmtop}.prmtop")
-    siz = open(f"{mol}_size.siz", 'w')
-    siz.write('atom__res_radius_\n')
+    with open(f"{mol}_size.siz", 'w') as siz:
+        siz.write('atom__res_radius_\n')
 
-    vdw = open(f"{mol}_vdw.vdw", 'w')
-    vdw.write('atom__sigma___epsilon_gamma___\n')
-    for at in top.atoms:
-        if len(at.residue.name) == 4:
-            at.residue.name = at.residue.name[1:]
-        siz.write(f"{at.name:<6s}{at.residue.name:<6}{at.solvent_radius:.3f}\n")
-        vdw.write(f"{at.name:<6s}{at.sigma:>8.4f}{at.epsilon:8.4f}{1.0000:>8.4f}\n")
-    siz.close()
-    vdw.close()
+        for at in top.atoms:
+            if len(at.residue.name) == 4:
+                at.residue.name = at.residue.name[1:]
+            siz.write(f"{at.name:<6s}{at.residue.name:<6}{at.solvent_radius:.3f}\n")
     # we need to save this top because delphi end in error when terminal residues (N* or C*) exists
     top.save(f"{prmtop}_delphi.prmtop")
 
@@ -246,7 +241,6 @@ def create_inputs(INPUT, prmtop_system, mpisize=None, num_frames=1):
     # We need to manage delphi independent since parameters and files are defined in the parm file
     if INPUT['delphi']['delphirun']:
         mm_mdin = SanderMMInput(INPUT)
-        mm_mdin.set_delphi_param()
         mm_mdin.make_mdin()
         mm_mdin.write_input('mm_delphi.mdin')
 
@@ -318,15 +312,13 @@ class DelPhiInput(object):
                     of.write(f"framelast={frames_per_rank}\n")
 
                 # energy computation
-                of.write('energy(n,s,c)\n')
+                of.write('energy(s)\n')
                 of.write(f'out(energy,file="{mol}_output_delphi.mdout.{rank}")\n\n')
 
                 of.write(f'in(topol,file="{top_name}_delphi.prmtop",format=prmtop)\n')
                 of.write(f'in(traj,file="{mol}.{suffix}.{rank}",format={suffix})\n')
                 # generated from selected radii
                 of.write(f'in(siz,file="{mol}_size.siz")\n')
-                of.write(f'in(vdw,file="{mol}_vdw.vdw")\n\n')
-
 
 
 
@@ -460,13 +452,6 @@ class SanderMMInput(SanderInput):
         for gbnsr6k, gbk in transferable.items():
             self.input_items[gbk] = self.INPUT['gbnsr6'][gbnsr6k]
         self.input_items['igb'] = 5
-
-    def set_delphi_param(self):
-        transferable = {'indi': 'intdiel', 'exdi': 'extdiel', 'salt': 'saltcon'}
-        for delphik, gbk in transferable.items():
-            self.input_items[gbk] = self.INPUT['delphi'][delphik]
-
-
 
 
 class SanderMMDecomp(SanderMMInput):

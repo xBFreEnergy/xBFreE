@@ -1123,7 +1123,7 @@ class MergeOutput():
                 for l, line in enumerate(of):
                     if not l:
                         continue
-                    nc_solv, nc_eel, nc_nonp, nc_edisp = line.strip('\n').split()[1:-1]
+                    nc_solv = line.strip('\n').split()[1]
                     # 1 kT = 0.5922 kcal/mol
                     energy[frame] = {'EPB': float(nc_solv.strip()) * 0.5922,
                                      # 'EEL': float(nc_eel.strip()) * 0.5922,
