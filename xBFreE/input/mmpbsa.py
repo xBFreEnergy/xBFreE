@@ -202,77 +202,71 @@ input_file.addNamelist('pb', 'pb', '(AMBER) Possion-Boltzmann namelist variables
                            ['npbverb', int, 0, 'Option to turn on verbose mode']
                        ], trigger='pbrun')
 
-int2fbool = ['autoc'
-'chebit'
-'clcsrf'
-'exitun'
-'fcrg'
-'loggrp'
-'logpot'
-'membranedata'
-'msigmag'
-'pbx'
-'pby'
-'pbz'
-'phicon'
-'solvpb']
+'''
+DelPhi variables not used
+solvpb      --> Always True
+exitun      --> For BFE I think this variable has no effect
+cutoff      --> No description
+framefirst  --> Get default value since delphi processes MD fragments
+framelast   --> Automatically assigned
+framestride --> Get default value since delphi processes MD fragments
+membranedata  > Not used
+maxwarn     --> Not necessary
+MULTISIGMAGAUSSIAN > Required a additional file
+pbx         --> Complicated to use it
+pby
+pbz
+phicon      --> Necessary ??
+PRESSURECOEFF > Without description
+gexpmultiplier > Without description
+radipz      --> Complicated to use it
+radpr2      -->  Is this relevant?
+relfac      -->  Is this relevant?
+salt2       --> Necessary ??
+surfdist    --> Necessary ??
+temperature --> Automatically assigned
+
+clcsrf      --> Obsolete
+grdcon
+
+We should used it?
+exdi2       --> I don't think it is used in BFE
+fcrg        --> I don't think it is used in BFE
+loggrp      -->  Is this relevant?
+logpot
+                           
+
+
+'''
 
 input_file.addNamelist('delphi', 'delphi', '(DelPhi) Possion-Boltzmann namelist variables',
                        [
 
-                           # ['autoc', bool, 1, ''],
-                           # ['atpods', float, 0.5, ''],
+                           ['autoc', int, 1, ''],
                            ['bndcon', int, 2, ''],
-                           ['perfil', int, 70, ''],
-                           # ['chebit', int, 0, ''],
-                           # ['clcsrf', int, 0, ''],
-                           # ['confra', int, 1, ''],
-                           # ['conint', int, 10, ''],
-                           # ['cutoff', int, 0, ''],
-                           # ['dencut', float, -1.0, ''],
-                           # ['exdi2', float, 1.00, ''],
-                           # ['exitun', int, 0, ''],
+                           ['perfil', int, 80, ''],
+                           ['chebit', int, 0, ''],
+                           ['confra', int, 1, ''],
+                           ['conint', int, 10, ''],
                            ['exdi', int, 80, ''],
-                           # ['fcrg', int, 0, ''],
-                           # ['framefirst', int, 1, ''],
-                           # ['framelast', int, 1, ''],
-                           # ['framestride', int, 1, ''],
-                           # ['grdcon', float, 0.0, ''],
-                           # ['gsize', int, automatic, ''],
-                           # ['gaussian', int, 0, ''],
-                           # ['gexpmultiplier', int, 1, ''],
-                           # ['gapdi', int, 80, ''],
+                           ['gsize', int, 0, ''],
+                           ['gaussian', int, 0, ''],
+                           ['dencut', float, -1.0, ''],
+                           ['gapdi', int, 80, ''],
                            ['indi', float, 2.0, ''],
                            ['salt', float, 0.0, ''],
-                           # ['ionrad', int, 0.0 / 2.0, ''],
-                           ['linit', int, 100, ''],
-                           # ['loggrp', int, 0, ''],
-                           # ['logpot', int, 0, ''],
-                           ['maxc', int, 0.01, ''],
-                           # ['membranedata', int, 0, ''],
-                           # ['maxwarn', int, 3, ''],
-                           # ['msigmag', int, 0, ''],
-                           # ['nonit', int, 0, ''],
-                           # ['pbx', int, 0, ''],
-                           # ['pby', int, 0, ''],
-                           # ['pbz', int, 0, ''],
-                           # ['phicon', int, 0, ''],
-                           # ['pressurecoeff', float, 1.0, ''],
+                           ['ionrad', int, 2.0, ''],
+                           ['linit', int, 0, ''],
+                           ['maxc', float, 0.01, ''],
+                           ['nonit', int, 0, ''],
                            ['prbrad', float, 1.4, ''],
-                           # ['radipz', float, -1.0, ''],
-                           # ['radpolextrl', float, 1.0, ''],
-                           # ['radpr2', int, prbrad, ''],
-                           # ['relfac', float, 0.9975, ''],
-                           # ['relpar', float, 1.0, ''],
-                           # ['rmsc', float, 0.0, ''],
-                           # ['salt2', float, 0.0, ''],
-                           ['scale', float, 2, ''],
-                           # ['solvpb', int, 1, ''],
-                           # ['sigma', float, 1.00, ''],
-                           # ['srfcut', float, 20.0, ''],
-                           # ['surfpot', int, 0, ''],
-                           # ['surfdist', float, 0.0, ''],
-                           # ['temperature', int, 297.3342119, ''],
+                           ['radpolext', float, 1.0, ''],
+                           ['relpar', float, 1.0, ''],
+                           ['rmsc', float, 0.0, ''],
+                           ['scale', float, 1.2, ''],
+                           ['sigma', float, 1.00, ''],
+                           ['srfcut', float, 20.0, ''],
+                           ['surfpot', int, 0, ''],
 
                         # SA calcualtions
                            ['surften', float, 0.005, 'Surface tension'],
