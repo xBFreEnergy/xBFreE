@@ -605,7 +605,8 @@ class MMPBSA_App(object):
                         f'{prefix}complex_delphi_surf.dat.%d')
             self.calc_list.append(c, '', timer_key='delphi')
 
-            c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}complex.parm.%d')
+            c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}complex.parm.%d',
+                           mol=f'{prefix}complex')
             self.calc_list.append(c, '    calculating PB...', timer_key='delphi',
                                   output_basename=f'{prefix}complex_output_delphi.mdout.%d')
             c = MergeOut(prog='delphi', topology=self.FILES.complex_prmtop,
@@ -644,7 +645,8 @@ class MMPBSA_App(object):
                                 f'{prefix}receptor_delphi_surf.dat.%d')
                     self.calc_list.append(c, '', timer_key='delphi')
 
-                    c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}receptor.parm.%d')
+                    c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}receptor.parm.%d',
+                                   mol=f'{prefix}receptor')
                     self.calc_list.append(c, '    calculating PB...', timer_key='delphi',
                                           output_basename=f'{prefix}receptor_output_delphi.mdout.%d')
                     c = MergeOut(prog='delphi', topology=self.FILES.receptor_prmtop,
@@ -682,7 +684,8 @@ class MMPBSA_App(object):
                                 f'{prefix}ligand_delphi_surf.dat.%d')
                     self.calc_list.append(c, '', timer_key='delphi')
 
-                    c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}ligand.parm.%d')
+                    c = DelPhiCalc(prog=progs['delphi'], input_file=f'delphi_{prefix}ligand.parm.%d',
+                                   mol=f'{prefix}ligand')
                     self.calc_list.append(c, '    calculating PB...', timer_key='delphi',
                                           output_basename=f'{prefix}ligand_output_delphi.mdout.%d')
                     c = MergeOut(prog='delphi', topology=self.FILES.ligand_prmtop,
@@ -1301,6 +1304,8 @@ class MMPBSA_App(object):
         """
         This parses the output files and loads them into dicts for easy access
         """
+        # FIXME: rewrite ouptut compatibility
+
         # Only the master does this
         from types import SimpleNamespace
         if not self.master:

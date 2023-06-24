@@ -279,17 +279,28 @@ class DelPhiInput(object):
         self.INPUT = INPUT
         self.mpisize = mpisize
         self.num_frames = num_frames
-
+        # these variables are fortran boolean (false or true), but in the input file are represented by 0 and 1
+        self.boolvars = ['autoc', 'chebit', 'clcsrf', 'exitun', 'fcrg', 'loggrp', 'logpot', 'membranedata', 'msigmag',
+                         'pbx', 'pby', 'pbz', 'phicon', 'solvpb']
         self.input_items = {
-            'perfil': 70,'bndcon':2, 'linit': 1000,'maxc': 0.01,'prbrad': 1.4, 'scale': 2.5,
-            'exdi': 80,
-            'indi': 2,
+            'autoc': 1, 'bndcon': 2, 'perfil': 80, 'chebit': 0, 'clcsrf': 0, 'confra': 1, 'conint': 10, 'exdi': 80,
+            'grdcon': 0.0, 'gsize': 0, 'gaussian': 0, 'dencut': -1.0, 'gapdi': 80, 'indi': 2.0, 'salt': 0.0,
+            'ionrad': 2.0, 'linit': 0, 'maxc': 0.0, 'nonit': 0, 'prbrad': 1.4, 'radpolext': 1.0, 'relpar': 1.0,
+            'rmsc': 0.0, 'scale': 1.2, 'sigma': 1.00, 'srfcut': 20.0, 'surfpot': 0, 'temperature': 297.3
             }
 
         self.name_map = {
-            'perfil': 'perfil', 'bndcon': 'bndcon', 'linit': 'linit', 'maxc': 'maxc',
-            'prbrad': 'prbrad', 'scale': 'scale', 'framelast': 'framelast', 'exdi': 'exdi', 'indi': 'indi',
+            'autoc': 'autoc', 'bndcon': 'bndcon', 'perfil': 'perfil', 'chebit': 'chebit', 'clcsrf': 'clcsrf',
+            'confra': 'confra', 'conint': 'conint', 'exdi': 'exdi', 'grdcon': 'grdcon', 'gsize': 'gsize',
+            'gaussian': 'gaussian', 'dencut': 'dencut', 'gapdi': 'gapdi', 'indi': 'indi', 'salt': 'salt',
+            'ionrad': 'ionrad', 'linit': 'linit', 'maxc': 'maxc', 'nonit': 'nonit', 'prbrad': 'prbrad',
+            'radpolext': 'radpolext', 'relpar': 'relpar', 'rmsc': 'rmsc', 'scale': 'scale', 'sigma': 'sigma',
+            'srfcut': 'srfcut', 'surfpot': 'surfpot', 'temperature': 'temperature'
         }
+
+    @staticmethod
+    def int2fbool(v):
+        return f"{bool(v)}".lower()
 
     def write_input(self, mol):
         """ Write the input file """
@@ -304,8 +315,17 @@ class DelPhiInput(object):
 
         for rank in range(self.mpisize):
             with open(f"delphi_{mol}.parm.{rank}", 'w') as of:
-                for k, v in self.input_items.items():
-                    of.write(f"{k}={v}\n")
+
+                for k, v in self.INPUT['delphi'].items():
+                    if k not in self.input_items:
+                        continue
+                    # change type from int to bool when correspond
+                    var = self.int2fbool(v) if k in self.boolvars else v
+                    of.write(f"{k}={var}\n")
+
+                # for k, v in self.input_items.items():
+                #     var = self.int2fbool(v) if v in self.boolvars else v
+                #     of.write(f"{k}={var}\n")
                 if rank == self.mpisize - 1:
                     of.write(f"framelast={extras or frames_per_rank}\n")
                 else:

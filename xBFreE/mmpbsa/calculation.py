@@ -313,10 +313,10 @@ class Calculation(object):
 class DelPhiCalc(Calculation):
     """ Quasi-harmonic entropy calculation class """
 
-    def __init__(self, prog, input_file):
+    def __init__(self, prog, input_file, mol):
         """ Initializes the Quasi-harmonic calculation class """
         Calculation.__init__(self, prog=prog, input_file=input_file)
-
+        self.mol = mol
         self.calc_setup = False
 
     # -#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
@@ -327,7 +327,7 @@ class DelPhiCalc(Calculation):
         self.calc_setup = True
 
     def run(self, rank, *args, **kwargs):
-        Calculation.run(self, rank, stdout=open(f"delphi_{rank}.log", 'a'))
+        Calculation.run(self, rank, stdout=open(f"delphi_{self.mol}_{rank}.log", 'a'))
 
 
 class EnergyCalculation(Calculation):
