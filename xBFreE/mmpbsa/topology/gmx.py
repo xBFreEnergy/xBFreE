@@ -311,7 +311,7 @@ class BuildTopGromacs(BuildTop):
 
     def gmxtop2prmtop(self):
         # FIXME: use Tan&Luo radii to avoid using radiopt variable (end in error when its not amber protein)
-        self.INPUT['pb']['radiopt'] = 0
+        # self.INPUT['pb']['radiopt'] = 0
         logging.info('Building Normal Amber topologies...')
 
         gmx_com_top = self.cleantop(self.FILES.complex_top, self.indexes['COM']['COM'])
