@@ -5,8 +5,7 @@ function loadNews(file) {
               if (data.length === 0) {
                   const element = document.querySelector('[data-md-component="announce"]');
                   element.style.display = 'none'
-                  return
-              }
+              } else {
               const new_container = document.getElementById("news-container")
               data.forEach((item) => {
                 let a = document.createElement('a');
@@ -25,7 +24,7 @@ function loadNews(file) {
               let marqueeContent = document.querySelector("ul.marquee-content");
               root.style.setProperty("--marquee-elements", marqueeContent.children.length);
               let width = 0
-              for(let i=0; i<marqueeContent.children.length - 1; i++) {
+                  for (let i = 0; i < marqueeContent.children.length; i++) {
                 width = width + marqueeContent.children[i].offsetWidth
               }
               let viewportWidth = window.innerWidth;
@@ -33,8 +32,21 @@ function loadNews(file) {
               if (width/viewportWidth < 1) {
                   root.style.setProperty("--marquee-traslation", 100);
               } else {
-                  root.style.setProperty("--marquee-traslation", width/viewportWidth * 100 +50);
+                      root.style.setProperty("--marquee-traslation", (width + 10 * marqueeContent.children.length) / marqueeContent.offsetWidth * 100);
               }
               root.style.setProperty("--marquee-animation-duration", 20 );
+              }
           })
       }
+
+const cs = document.currentScript;
+
+document.addEventListener("DOMContentLoaded", function () {
+    console.log(cs)
+
+    if (cs) {
+        let news_json = cs.src.replace("js/news.js", "data/news.json")
+        loadNews(news_json)
+        console.log(news_json)
+    }
+});

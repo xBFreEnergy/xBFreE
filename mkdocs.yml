@@ -1,7 +1,7 @@
 
 # Project information
 site_name: xBFreE Documentation
-site_url: https://xBFreEnergy.github.io/dev/
+site_url: https://xbfreenergy.github.io/xBFreE/dev
 site_author: Mario S. and Mario E. Valdés-Tresanco
 site_description: >-
   xBFreE is a tool for Binding Free Energy calculations
@@ -24,7 +24,6 @@ theme:
   name: material
   logo: assets/logo.svg
   custom_dir: docs/overrides
-
 
   # 404 page
   static_templates:
@@ -90,9 +89,9 @@ plugins:
   - git-revision-date-localized:
       type: timeago
       enable_creation_date: true
-  - git-committers:
-      repository: xBFreEnergy/xBFreEnergy.github.io
-      branch: master
+#  - git-committers:
+#      repository: xBFreEnergy/xBFreE
+#      branch: master
   - minify:
       minify_html: true
 
@@ -179,7 +178,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting started:
-    - Getting started: getting-started/getting-started.md
+    - Getting started: getting-started/index.md
     - xBFreE in a nutshell: getting-started/summary.md
     - Installation: getting-started/installation.md
     - Command-line: getting-started/command-line.md
@@ -286,5 +285,6 @@ extra_javascript:
   - assets/js/termynal.js
   - assets/js/custom.js
   - assets/js/mathjax.js
+  - assets/js/news.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
