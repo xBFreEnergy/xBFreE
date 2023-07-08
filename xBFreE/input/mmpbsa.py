@@ -241,40 +241,49 @@ logpot
 
 input_file.addNamelist('delphi', 'delphi', '(DelPhi) Possion-Boltzmann namelist variables',
                        [
+                           ['exe_name', str, '', 'Delphi executable name'],
+                           ['autoc', int, 1, 'The number of iterations needed to attain convergence will determined '
+                                             'automatically'],
+                           ['bndcon', int, 2, 'Specifying the type of boundary condition imposed on the edge of the '
+                                              'lattice'],
+                           ['perfil', int, 80, 'A percentage of the object longest linear dimension to the lattice '
+                                               'linear dimension'],
+                           ['chebit', int, 0, 'Set the linear convergence equal to 1'],
+                           ['confra', int, 1, 'Determines the convergence fraction'],
+                           ['conint', int, 10, 'Determines at what iteration interval convergence is checked'],
+                           ['exdi', int, 80, 'The external (solution) dielectric constant'],
+                           ['gsize', int, 0, 'An odd integer number of points per side of the cubic lattice'],
 
-                           ['autoc', int, 1, ''],
-                           ['bndcon', int, 2, ''],
-                           ['perfil', int, 80, ''],
-                           ['chebit', int, 0, ''],
-                           ['confra', int, 1, ''],
-                           ['conint', int, 10, ''],
-                           ['exdi', int, 80, ''],
-                           ['gsize', int, 0, ''],
-                           ['gaussian', int, 0, ''],
-                           ['dencut', float, -1.0, ''],
-                           ['gapdi', int, 80, ''],
-                           ['indi', float, 2.0, ''],
-                           ['salt', float, 0.0, ''],
-                           ['ionrad', int, 2.0, ''],
-                           ['linit', int, 0, ''],
-                           ['maxc', float, 0.01, ''],
-                           ['nonit', int, 0, ''],
-                           ['prbrad', float, 1.4, ''],
-                           ['radpolext', float, 1.0, ''],
-                           ['relpar', float, 1.0, ''],
-                           ['rmsc', float, 0.0, ''],
-                           ['scale', float, 1.2, ''],
-                           ['sigma', float, 1.00, ''],
-                           ['srfcut', float, 20.0, ''],
-                           ['surfpot', int, 0, ''],
+                           ['indi', float, 2.0, 'The internal (molecules) dielectric constant'],
+                           ['salt', float, 0.0, 'The concentration of first kind of salt, (moles/liter)'],
+                           ['ionrad', int, 2.0, 'The thickness of the ion exclusion layer around molecule (˚A)'],
+                           ['linit', int, 11, 'An integer number of iterations with linear equation'],
+                           ['maxc', float, 0.01, 'The convergence threshold value based on maximum change of '
+                                                 'potential (suggested)'],
+                           ['nonit', int, 30, 'An integer number (leq0) of non-linear iterations'],
+                           ['prbrad', float, 1.4, 'A radius (˚A) of probe molecule that will define solvent '
+                                                  'accessible surface in the Lee and Richard’s sense'],
+                           ['relpar', float, 1.0, 'A manually assigned value for relaxation parameter in non-linear '
+                                                  'iteration convergence process.'],
+                           ['rmsc', float, 0.0, 'The convergence threshold value based on root mean square change of '
+                                                'potential'],
+                           ['scale', float, 1.2, 'The reciprocal of one grid spacing (grids/˚A).'],
+
+                           # Gaussian options
+                           ['gaussian', int, 0, 'Indicates that the Gaussian smooth dielectric method is selected'],
+                           ['dencut', float, -1.0, 'A cutoff of atomic density to determine the border between '
+                                                   'protein and solvent phases in with Gaussian smooth method'],
+                           ['gapdi', int, 80, 'The gap-dielectric (protein) is a maximum dielectric constant inside '
+                                              'protein. This value is used only in case of Gaussian'],
+                           ['sigma', float, 1.00, 'Sigma is the value of the variance of Gaussian distribution'],
+                           ['srfcut', float, 20.0, 'A cutoff of dielectric value to determine the border between '
+                                                   'protein and solvent phases in with Gaussian smooth method'],
 
                         # SA calcualtions
                            ['surften', float, 0.005, 'Surface tension'],
                            ['surfoff', float, 0.0, 'Surface tension offset'],
                            ['molsurf', int, 0, 'Use Connelly surface (\'molsurf\' program)'],
                            ['msoffset', float, 0.0, 'Offset for molsurf calculation'],
-
-
 
                        ], trigger='delphirun')
 
