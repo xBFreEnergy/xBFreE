@@ -1,12 +1,12 @@
 ---
 template: main.html
-title: gmx_MMPBSA in a nutshell
+title: xBFreE in a nutshell
 ---
 
 # **xBFreE** in a nutshell
-**xBFreE** implements all the features in gmx_MMPBSA with support for GROMACS, AMBER, NAMD, and CHARMM. For now, this 
-includes only MMPBSA and its derivatives as methods for calculating binding free energy. We intend to implement 
-several more methods, such as LIE, FEP, TI, etc.
+**xBFreE** implements all the features in gmx_MMPBSA with support for GROMACS, AMBER, NAMD, and CHARMM. So far, this 
+includes the PB and other implicit solvent-based methods for calculating binding free energies. We intend to implement 
+several more methods, such as LIE, FEP, TI, etc. in the future.
 
 ## **xBFreE** general workflow
 ```mermaid
@@ -77,7 +77,7 @@ Coming soon!
   [examples][4] in **xBFreE**.
 
 !!! important
-    We decided to separate the GUI for analysis into a separate python package. In this way, each application can have 
+    We decided to separate the GUI for analysis into a separate python package. This way, each application can have 
     its own development, as well as better software development dynamics. Additionally, it can be installed 
     according to the user's need. For example, for HPC installations, **xBFreE-Analyzer** is not required, while 
     **xBFreE** does not need to be installed to analyze the results. In any case, **xBFreE** still retains the 

@@ -4,8 +4,7 @@ title:
 ---
 
 ## **xBFreE** command-line
-**xBFreE** divide en subcomandos los métodos para el cálculo de BFE como los programas de MD. Para simplificar la 
-escritura, la aplicación la nombramos como `xbfree`.
+**xBFreE** uses subcommands to execute different BFE methods for different MD programs:
 
 <div class="termy">
     ```console
@@ -13,32 +12,31 @@ escritura, la aplicación la nombramos como `xbfree`.
 
     $ xbfree -h
     
-    usage: run_cmd.py [-h] [-v] {gmx_MMPBSA,amber_MMPBSA,namd_MMPBSA,charmm_MMPBSA} ...
+    usage: xbfree [-h] [-v] {gmx_MMPBSA,amber_MMPBSA,namd_MMPBSA,charmm_MMPBSA} ...
     
-    xBFreEnergy is a tool to compute Binding Free Energy with different methods including MMPBSA and LIE
+    xBFreEnergy is a tool to compute Binding Free Energy with different methods
     
     positional arguments:
       {gmx_MMPBSA,amber_MMPBSA,namd_MMPBSA,charmm_MMPBSA}
                             Methods to compute Binding Free Energy
-        gmx_MMPBSA          MMPBSA calculations for GROMACS
-        amber_MMPBSA        MMPBSA calculations for AMBER
-        namd_MMPBSA         MMPBSA calculations for NAMD
-        charmm_MMPBSA       MMPBSA calculations for CHARMM
+        gmx_MMPBSA          PB and other implicit solvent-based calculations for GROMACS
+        amber_MMPBSA        PB and other implicit solvent-based calculations for AMBER
+        namd_MMPBSA         PB and other implicit solvent-based calculations for NAMD
+        charmm_MMPBSA       PB and other implicit solvent-based calculations for CHARMM
     
     optional arguments:
       -h, --help            show this help message and exit
       -v, --version         show program's version number and exit
     
-    xBFreEnergy is a tool to compute Binding Free Energy with different methods including MMPBSA and LIE
+    xBFreEnergy is a tool to compute Binding Free Energy with different methods
     ```
     
 
 </div>
 
 ## Sub-commands structure
-Each subcommand has their own arguments according to the MD program and method selected. However, we decide to make 
-some arguments redundant to simplify the command-line instructions and keep similar to gmx_MMPBSA. Take a look at 
-the example below 
+Each subcommand contains its own arguments according to the MD program and method selected. However, we decide to make 
+some arguments redundant to simplify the command-line instructions and keep it similar to gmx_MMPBSA:
 
 === "GROMACS"
     
@@ -50,7 +48,7 @@ the example below
 
         usage: ...
 
-        This is the core of gmx_MMPBSA and it will do all the calculations
+        This is the core of gmx_MMPBSA and it will perfrom all the calculations
         
         optional arguments:
           -h, --help            show this help message and exit
@@ -67,7 +65,7 @@ the example below
         
           -i FILE               MM/PBSA input file.
           -xvvfile XVVFILE      XVV file for 3D-RISM.
-          -o FILE               Output file with selected method (MMPBSA or LIE) statistics.
+          -o FILE               Output file with statistics for the selected method.
           -do FILE              Output file for decomposition statistics summary.
           -eo FILE              CSV-format output of all energy terms for every frame in every calculation. File name forced to end in [.csv]. This file is only written when specified on the command-line.
           -deo FILE             CSV-format output of all energy terms for each printed residue in decomposition calculations. File name forced to end in [.csv]. This file is only written when specified on the command-line.
@@ -80,7 +78,7 @@ the example below
           --input-file-help     Print all available options in the input file.
           --clean               Clean temporary files and quit.
         
-        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE
+        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods
         ```
     </div>
 
@@ -93,7 +91,7 @@ the example below
 
         usage: ...
 
-        This is the core of gmx_MMPBSA and it will do all the calculations
+        This is the core of amber_MMPBSA and it will perform all the calculations
         
         optional arguments:
           -h, --help            show this help message and exit
@@ -110,7 +108,7 @@ the example below
         
           -i FILE               MM/PBSA input file.
           -xvvfile XVVFILE      XVV file for 3D-RISM.
-          -o FILE               Output file with selected method (MMPBSA or LIE) statistics.
+          -o FILE               Output file with statistics for the selected method.
           -do FILE              Output file for decomposition statistics summary.
           -eo FILE              CSV-format output of all energy terms for every frame in every calculation. File name forced to end in [.csv]. This file is only written when specified on the command-line.
           -deo FILE             CSV-format output of all energy terms for each printed residue in decomposition calculations. File name forced to end in [.csv]. This file is only written when specified on the command-line.
@@ -123,7 +121,7 @@ the example below
           --input-file-help     Print all available options in the input file.
           --clean               Clean temporary files and quit.
         
-        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE
+        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods
         ```
     </div>
 
@@ -136,7 +134,7 @@ the example below
 
         usage: ...
 
-        This is the core of gmx_MMPBSA and it will do all the calculations
+        This is the core of namd_MMPBSA and it will perform all the calculations
         
         optional arguments:
           -h, --help            show this help message and exit
@@ -153,7 +151,7 @@ the example below
         
           -i FILE               MM/PBSA input file.
           -xvvfile XVVFILE      XVV file for 3D-RISM.
-          -o FILE               Output file with selected method (MMPBSA or LIE) statistics.
+          -o FILE               Output file with statistics for the selected method.
           -do FILE              Output file for decomposition statistics summary.
           -eo FILE              CSV-format output of all energy terms for every frame in every calculation. File name forced to end in [.csv]. This file is only written when specified on the command-line.
           -deo FILE             CSV-format output of all energy terms for each printed residue in decomposition calculations. File name forced to end in [.csv]. This file is only written when specified on the command-line.
@@ -166,7 +164,7 @@ the example below
           --input-file-help     Print all available options in the input file.
           --clean               Clean temporary files and quit.
         
-        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE
+        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods
         ```
     </div>
 
@@ -179,7 +177,7 @@ the example below
 
         usage: ...
 
-        This is the core of gmx_MMPBSA and it will do all the calculations
+        This is the core of charmm_MMPBSA and it will perform all the calculations
         
         optional arguments:
           -h, --help            show this help message and exit
@@ -196,7 +194,7 @@ the example below
         
           -i FILE               MM/PBSA input file.
           -xvvfile XVVFILE      XVV file for 3D-RISM.
-          -o FILE               Output file with selected method (MMPBSA or LIE) statistics.
+          -o FILE               Output file with statistics for the selected method.
           -do FILE              Output file for decomposition statistics summary.
           -eo FILE              CSV-format output of all energy terms for every frame in every calculation. File name forced to end in [.csv]. This file is only written when specified on the command-line.
           -deo FILE             CSV-format output of all energy terms for each printed residue in decomposition calculations. File name forced to end in [.csv]. This file is only written when specified on the command-line.
@@ -209,6 +207,6 @@ the example below
           --input-file-help     Print all available options in the input file.
           --clean               Clean temporary files and quit.
         
-        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods including MMPBSA and LIE
+        xBFreEnergy is a tool to compute Binding Free Enrgy with different methods
         ```
     </div>
