@@ -85,7 +85,7 @@ The following video shows how to perform correlation analysis in gmx_MMPBSA_ana.
     
 
 
-  [1]: ../../getting-started/command-line.md#gmx_mmpbsa-command-line
+  [1]: ../../mmpbsa/command-line.md#gmx_mmpbsa-command-line
   [2]: ../../input_file.md#the-input-file
   [3]: ../../input_file.md#sample-input-files
   [4]: ../../analyzer.md#gmx_mmpbsa_ana-the-analyzer-tool  

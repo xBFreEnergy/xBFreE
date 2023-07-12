@@ -107,7 +107,7 @@ output files containing all energy terms for each printed residue in decompositi
 ### Alternatives for per-residue energy contribution visualization
 You can also use [VMD][8] and [Chimera][9] to view the modified pdb file with the per-residue energy contributions
 
-  [1]: ../../getting-started/command-line.md#gmx_mmpbsa-command-line
+  [1]: ../../mmpbsa/command-line.md#gmx_mmpbsa-command-line
   [2]: ../../input_file.md#the-input-file
   [3]: ../../input_file.md#sample-input-files
   [4]: ../../input_file.md#decomp-namelist-variables
