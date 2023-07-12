@@ -193,7 +193,7 @@ nav:
     - Command-line: getting-started/command-line.md
   - MMPBSA:
       - Introduction: mmpbsa/introduction.md
-      - xBFreE vs other program: mmpbsa/versus.md
+      - xBFreE vs other programs: mmpbsa/versus.md
       - How it works: mmpbsa/howworks.md
       - Command-line: mmpbsa/command-line.md
       - Running MMPBSA calculations: mmpbsa/running_mmpbsa.md
