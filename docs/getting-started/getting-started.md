@@ -36,9 +36,9 @@ efficient manner.
     End-State Free Energy Calculations with GROMACS_. Journal of Chemical Theory and Computation, 2021 17 (10), 6281-6291. 
     https://pubs.acs.org/doi/10.1021/acs.jctc.1c00645. 
     
-    Download | [*.bib](gmx_MMPBSA_citation.bib) | [*.ris](gmx_MMPBSA_citation.ris)
+    Download | [*.bib](../gmx_MMPBSA_citation.bib) | [*.ris](../gmx_MMPBSA_citation.ris)
 
-    Please, visit [Cite gmx_MMPBSA](cite_us.md#example) page for more information on how to cite gmx_MMPBSA and the 
+    Please, visit [Cite gmx_MMPBSA](../cite_us.md#example) page for more information on how to cite gmx_MMPBSA and the 
     programs/methods implemented in it.
 
 ### Which MD programs are supported?
@@ -71,7 +71,7 @@ At the moment, methods derived from PB and other implicit solvent-based approach
   [13]: ../examples/QM_MMGBSA/README.md                              
                                          
 ## **xBFreE** a quick overview
-[**xBFreE**](howworks.md) is a python application that carries out several BFE calculations. The **xBFreE** results can 
+[**xBFreE**](../mmpbsa/howworks.md) is a python application that carries out several BFE calculations. The **xBFreE** results can 
 be analyzed with [**xBFreE-Analyzer**](../analyzer.md) which provides an intuitive way to analyze the data through 
 visually and well-structured charts and save high-quality pictures. You can test if your **xBFreE** installation 
 work well using [**xBFreE-Tester**](../examples/gmx_MMPBSA_test.md#gmx_mmpbsa_test-command-line) by running one or more 
@@ -85,7 +85,7 @@ Ready to use **xBFreE** 😀? Check the [installation page](installation.md)
 [Google group](https://groups.google.com/x/xbfree) or the [issues](https://github.com/xBFreEnergy/xBFreE/issues) 
 section to find out about specific cases and others.
 
-If you have any question, doubt, suggestion or want to discuss any particular subject, please, consider open a new 
+If you have any question, doubt, suggestion or want to discuss any particular subject, please consider opening a new 
 [discussion](https://github.com/xBFreEnergy/xBFreE/discussions) 
 
 ## Follow **xBFreE**
@@ -94,9 +94,9 @@ to see how **xBFreE** is doing.
 
 ## **Collaboration**
 
-We are opened to any collaboration.  If you want to implement any method developed by your lab we can help you. Also,
-if you are interested in including xBFreE in your divulgation program, we can help you to optimize the content and 
-including it in our official documentation.
+We are opened to any collaboration. If you want to implement any method developed by your lab, we can help you. Also,
+if you are interested in including xBFreE in your program, we can help you to optimize the content and include it in 
+our official documentation.
 
 Feel free to contact us through our Google group (https://groups.google.com/x/xbfree) for more details...
 
