@@ -3,13 +3,13 @@ template: main.html
 title: How xBFreE (MMPBSA) works
 ---
 
-# How **xBFreE** (MMPBSA) works
+# How **xBFreE (MMPBSA)** works
 
 xBFreE implements all the features in gmx_MMPBSA with support for GROMACS, AMBER, NAMD, and CHARMM. 
 Hereafter, we refer to **xBFreE** (MMPBSA) as the module used to perform binding free energy calculations employing
 PB and other implicit solvent-based approaches.
 
-## General workflow in **xBFreE** (MMPBSA)
+## General workflow in **xBFreE (MMPBSA)**
 
 The calculations can be divided into 2 parts as shown in figure 1. In the first part, `Preparation`, the 
 topologies and trajectories are generated, among other elements depending on the calculations and MD program, such as 
@@ -50,7 +50,7 @@ flowchart TD
     L --> M[Print final results]
 ```
 
-**Figure 1**. **xBFreE** general workflow for MMPBSA calculations
+**Figure 1**. **xBFreE (MMPBSA)** general workflow
 
 ## Required input files
 
@@ -58,12 +58,12 @@ Currently, only AMBER and CHARMM force fields are officially supported. Dependin
 different files are required.
 
 
-| MD Program\Flags |        **-cp**        |     **-cs**      |          **-ct**           |        **-cg**         | **-ci** | **-cr** |
-|:----------------:|:---------------------:|:----------------:|:--------------------------:|:----------------------:|:-------:|:-------:|
-|     GROMACS      |        `*.top`        | `*.tpr`, `*.pdb` |      `*.xtc`, `*.trr`      | group numbers or names | `*.ndx` | `*.pdb` |
-|      AMBER       | `*.prmtop`, `*.parm7` |   `*.pdb`[^1]    | `*.nc`, `*.crd`, `*.mdcrd` |      amber masks       |         |         |
-|       NAMD       |  `*.psf`, `*.parm7`   |   `*.pdb`[^1]    |          `*.dcd`           |      amber masks       |         |         |
-|      CHARMM      |        `*.psf`        |   `*.pdb`[^1]    |          `*.dcd`           |      amber masks       |         |         |
+| MD Program\Flags |  **-cp** (Topology)   |   **-cs** (MD Structure)   |    **-ct** (Trajectory)    |    **-cg** (Groups)    | **-ci** (Index) | **-cr** (Reference structure) |
+|:----------------:|:---------------------:|:--------------------------:|:--------------------------:|:----------------------:|:---------------:|:-----------------------------:|
+|     GROMACS      |        `*.top`        |      `*.tpr`, `*.pdb`      |      `*.xtc`, `*.trr`      | group numbers or names |     `*.ndx`     |            `*.pdb`            |
+|      AMBER       | `*.prmtop`, `*.parm7` |        `*.pdb`[^1]         | `*.nc`, `*.crd`, `*.mdcrd` |      amber masks       |                 |                               |
+|       NAMD       |  `*.psf`, `*.parm7`   |        `*.pdb`[^1]         |          `*.dcd`           |      amber masks       |                 |                               |
+|      CHARMM      |        `*.psf`        |        `*.pdb`[^1]         |          `*.dcd`           |      amber masks       |                 |                               |
 
  [^1]: This file is the unique reference for every subsequent calculation, selection, etc. Make sure this PDB file 
  is consistent.

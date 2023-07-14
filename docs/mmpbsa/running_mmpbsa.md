@@ -11,8 +11,10 @@ calculation, please make sure:
 ??? tip "The structure defined in `-cs`, `-rs`, or `-ls` options is consistent"
         
     Visualize the structure contained in the structure input file given in the `-cs`, `-rs`, or `-ls` 
-    options and make sure it is consistent (as shown in Fig 1, right panel). On the other hand, if the 
-    structure is "broken" (as shown in Fig 1, left panel) this could generate inconsistent results.
+    options and make sure it is consistent (as shown in Figure 1, right panel). If the 
+    structure is "broken" (as shown in Figure 1, left panel) this could generate inconsistent results.
+
+    The following procedure is executed with GROMACS. A similar processing can be performed with other softwares as well.
     
     _Generate the structure from tpr file:_
         
@@ -30,8 +32,10 @@ calculation, please make sure:
 ??? tip "The trajectory defined in `-ct`, `-rt`, or `-lt` doesn't contain PBC"
 
     Visualize the trajectory given in the `-ct`, `-rt`, or `-lt` options and make sure the PBC has been 
-    removed (as shown in Fig 2, right panel). On the other hand, if the trajectory has not been fitted (as 
-    shown in Fig 2, left panel) this could generate inconsistent results.
+    removed (as shown in Figure 2, right panel). On the other hand, if the trajectory has not been fitted (as 
+    shown in Figure 2, left panel) this could generate inconsistent results.
+
+    The following procedure is executed with GROMACS. A similar processing can be performed with other softwares as well.
     
     Steps:
 
@@ -59,7 +63,7 @@ calculation, please make sure:
         
     4. Visualization
         
-        Make sure that the trajectory is consistent (as shown in Fig 2, right panel)
+        Make sure that the trajectory is consistent (as shown in Figure 2, right panel)
 
     5. If the process is not succesful, consider using other options like `-pbc nojump` (as suggested [here][5])
 
@@ -125,18 +129,18 @@ calculation, please make sure:
 
         RAM~total~ = RAM~1_frame~ * NUM of Threads
         
-        If it consumes all the RAM of the system it can cause crashes, instability or system shutdown!
+        If the RAM of the system is consumed, it can cause crashes, instability or system shutdown!
 
 
 === "Serial version"
     This version is installed via pip as described above. `AMBERHOME` variable must be set, or it will quit with an error. 
     An example command-line call is shown below:
     
-        gmx_MMPBSA -O -i mmpbsa.in -cs com.tpr -ci index.ndx -cg 1 13 -ct com_traj.xtc
+        xbfree gmx_MMPBSA -O -i mmpbsa.in -cs com.tpr -ci index.ndx -cg 1 13 -ct com_traj.xtc
     
     You can found test files on [GitHub][1]
 
-  [1]: https://github.com/Valdes-Tresanco-MS/gmx_MMPBSA/tree/master/docs/examples
+  [1]: https://github.com/xBFreEnergy/xBFreE/tree/main/examples
 
 <figure markdown="1">
 ![drawing](../assets/images/mmpbsa_py_mpi.png){ width=70% style="display: block; margin: 0 auto"}
