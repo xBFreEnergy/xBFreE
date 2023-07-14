@@ -26,8 +26,8 @@ efficient manner.
     Please, consider also citing gmx_MMPBSA:
 
     <a href="https://www.scimagojr.com/journalsearch.php?q=5100155074&amp;tip=sid&amp;exact=no" title="SCImago Journal 
-    &amp; Country Rank"><img border="0" align="right" src="https://www.scimagojr.com/journal_img.php?id=5100155074" 
-    alt="SCImago Journal &amp; Country Rank"  /></a>
+    &amp; Country Rank"><img border="0" align="right" src="https://www.scimagojr.com/journal_img.php?id=5100155074"
+    alt="SCImago Journal &amp; Country Rank"/></a>
     
     `gmx_MMPBSA` official paper has been published on _Journal of Chemical Theory and Computation_ and can be accessed 
     [here](https://pubs.acs.org/doi/10.1021/acs.jctc.1c00645). If you use `gmx_MMPBSA`, please cite it as follows:
@@ -36,8 +36,9 @@ efficient manner.
     End-State Free Energy Calculations with GROMACS_. Journal of Chemical Theory and Computation, 2021 17 (10), 6281-6291. 
     https://pubs.acs.org/doi/10.1021/acs.jctc.1c00645. 
     
-    <span class="__dimensions_badge_embed__" data-doi="10.1021/acs.jctc.1c00645" data-legend="always"></span><script 
-    async src="https://badge.dimensions.ai/badge.js" charset="utf-8"> align="right" </script>
+    <span class="__dimensions_badge_embed__" data-doi="10.1021/acs.jctc.1c00645"  data-style="medium_circle" 
+    data-legend="always"></span><script async src="https://badge.dimensions.ai/badge.js" charset="utf-8" align="right"> 
+     </script>
     
     Download | [*.bib](../gmx_MMPBSA_citation.bib) | [*.ris](../gmx_MMPBSA_citation.ris)
 
