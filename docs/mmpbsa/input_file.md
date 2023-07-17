@@ -1382,7 +1382,7 @@ summation of the atomic SASA’s. A molecular SASA is used for both PB dielectri
     * We have included more variables in 3D-RISM calculations than the ones available in the MMPBSA.py original code. 
     That way, users can be more in control and tackle various issues (_e.g._, convergence issues).
     * One advantage of `3D-RISM` is that an arbitrary solvent can be chosen; you just need to change the `xvvfile` 
-    specified on the command line (see `-xvvfile` flag in [gmx_MMPBSA command line](gmx_MMPBSA_command-line.md). The 
+    specified on the command line (see `-xvvfile` flag in [gmx_MMPBSA command line](mmpbsa/command-line.md). The 
     default solvent is `$AMBERHOME/AmberTools/test/rism1d/tip3p-kh/tip3p.xvv.save`. In case this file 
     doesn't exist, a copy `path_to_GMXMMPBSA/data/xvv_files/tip3p.xvv` is used. You can find examples of precomputed 
     `.xvv` files for SPC/E and TIP3P water in `$AMBERHOME/AmberTools/test/rism1d` or 

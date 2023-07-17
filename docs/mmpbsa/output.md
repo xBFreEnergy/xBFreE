@@ -11,9 +11,9 @@ on the type of calculation, reaching an absurd amount when many CPUs were used i
 in a folder presents several problems. First, since it is generated in the same folder as the input files, it is 
 hard to use them. Second, because of the large number, it becomes problematic to find a specific file. Lastly, 
 folders with many files are not easy to handle for the GUI of operating systems due to indexing.     
-Of all the above, we decided to make some changes to the project structure. Now, a folder called xBFReE_RESULTS is 
-generated in the working folder. Inside this, a folder is generated for each type of calculation, currently only 
-mmpbsa, which contains all the temporary files. Since they are isolated, the `_GMXMMPBSA_` prefix is not required.  
+Therefore, we decided to make some changes in the working directory structure. Now, a folder called xBFReE_RESULTS is 
+generated and then a folder is generated for each type of calculation, currently only 
+mmpbsa, which contains all the temporary files. Since they are isolated, the `_GMXMMPBSA_` prefix is no longer required.  
 
 ```bash  title="WDIR structure for xbfree gmx_MMPBSA"
 .
@@ -58,7 +58,7 @@ mmpbsa, which contains all the temporary files. Since they are isolated, the `_G
 
 !!! important 
     Note that the result files (`FINAL_RESULTS_MMPBSA.dat`, `DECOMP_RESULTS_MMPBSA.dat` and 
-    `COMPACT_RESULTS_MMPBSA.xbfree`) are in the working directory
+    `COMPACT_RESULTS_MMPBSA.xbfree`) are inside the working directory
 
 
 ## The output file
@@ -221,26 +221,146 @@ ligand (if it is only a single residue). After that, general information about m
 included. Entropy results are shown next in case any entropy approximation was used. Next, the energy and entropy 
 contributions are broken up into their components as they are in `sander` and `nmode` or `cpptraj`. The contributions 
 are further broken for the complex, receptor and ligand into `GGAS` and `GSOLV`. `GGAS` is the interaction energy 
-and is obtained after sum the internal(bonded) components (`BOND` + `ANGLE` + `DIHED`) and the 
+and is obtained after adding the internal(bonded) components (`BOND` + `ANGLE` + `DIHED`) and the 
 non-bonded (`VDWAALS` + `EEL`) components. For `GSOLV`, the polar and non-polar contributions are `EGB` (or `EPB`) 
 and `ESURF` (or `ENPOLAR + EDISPER`), respectively for `GB` (or `PB`) calculations. A single trajectory protocol does 
 not produce any differences between bond lengths, angles, dihedrals or 1-4 interactions between the complex and 
-receptor/ligand structures. Thus, when subtracted they cancel completely. If not, these values are displayed and 
-inconsistency warnings are printed. When this occurs the results are generally useless. Of course this does not 
+receptor/ligand structures. Thus, when subtracted, they cancel completely. If not, these values are displayed and 
+inconsistency warnings are printed. When this occurs, the results are generally useless. Of course, this does not 
 hold for the multiple trajectory protocol as independent trajectories are used for the complex, receptor and ligand. 
-Two approaches are used when calculating the standard deviation, and the standard error of the mean. The `SD` and `SEM`
+Two approaches are used when calculating the standard deviation and the standard error of the mean. The `SD` and `SEM`
 values are calculated using a sample (array) of values. On the other hand, `SD(Prop.)` and `SEM(Prop.)` are 
 obtained with the 
 [propagation of uncertainty formula](https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulae) for 
 _f_ = _A_ - _B_. Check this [thread](http://archive.ambermd.org/201202/0317.html) for more details on MM/PB(GB)SA 
 statistics.
 
+This is how a typical decomposition output file (`FINAL_DECOMP_MMPBSA.dat` by default) looks like:
+
+```  yaml title="FINAL_DECOMP_MMPBSA.dat"  
+|Run on Tue Mar  9 23:48:23 2021                                                  | # (1)!
+|GB non-polar solvation energies calculated with gbsa=2							  + # (2)!												
+|idecomp = 2 Per-residue decomp adding 1-4 interactions to EEL and VDW.			  | 																
+|Energy Decomposition Analysis (All units kcal/mol) Generalized Born solvent      +
+
+Complex:                         | # (3)!																		
+Total Energy Decomposition:      | # (4)!
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	   22.06	3.40	    0.82	            -6.83	1.27	    0.31	            -32.53	0.81	    0.20	            -1.57	0.38	    0.09	            0.01	0.00	    0.00	            -18.86	3.27	    0.79	
+THR  41	   19.15	2.58	    0.63	            -3.64	1.06	    0.26	            -36.16	0.96	    0.23	            -3.58	0.37	    0.09	            0.23	0.02	    0.00	            -23.99	1.97	    0.48	
+ALA  44	   15.67	1.92	    0.47	            -5.42	0.72	    0.18	            -7.54	0.90	    0.22	            -2.36	0.33	    0.08	            0.00	0.00	    0.00	            0.35	2.42	    0.59	
+RAL 241	   72.32	3.91	    0.95	            -16.88	2.66	    0.65	            -46.00	1.94	    0.47	            -0.74	0.89	    0.22	            0.42	0.02	    0.00	            9.12	3.79	    0.92	
+
+Sidechain Energy Decomposition:	 | # (5)!																	
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	   9.64	    2.16	    0.52	            -4.15	0.92	    0.22	            -27.51	0.45	    0.11	            4.14	0.11	    0.03	            0.01	0.00	    0.00	            -17.88	2.48	    0.60	
+THR  41	   6.60	    1.19	    0.29	            -1.62	0.70	    0.17	            -26.20	0.93	    0.23	            2.38	0.25	    0.06	            0.23	0.02	    0.00	            -18.61	1.11	    0.27	
+ALA  44	   2.94	    1.08	    0.26	            -2.20	0.26	    0.06	            2.19	0.13	    0.03	            -0.31	0.04	    0.01	            0.00	0.00	    0.00	            2.63	1.25	    0.30	
+RAL 241	   72.32	3.91	    0.95	            -16.88	2.66	    0.65	            -46.00	1.94	    0.47	            -0.74	0.89	    0.22	            0.42	0.02	    0.00	            9.12	3.79	    0.92	
+
+Backbone Energy Decomposition:	 | # (6)!																			
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	   12.42	2.04	    0.49	            -2.67	0.66	    0.16	            -5.03	0.80	    0.19	            -5.70	0.43	    0.11	            0.00	0.00	    0.00	            -0.98	1.72	    0.42	
+THR  41	   12.55	1.83	    0.44	            -2.02	0.71	    0.17	            -9.95	0.98	    0.24	            -5.96	0.34	    0.08	            0.00	0.00	    0.00	            -5.38	1.59	    0.39	
+ALA  44	   12.72	1.21	    0.29	            -3.22	0.73	    0.18	            -9.73	0.87	    0.21	            -2.05	0.33	    0.08	            0.00	0.00	    0.00	            -2.28	1.44	    0.35	
+RAL 241	   0.00	    0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	
+																			
+Receptor:                        | # (7)!																			
+Total Energy Decomposition:	     | # (8)!																			
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	   22.06	3.40	    0.82	            -4.37	1.27	    0.31	            -32.08	0.79	    0.19	            -2.68	0.39	    0.09	            0.23	0.02	    0.01	            -16.84	3.30	    0.80	
+THR  41	   19.15	2.58	    0.63	            -1.55	1.04	    0.25	            -35.55	0.96	    0.23	            -4.84	0.33	    0.08	            0.52	0.02	    0.00	            -22.28	2.03	    0.49	
+ALA  44	   15.67	1.92	    0.47	            -3.91	0.72	    0.17	            -7.61	0.86	    0.21	            -2.02	0.35	    0.08	            0.21	0.02	    0.00	            2.33	2.36	    0.57	
+
+Sidechain Energy Decomposition:	 | # (9)!																		
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	   9.64	    2.16	    0.52	            -2.70	0.89	    0.21	            -27.27	0.44	    0.11	            3.89	0.09	    0.02	            0.20	0.02	    0.01	            -16.25	2.49	    0.60	
+THR  41	   6.60	    1.19	    0.29	            -0.40	0.70	    0.17	            -25.86	0.88	    0.21	            1.62	0.21	    0.05	            0.49	0.02	    0.00	            -17.55	1.10	    0.27	
+ALA  44	   2.94	    1.08	    0.26	            -1.33	0.18	    0.04	            2.24	0.12	    0.03	            -0.43	0.04	    0.01	            0.20	0.01	    0.00	            3.62	1.17	    0.28	
+
+Backbone Energy Decomposition:	 | # (10)!																			
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	   12.42	2.04	    0.49	            -1.66	0.66	    0.16	            -4.81	0.81	    0.20	            -6.57	0.42	    0.10	            0.03	0.01	    0.00	            -0.59	1.69	    0.41	
+THR  41	   12.55	1.83	    0.44	            -1.15	0.72	    0.17	            -9.70	0.95	    0.23	            -6.46	0.34	    0.08	            0.02	0.01	    0.00	            -4.73	1.65	    0.40	
+ALA  44	   12.72	1.21	    0.29	            -2.59	0.71	    0.17	            -9.85	0.84	    0.20	            -1.58	0.35	    0.08	            0.01	0.01	    0.00	            -1.28	1.46	    0.35	
+																			
+Ligand:                          | # (11)!																			
+Total Energy Decomposition:	     | # (12)!																			
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+RAL   1	   72.32	3.91	    0.95	            12.61	2.08	    0.51	            -30.28	0.65	    0.16	            -23.18	0.63	    0.15	            5.65	0.03	    0.01	            37.11	4.05	    0.98	
+
+Sidechain Energy Decomposition:	 | # (13)!																			
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+RAL   1	   72.32	3.91	    0.95	            12.61	2.08	    0.51	            -30.28	0.65	    0.16	            -23.18	0.63	    0.15	            5.65	0.03	    0.01	            37.11	4.05	    0.98	
+
+Backbone Energy Decomposition:	 | # (14)!																			
+Residue	   Internal			                        van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	       Avg.	    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+RAL   1	   0.00	    0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	
+																			
+DELTAS:                          | # (15)!																			
+Total Energy Decomposition:	     | # (16)!																			
+Residue	Location    Internal			                    van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	                Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	R LEU  40	0.00	0.00	    0.00	            -2.46	0.21	    0.05	            -0.45	0.13	    0.03	            1.11	0.18	    0.04	            -0.22	0.02	    0.01	            -2.02	0.23	    0.06
+THR  41	R THR  41	0.00	0.00	    0.00	            -2.09	0.15	    0.04	            -0.60	0.12	    0.03	            1.26	0.15	    0.04	            -0.28	0.02	    0.00	            -1.72	0.17	    0.04
+ALA  44	R ALA  44	0.00	0.00	    0.00	            -1.50	0.13	    0.03	            0.07	0.05	    0.01	            -0.34	0.04	    0.01	            -0.21	0.02	    0.00	            -1.98	0.17	    0.04
+RAL 241	L RAL   1	0.00	0.00	    0.00	            -29.49	1.14	    0.28	            -15.72	1.60	    0.39	            22.44	0.74	    0.18	            -5.22	0.04	    0.01	            -28.00	1.36	    0.33
+																			
+Sidechain Energy Decomposition:	 | # (17)!																			
+Residue	Location    Internal			                    van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	                Avg.	td. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	R LEU  40	0.00	0.00	    0.00	            -1.45	0.17	    0.04	            -0.23	0.10	    0.02	            0.25	0.05	    0.01	            -0.19	0.02	    0.01	            -1.63	0.15	    0.04
+THR  41	R THR  41	0.00	0.00	    0.00	            -1.22	0.13	    0.03	            -0.34	0.12	    0.03	            0.76	0.15	    0.04	            -0.26	0.02	    0.00	            -1.06	0.13	    0.03
+ALA  44	R ALA  44	0.00	0.00	    0.00	            -0.87	0.15	    0.04	            -0.05	0.02	    0.01	            0.13	0.02	    0.00	            -0.19	0.01	    0.00	            -0.99	0.16	    0.04
+RAL 241	L RAL   1	0.00	0.00	    0.00	            -29.49	1.14	    0.28	            -15.72	1.60	    0.39	            22.44	0.74	    0.18	            -5.22	0.04	    0.01	            -28.00	1.36	    0.33
+																			
+Backbone Energy Decomposition:	 | # (18)!																			
+Residue	Location    Internal			                    van der Waals			                Electrostatic			                Polar Solvation			                Non-Polar Solv.			                TOTAL			
+	                Avg.    Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean	Avg.	Std. Dev.	Std. Err. of Mean
+LEU  40	R LEU  40	0.00	0.00	    0.00	            -1.01	0.08	    0.02	            -0.22	0.10	    0.02	            0.86	0.18	    0.04	            -0.03	0.01	    0.00	            -0.40	0.11	    0.03
+THR  41	R THR  41	0.00	0.00	    0.00	            -0.87	0.10	    0.02	            -0.26	0.06	    0.02	            0.50	0.04	    0.01	            -0.02	0.01	    0.00	            -0.66	0.16	    0.04
+ALA  44	R ALA  44	0.00	0.00	    0.00	            -0.63	0.06	    0.01	            0.12	0.04	    0.01	            -0.47	0.04	    0.01	            -0.01	0.01	    0.00	            -1.00	0.08	    0.02
+RAL 241	L RAL   1	0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00	            0.00	0.00	    0.00
+```
+
+1. Date of running
+2. General description of the methods used and units
+3. Data for the complex
+4. Total Decomposition (TDC) by term for the complex (= Sidechain Energy Decomposition + Backbone Energy Decomposition)
+5. Sidechain Energy Decomposition (SDC) by term for the complex
+6. Backbone Energy Decomposition (BDC) by term for the complex
+7. Data for the receptor
+8. Total Decomposition (TDC) by term for the receptor (= Sidechain Energy Decomposition + Backbone Energy Decomposition)
+9. Sidechain Energy Decomposition (SDC) by term for the receptor
+10. Backbone Energy Decomposition (BDC) by term for the receptor
+11. Data for the ligand
+12. Total Decomposition (TDC) by term for the ligand (= Sidechain Energy Decomposition + Backbone Energy Decomposition)
+13. Sidechain Energy Decomposition (SDC) by term for the ligand
+14. Backbone Energy Decomposition (BDC) by term for the ligand
+15. Delta Energies
+16. Delta energy for the Total Decomposition (TDC) by term
+17. Delta energy for the Sidechain Energy Decomposition (SDC) by term
+18. Delta energy for the Backbone Energy Decomposition (BDC) by term
+
+The header of the output file will contain information about the calculation and parameters specified. Next, the TDC,
+SDC, and BDC data are shown for the complex, receptor and ligand, respectively. Finally, the delta energies are shown 
+by terms for TDC, SDC, and BDC, respectively.
+
 ## Temporary files
 
 !!! gmx-mmpbsa "For gmx_MMPBSA users!"
     This section and the temporary files structure are different to gmx_MMPBSA. 
 
-If `xbfree` does not finish successfully, several of these files may be helpful in diagnosing the problem. For that
+If `xbfree` does not finish successfully, several of these files may be helpful for diagnosing the problem. For that
 reason, every temporary file is described below. Note that not every temporary file is generated in every simulation. 
 
 * `xBFreE.log` This file contains the output coming from `xBFReE`.

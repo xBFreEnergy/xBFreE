@@ -190,7 +190,6 @@ nav:
     - Getting started: getting-started/getting-started.md
     - xBFreE in a nutshell: getting-started/summary.md
     - Installation: getting-started/installation.md
-    - Command-line: getting-started/command-line.md
   - MMPBSA:
       - Introduction: mmpbsa/introduction.md
       - xBFreE vs other programs: mmpbsa/versus.md
