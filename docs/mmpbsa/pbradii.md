@@ -1,14 +1,14 @@
 
 !!! warning
-    Please, note that this page under develop, so some element should miss or can be changed in futures versions 
+    Please, note that this section is in active development; thus some elements could change in future versions 
 
-### TODO: What it is and how it influences the calculation of energy
+## Introduction
 
-Our interest in providing all available tools to users and meeting their needs did not lead to implementing a new
-way of defining radii. Unlike [ParmEd](https://parmed.github.io/ParmEd/html/index.html) (used by
-[gmx_MMPBSA](https://valdes-tresanco-ms.github.io/gmx_MMPBSA/dev/)), we have generated different classifications (or
-Types) for radii sets based on the conditions for their assignment by atoms. Currently, we implement 10 radii sets
-that you can define with the [PBRadii](input_file.md#mmpbsa_ifv_PBRadii) variable in the [input file](input_file.md):
+Previous results suggest that the PB/GB predictions are largely impacted by the radii used, as the multiple variants of 
+radii give very different results (check [Wang et. al., 2019][14] for an extensive review on this and other factors). 
+In our interest in providing the users with all available tools, we have implemented 
+10 radii sets available in the literature that you can define with the [PBRadii](input_file.md#mmpbsa_ifv_PBRadii) 
+variable in the [input file](input_file.md):
 
 |   Radii Name   |                     Type                     |             FF Compatibility             | Compatibility |
 |:--------------:|:--------------------------------------------:|:----------------------------------------:|:-------------:|
@@ -23,11 +23,14 @@ that you can define with the [PBRadii](input_file.md#mmpbsa_ifv_PBRadii) variabl
 |    `tyl06`     |                  `residue`                   | amber (optimized), charmm (experimental) | semi-complete |
 |  `yamagishi`   |                  `residue`                   | amber (optimized), charmm (experimental) | semi-complete |
 
+  [14]: https://pubs.acs.org/doi/abs/10.1021/acs.chemrev.9b00055
+
 ## Radii file structure
 
-The radii data is contained in a JSON format file. It is a dictionary (key-value pair) that contains the required
-information. The most important keys are `forcefield`, `type`, and `radii`, so please, pay attention to them when
-modifying or generating a new radii set.
+The radii data is contained in a JSON format file. It is a dictionary (key-value pair) that contains 
+all the required information. The most important keys are `forcefield`, `type`, and `radii`, so please, pay attention 
+to them when modifying or generating a new radii set. This format is extremely versatile and allows adding new atoms or 
+modifying the current ones:
 
 ```json  title="mbondi radii"
 {
@@ -70,8 +73,8 @@ Type column of the table above, there are various combinations depending on the 
 
 ## Understanding the radii classification/type
 
-In the table above, the Type column shows several combinations. Each keyword is used as condition to
-assigning the radii to any atom. Let's analyze the previous example: `mbondi`
+In the table above, the Type column shows several combinations. Each keyword is used as a condition to assign the 
+radii to any atom. Let's analyze the previous example: `mbondi`
 In this case, a combination of `atom_number` and `bonded_atom_number` is highlighted. 
 
 ??? note "Why not include `atom_type` or `mass`?"
@@ -118,8 +121,7 @@ Suppose you want to add a new atom parameter, for example, iron (Fe). For this, 
 
 Now, this new file can be defined as the radii in the variable [PBRadii](input_file.md#mmpbsa_ifv_PBRadii), for example:
 ```yaml
-Sample input file for GB calculation building the Amber topologies
-from structures. Please refer to the section "How gmx_MMPBSA works"
+Sample input file for GB calculation
 
 &general
   PBRadii = /home/user/path/to/new_radii.json 
@@ -136,5 +138,5 @@ igb=5, saltcon=0.150,
     You will receive due credit in the "reviews" section of the radii archive.
     * If you create or optimize your radii, feel free to share it, and we will include it in the list of radii.
     * We don't show much information about the radii used at this time, but we plan to have it displayed in the output 
-    file, not least because it has an impact on energy calculation.
+    file.
     
