@@ -16,9 +16,10 @@ You can carry out the installation of **xBFreE** in three ways:
 [`conda environment`](#gs_gs_conda_environment){#gs_gs_conda_environment} (Recommended for PC installation)
 :   The conda environment provides a clean and efficient way of installing **xBFreE**. It also allows having 
     different versions of xBFreE in isolated environments, thus reducing the possibility of incompatibility with 
-    other packages. Installation time is also less since it does not require the compilation of AmberTools or GROMACS. 
+    other packages. Installation time is also less since it does not require the compilation of AmberTools or GROMACS.
+    To install xBFreE in a conda environment, please, follows these steps:
     
-    ??? "Miniconda Installation"
+    ??? "1-Miniconda Installation (skip this step if conda is already installed in your PC)"
     
         Download and install [Miniconda]
     
@@ -51,7 +52,7 @@ You can carry out the installation of **xBFreE** in three ways:
             2. Change permissions for the installer
             3. Execute and install miniconda
 
-    !!! -n "Create conda environment and install libraries"
+    !!! -n "2-Create conda environment and install libraries"
     
         !!! Info "Important"
             Make sure to have conda installed in your computer. 

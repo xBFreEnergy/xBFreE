@@ -15,7 +15,8 @@ title: Getting started
 ## What is xBFreE?
 **xBFreE** [ **x** (any BFE method) <strong>B</strong>inding <strong>Fre</strong>e <strong>E</strong>nergy) is a 
 powerful and versatile tool for computing the Binding Free Energies using a variety of methods across 
-popular Molecular Dynamics programs. It represents the natural progression from gmx_MMPBSA, while also aiming to 
+popular Molecular Dynamics programs. It represents the natural progression from 
+[gmx_MMPBSA](https://valdes-tresanco-ms.github.io/gmx_MMPBSA/dev/getting-started/), while also aiming to 
 democratize the application of any BFE method by providing a user-friendly and enhanced platform. With xBFreE, 
 researchers can effortlessly leverage diverse BFE methods to advance their studies in a more accessible and 
 efficient manner.
@@ -47,7 +48,7 @@ efficient manner.
 
 
 ### Which MD programs are supported?
-Currently, we support four (4) MD programs: 
+Currently, we officially support four (4) MD programs: 
 
 | GROMACS |  AMBER  |  NAMD  |  CHARMM  |
 |:-------:|:-------:|:------:|:--------:|
