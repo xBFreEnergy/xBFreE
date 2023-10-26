@@ -63,7 +63,7 @@ Depending on the MD engine and force field used, `xBFreE` requires specific file
 :octicons-check-circle-fill-16:{ .req } -> Must be defined -- :octicons-check-circle-fill-16:{ .req_optrec } -> 
 Optional, but recommended -- :octicons-check-circle-fill-16:{ .req_opt } -> Optional
 
-_See a detailed list of all the flags in gmx_MMPBSA command line [here][1]_
+_See a detailed list of all the flags in xBFreE command line [here][1]_
 
 ## Command-line
 That being said, once you are in the folder containing all files, the command-line will be as follows:
@@ -155,7 +155,7 @@ specified on the command-line.
     Once the calculation is done, the results can be analyzed in `xBFreE-Analyzer` (if `-nogui` flag was not used in the command-line). 
     Please, check the [xBFreE-Analyzer][4] section for more information
 
-  [1]: ../../mmpbsa/command-line.md#gmx_mmpbsa-command-line  
+  [1]: ../../../mmpbsa/command-line.md
   [2]: ../../input_file.md#the-input-file
   [3]: ../../input_file.md#sample-input-files
   [4]: ../../analyzer.md#gmx_mmpbsa_ana-the-analyzer-tool

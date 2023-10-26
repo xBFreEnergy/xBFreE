@@ -250,6 +250,7 @@ nav:
         - Single Trajectory Protocol: examples/Protein_ligand/ST/README.md
         - Multiple Trajectory Protocol: examples/Protein_ligand/MT/README.md
         - BFE calculations:
+            - BFE calculations: examples/Protein_ligand/ST/README.md
             - BFE calculation with GB: examples/Protein_ligand/ST/README.md
             - BFE calculation with GBNSR6: examples/GBNSR6/README.md
             - BFE calculation with Linear PB: examples/Linear_PB_solver/README.md
@@ -258,6 +259,7 @@ nav:
         - Alanine scanning: examples/Alanine_scanning/README.md
         - Decomposition analysis: examples/Decomposition_analysis/README.md
         - Entropy calculations:
+            - Entropy calculations: examples/Entropy_calculations/Interaction_Entropy/README.md
             - Interaction Entropy: examples/Entropy_calculations/Interaction_Entropy/README.md
             - nmode Entropy: examples/Entropy_calculations/nmode/README.md
             - C2 Entropy calculations: examples/Entropy_calculations/C2_Entropy/README.md
