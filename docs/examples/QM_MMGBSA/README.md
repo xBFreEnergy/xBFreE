@@ -98,7 +98,7 @@ specified on the command-line.
     Once the calculation is done, the results can be analyzed in `gmx_MMPBSA_ana` (if `-nogui` flag was not used in the command-line). 
     Please, check the [gmx_MMPBSA_ana][5] section for more information
   
-  [1]: ../../getting-started/command-line.md#gmx_mmpbsa-command-line
+  [1]: ../../mmpbsa/command-line.md#gmx_mmpbsa-command-line
   [2]: ../../input_file.md#the-input-file
   [3]: ../../input_file.md#sample-input-files
   [5]: ../../analyzer.md#gmx_mmpbsa_ana-the-analyzer-tool

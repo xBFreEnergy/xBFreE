@@ -190,10 +190,9 @@ nav:
     - Getting started: getting-started/getting-started.md
     - xBFreE in a nutshell: getting-started/summary.md
     - Installation: getting-started/installation.md
-    - Command-line: getting-started/command-line.md
   - MMPBSA:
       - Introduction: mmpbsa/introduction.md
-      - xBFreE vs other program: mmpbsa/versus.md
+      - xBFreE vs other programs: mmpbsa/versus.md
       - How it works: mmpbsa/howworks.md
       - Command-line: mmpbsa/command-line.md
       - Running MMPBSA calculations: mmpbsa/running_mmpbsa.md
@@ -226,26 +225,28 @@ nav:
     - Examples: examples/README.md
     - gmx_MMPBSA_test: examples/gmx_MMPBSA_test.md
     - Systems:
-      - Protein-protein: examples/Protein_protein/README.md
-      - Protein-ligand: examples/Protein_ligand/ST/README.md
-      - Protein-DNA: examples/Protein_DNA/README.md
-      - Protein-glycan: examples/Protein_glycan/README.md
-      - Membrane proteins: examples/Protein_membrane/README.md
-      - Metalloprotein-ligand: examples/Metalloprotein_ligand/README.md
-      - Multicomponent system: examples/Comp_receptor/README.md
-      - COVID-19 related proteins:
-          - Info: examples/COVID-19_related_proteins/README.md
-          - Main protease: examples/COVID-19_related_proteins/Main_protease_7l5d/README.md
-          - Papain-like protease: examples/COVID-19_related_proteins/Papain-like_protease_7koj/README.md
-          - S1-ACE2 complex: examples/COVID-19_related_proteins/S1-ACE2_complex_7dmu/README.md
-          - S1 RBD with antibody: examples/COVID-19_related_proteins/S1_RBD_with_antibody_6zlr/README.md
-    - CHARMMff Support:
-        - Protein-ligand: examples/Protein_ligand_CHARMMff/README.md
-        - Protein-ligand complex embedded in membrane: examples/Protein_membrane_CHARMMff/README.md
-        - Protein-ligand with LPH particles (ST): examples/Protein_ligand_LPH_atoms_CHARMMff/README.md
-    - OPLSff Support:
-        - Protein-protein: examples/OPLS/protein_protein/README.md
+        - Systems: examples/Protein_protein/README.md
+        - Protein-protein: examples/Protein_protein/README.md
+        - Protein-ligand: examples/Protein_ligand/ST/README.md
+#      - Protein-DNA: examples/Protein_DNA/README.md
+#      - Protein-glycan: examples/Protein_glycan/README.md
+#      - Membrane proteins: examples/Protein_membrane/README.md
+#      - Metalloprotein-ligand: examples/Metalloprotein_ligand/README.md
+#      - Multicomponent system: examples/Comp_receptor/README.md
+#      - COVID-19 related proteins:
+#          - Info: examples/COVID-19_related_proteins/README.md
+#          - Main protease: examples/COVID-19_related_proteins/Main_protease_7l5d/README.md
+#          - Papain-like protease: examples/COVID-19_related_proteins/Papain-like_protease_7koj/README.md
+#          - S1-ACE2 complex: examples/COVID-19_related_proteins/S1-ACE2_complex_7dmu/README.md
+#          - S1 RBD with antibody: examples/COVID-19_related_proteins/S1_RBD_with_antibody_6zlr/README.md
+#    - CHARMMff Support:
+#        - Protein-ligand: examples/Protein_ligand_CHARMMff/README.md
+#        - Protein-ligand complex embedded in membrane: examples/Protein_membrane_CHARMMff/README.md
+#        - Protein-ligand with LPH particles (ST): examples/Protein_ligand_LPH_atoms_CHARMMff/README.md
+#    - OPLSff Support:
+#        - Protein-protein: examples/OPLS/protein_protein/README.md
     - Analysis:
+        - Analysis: examples/Protein_ligand/ST/README.md
         - Single Trajectory Protocol: examples/Protein_ligand/ST/README.md
         - Multiple Trajectory Protocol: examples/Protein_ligand/MT/README.md
         - BFE calculations:

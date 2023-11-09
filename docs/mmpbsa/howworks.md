@@ -3,22 +3,23 @@ template: main.html
 title: How xBFreE (MMPBSA) works
 ---
 
-# How **xBFreE** (MMPBSA) works
+# How **xBFreE (MMPBSA)** works
 
-xBFreE implements all the features in gmx_MMPBSA with support for GROMACS, AMBER, NAMD, and CHARMM. For now, this 
-includes only MMPBSA and its derivatives as methods for calculating binding free energy. 
+xBFreE implements all the features in gmx_MMPBSA with support for GROMACS, AMBER, NAMD, and CHARMM. 
+Hereafter, we refer to **xBFreE** (MMPBSA) as the module used to perform binding free energy calculations employing
+PB and other implicit solvent-based approaches.
 
-## General workflow for MMPBSA calculations
+## General workflow in **xBFreE (MMPBSA)**
 
-MMPBSA calculations can be divided into 2 parts as shown in figure 1. In the first part, `Preparation`, the 
+The calculations can be divided into 2 parts as shown in figure 1. In the first part, `Preparation`, the 
 topologies and trajectories are generated, among other elements depending on the calculations and MD program, such as 
 the mutants for the alanine/glycine scanning or the list of interacting residues during decomposition analysis. In 
 the second part, `Calculation`, the binding free energies and/or entropies are estimated using the selected models. 
 
 !!! gmx-mmpbsa "For gmx_MMPBSA users"
     Note that the analysis of the results is now outside the **xBFreE** workflow. This is because we have 
-    separated the **xBFreE-Analyzer** (formerly gmx_MMPBSA_ana) analysis tool as a independent module. See the 
-    [**xBFreE-Analyzer**]() documentation for more information.   
+    separated the **xBFreE-Analyzer** (formerly gmx_MMPBSA_ana) analysis tool as an independent module. See the 
+    [**xBFreE-Analyzer**]() documentation for more information.
 
 
 ```mermaid
@@ -49,29 +50,29 @@ flowchart TD
     L --> M[Print final results]
 ```
 
-**Figure 1**. **xBFreE** general workflow for MMPBSA calculations
+**Figure 1**. **xBFreE (MMPBSA)** general workflow
 
 ## Required input files
 
-Currently, only AMBER and CHARMM force fields are officially supported. Depending on the MD program one or several 
-different files are required. 
+Currently, only AMBER and CHARMM force fields are officially supported. Depending on the MD program, one or several 
+different files are required.
 
 
-| MD Program\Flags |        **-cp**        |     **-cs**      |          **-ct**           |       **-cg**        | **-ci** | **-cr** |
-|:----------------:|:---------------------:|:----------------:|:--------------------------:|:--------------------:|:-------:|:-------:|
-|     GROMACS      |        `*.top`        | `*.tpr`, `*.pdb` |      `*.xtc`, `*.trr`      | group number or name | `*.ndx` | `*.pdb` |
-|      AMBER       | `*.prmtop`, `*.parm7` |   `*.pdb`[^1]    | `*.nc`, `*.crd`, `*.mdcrd` |      amber mask      |         |         |
-|       NAMD       |  `*.psf`, `*.parm7`   |   `*.pdb`[^1]    |          `*.dcd`           |      amber mask      |         |         |
-|      CHARMM      |        `*.psf`        |   `*.pdb`[^1]    |          `*.dcd`           |      amber mask      |         |         |
+| MD Program\Flags |  **-cp** (Topology)   |   **-cs** (MD Structure)   |    **-ct** (Trajectory)    |    **-cg** (Groups)    | **-ci** (Index) | **-cr** (Reference structure) |
+|:----------------:|:---------------------:|:--------------------------:|:--------------------------:|:----------------------:|:---------------:|:-----------------------------:|
+|     GROMACS      |        `*.top`        |      `*.tpr`, `*.pdb`      |      `*.xtc`, `*.trr`      | group numbers or names |     `*.ndx`     |            `*.pdb`            |
+|      AMBER       | `*.prmtop`, `*.parm7` |        `*.pdb`[^1]         | `*.nc`, `*.crd`, `*.mdcrd` |      amber masks       |                 |                               |
+|       NAMD       |  `*.psf`, `*.parm7`   |        `*.pdb`[^1]         |          `*.dcd`           |      amber masks       |                 |                               |
+|      CHARMM      |        `*.psf`        |        `*.pdb`[^1]         |          `*.dcd`           |      amber masks       |                 |                               |
 
- [^1]: This file is the unique reference for every subsequent calculation, selection, etc. Make sure that this PDB file 
- are consistent.
+ [^1]: This file is the unique reference for every subsequent calculation, selection, etc. Make sure this PDB file 
+ is consistent.
 
 
 !!! gmx-mmpbsa "For gmx_MMPBSA users!"
     Note that the generation of the Amber topology from structures is no longer supported. Now only the topology is 
     required, no matter which force field or MD program was used. This also removes some confusing flags and variables, 
-    for example the `-lm` flag and the `forcefields` variable.   
+    for example, the `-lm` flag and the `forcefields` variable.
 
 
 ## Topology preparation

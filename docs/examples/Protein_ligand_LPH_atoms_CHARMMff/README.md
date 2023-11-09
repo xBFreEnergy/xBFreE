@@ -241,7 +241,7 @@ specified on the command-line.
 
 
   [1]: http://archive.ambermd.org/201508/0382.html 
-  [2]: ../../getting-started/command-line.md#gmx_mmpbsa-command-line
+  [2]: ../../mmpbsa/command-line.md#gmx_mmpbsa-command-line
   [3]: ../../input_file.md#the-input-file
   [4]: ../../input_file.md#sample-input-files
   [5]: ../../analyzer.md#gmx_mmpbsa_ana-the-analyzer-tool

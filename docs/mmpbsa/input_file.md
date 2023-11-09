@@ -1,19 +1,19 @@
 ---
 template: main.html
-title: The input file for MMPBSA
+title: The input file for xBFreE (MMPBSA)
 ---
 
 # The input file
 
 ## Description
 
-**xBFreE** input file contains all the specifications for the MMPBSA calculations. The input file is syntactically 
-similar to other programs in Amber, although we incorporated a new format more similar to the one used on GROMACS *.mdp 
-files (see bleow). The input file contains sections called `namelist` where the variables are defined for each 
+**xBFreE (MMPBSA)** input file contains all the specifications for the MMPBSA calculations. The input file is syntactically 
+similar to other programs in Amber, although we have incorporated format more similar to that of GROMACS *.mdp 
+files (see below). The input file contains sections called `namelist` where the variables are defined for each 
 calculation. The allowed namelists are:
 
 - [`&general`](#general-namelist-variables): contains variables that apply to all aspects of the 
-  calculation or parameters required for building AMBER topologies from GROMACS files.
+  calculation or parameters required for building AMBER topologies.
 - [`&gb`](#gb-namelist-variables): unique variables to Generalized Born (GB) calculations.
 - [`&gbnsr6`](#gbnsr6-namelist-variables): unique variables to GBNSR6 calculations.
 - [`&pb`](#pb-namelist-variables): unique variables to Poisson Boltzmann (PB) calculations.
@@ -29,132 +29,131 @@ calculation. The allowed namelists are:
 ## Generation of input files with **xBFreE**
 The input file can be created using **xBFreE** by selecting the subcommand and the calculations you want to perform.
 
-!!! note "Take a look at"
+!!! note
     Note that the command-line is basically the same for all MD programs. They only differ in the subcommand 
     selected according to the MD program.
 
-=== "GROMACS"
-    ``` title="Command-line"
-    xbfree gmx_MMPBSA --create_input args
-    ```
-    where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
-
-    Example:
+    === "GROMACS"
+        ``` title="Command-line"
+        xbfree gmx_MMPBSA --create_input args
+        ```
+        where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
     
-    === "GB calculation"
+        Example:
+        
+        === "GB calculation"
+                
+                xbfree gmx_MMPBSA --create_input gb
             
-            xbfree gmx_MMPBSA --create_input gb
-        
-    === "PB calculation"
-        
-            xbfree gmx_MMPBSA --create_input pb
-    
-    === "GB, PB and Decomposition calculations"
-        
-            xbfree gmx_MMPBSA --create_input gb pb decomp
-    
-    === "All calculations"
-    
-            xbfree gmx_MMPBSA --create_input
-         
-        or 
+        === "PB calculation"
             
-            xbfree gmx_MMPBSA --create_input all
-
-=== "AMBER"
-    ``` title="Command-line"
-    xbfree amber_MMPBSA --create_input args
-    ```
-    where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
-    
-    Example:
-    
-    === "GB calculation"
+                xbfree gmx_MMPBSA --create_input pb
+        
+        === "GB, PB and Decomposition calculations"
             
-            xbfree amber_MMPBSA --create_input gb
+                xbfree gmx_MMPBSA --create_input gb pb decomp
         
-    === "PB calculation"
+        === "All calculations"
         
-            xbfree amber_MMPBSA --create_input pb
+                xbfree gmx_MMPBSA --create_input
+             
+            or 
+                
+                xbfree gmx_MMPBSA --create_input all
     
-    === "GB, PB and Decomposition calculations"
+    === "AMBER"
+        ``` title="Command-line"
+        xbfree amber_MMPBSA --create_input args
+        ```
+        where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
         
-            xbfree amber_MMPBSA --create_input gb pb decomp
-    
-    === "All calculations"
-    
-            xbfree amber_MMPBSA --create_input
-         
-        or 
+        Example:
+        
+        === "GB calculation"
+                
+                xbfree amber_MMPBSA --create_input gb
             
-            xbfree amber_MMPBSA --create_input all
-
-=== "NAMD"
-    ``` title="Command-line"
-    xbfree namd_MMPBSA --create_input args
-    ```
-    where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
-
-    Example:
-    === "GB calculation"
+        === "PB calculation"
             
-            xbfree namd_MMPBSA --create_input gb
+                xbfree amber_MMPBSA --create_input pb
         
-    === "PB calculation"
-        
-            xbfree namd_MMPBSA --create_input pb
-    
-    === "GB, PB and Decomposition calculations"
-        
-            xbfree namd_MMPBSA --create_input gb pb decomp
-    
-    === "All calculations"
-    
-            xbfree namd_MMPBSA --create_input
-         
-        or 
+        === "GB, PB and Decomposition calculations"
             
-            xbfree namd_MMPBSA --create_input all
-
-=== "CHARMM"
-    ``` title="Command-line"
-    xbfree charmm_MMPBSA --create_input args
-    ```
-    where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
+                xbfree amber_MMPBSA --create_input gb pb decomp
+        
+        === "All calculations"
+        
+                xbfree amber_MMPBSA --create_input
+             
+            or 
+                
+                xbfree amber_MMPBSA --create_input all
     
-    Example:
-    === "GB calculation"
+    === "NAMD"
+        ``` title="Command-line"
+        xbfree namd_MMPBSA --create_input args
+        ```
+        where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
+    
+        Example:
+        === "GB calculation"
+                
+                xbfree namd_MMPBSA --create_input gb
             
-            xbfree charmm_MMPBSA --create_input gb
-        
-    === "PB calculation"
-        
-            xbfree charmm_MMPBSA --create_input pb
-    
-    === "GB, PB and Decomposition calculations"
-        
-            xbfree charmm_MMPBSA --create_input gb pb decomp
-    
-    === "All calculations"
-    
-            xbfree charmm_MMPBSA --create_input
-         
-        or 
+        === "PB calculation"
             
-            xbfree charmm_MMPBSA --create_input all
+                xbfree namd_MMPBSA --create_input pb
+        
+        === "GB, PB and Decomposition calculations"
+            
+                xbfree namd_MMPBSA --create_input gb pb decomp
+        
+        === "All calculations"
+        
+                xbfree namd_MMPBSA --create_input
+             
+            or 
+                
+                xbfree namd_MMPBSA --create_input all
+    
+    === "CHARMM"
+        ``` title="Command-line"
+        xbfree charmm_MMPBSA --create_input args
+        ```
+        where `args` can be:  `gb`, `gbnsr6`, `pb`, `rism`, `ala`, `decomp`, `nmode`, `all`
+        
+        Example:
+        === "GB calculation"
+                
+                xbfree charmm_MMPBSA --create_input gb
+            
+        === "PB calculation"
+            
+                xbfree charmm_MMPBSA --create_input pb
+        
+        === "GB, PB and Decomposition calculations"
+            
+                xbfree charmm_MMPBSA --create_input gb pb decomp
+        
+        === "All calculations"
+        
+                xbfree charmm_MMPBSA --create_input
+             
+            or 
+                
+                xbfree charmm_MMPBSA --create_input all
 
 
 !!! Danger 
     - Note that several variables must be explicitly defined in the input file
-    - Define all the calculations will take a long time, so take care when you define the calculation you want to 
-    perform
+    - Performing all the calculations in the same run can take a long time
 
 
 ## Format
 All the input variables are described below according to their respective namelists. Descriptions are taken from 
 original sources and modified accordingly when needed. All variables should be 
-set with `variable = value` and separated by commas is they appear in the same line. If the variables appear in different 
-lines, the comma is no longer needed. See several [examples](#sample-input-files) are shown below. As you will see, several 
+set with `variable = value` and separated by commas if they appear in the same line. If the variables appear in different 
+lines, the comma is no longer needed. Several [examples](#sample-input-files) are shown below. As you will see, several 
 calculations can be performed in the same run (_i.e._ `&gb` and `&pb`; `&gb` and `&alanine_scanning`; `&pb` and
 `&decomp`; etc). As we have mentioned, the input file can be generated using the `create_input` option of 
 `xbfree <subcommand>`. 
@@ -163,7 +162,7 @@ style (`*.mdp`). However, it maintains the same essence, so it could be defined 
 combined. See the formats below:
 
 ??? gmx-mmpbsa "For gmx_MMPBSA and MMPBSA.py users!"
-    Note that the string format no requires de single- or double-quotes. However, you can put them if you wish  
+    Note that the string format does not require de single- or double-quotes. However, you can use them if you wish  
 
 === "New format style "
     ``` title="New format style Input file example"
@@ -241,8 +240,8 @@ the solvation energy. You can combine multiple PBRadii for the same system!
 
     ??? warning "Effect of radii on energy calculations"
         Depending on the method selected, this parameter will have a greater or lesser impact on the computed value. 
-        While in PB, this will only be used to compute the non-polar solvation component (`ENPOLAR` and `EDISPER`). In 
-        GB, it is used, in addition to the non-polar solvation component, to compute the effective Born radius. 
+        In PB, this parameter is used to compute the non-polar solvation component (`ENPOLAR` and `EDISPER`). In 
+        GB, on the other hand, is also used to compute the effective Born radius.
 
     ??? gmx-mmpbsa "For gmx_MMPBSA users!"
         Note that notation changes from number to string. We implemented a new function to assing radii, which allow 
@@ -298,7 +297,7 @@ the solvation energy. You can combine multiple PBRadii for the same system!
             
             |               | Description                                                                                                                                                                                           |
             |---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-            | Recommended   | recommended when `igb = 1`                                                                                                                                                                            |
+            | Recommended   | recommended for PB calculations of halogenated compounds (without extra point (EP) of charge)                                                                                                                                                                           |
             | Compatibility | `mbondi_pb2` is a generic radii type, which means that the radii is assigned by atom properties for any type of molecule                                                                              |
             | Modification  | you can add parameters for new atoms or modify existing ones. Please see how to do it [here](pbradii.md#)                                                                                             |
             | Combination   | since `mbondi_pb2` is a generic type, you can combine it with specific radii set (`tyl06` or `yamagishi`). Note you can't combine it with other generic radii or complete radii types. |
@@ -332,7 +331,7 @@ the solvation energy. You can combine multiple PBRadii for the same system!
             
             |               | Description                                                                                                                                                                                 |
             |---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-            | Recommended   | recommended when `igb = 1`                                                                                                                                                                  |
+            | Recommended   | recommended for PB calculations of halogenated compounds (without extra point (EP) of charge)                                                                                                                                                                  |
             | Compatibility | `mbondi_pb3` is a generic radii type, which means that the radii is assigned by atom properties for any type of molecule                                                                    |
             | Modification  | you can add parameters for new atoms or modify existing ones. Please see how to do it [here](pbradii.md#)                                                                                   |
             | Combination   | since `mbondi_pb3` is a generic type, you can combine it with specific radii set (`tyl06` or `yamagishi`). Note you can't combine it with other generic radii or complete radii types. |
@@ -374,7 +373,7 @@ the solvation energy. You can combine multiple PBRadii for the same system!
             | Modification  | you can add parameters for new atoms or modify existing ones. Please see how to do it [here](pbradii.md#)                           |
             | Combination   | can't be combined                                                                                                                   |
 
-            This atomic radii set for Poisson-Boltzmann calculations has been derived from average solvent 
+            This atomic radii set for PB calculations has been derived from average solvent 
             electrostatic charge distribution with explicit solvent. The accuracy has been tested with free energy 
             perturbation with explicit solvent. Most of the values were taken from a _*radii.str_ file used in PBEQ 
             Solver in [charmm-gui](https://www.charmm-gui.org/?doc=input/pbeqsolver).
@@ -399,8 +398,8 @@ the solvation energy. You can combine multiple PBRadii for the same system!
         
         ??? note "For Amber users!"
             Note that this radii is the same applied when `radiopt=1`. However, as radiopt is not available in xbfree 
-            due to possible fails if the system contains other molecules types in addition to proteins and nucleic 
-            acids, then you have to apply it manually.  
+            due to possible fails when the system contains other molecule types in addition to proteins and nucleic 
+            acids. Therefore, it should be specified in the input file in case you want to use it.
 
     * `yamagishi` 
         
@@ -583,22 +582,22 @@ However, this option is incompatible with alanine scanning.
 !!! note "Keep in mind"
     * A default GB input file can be created as follows:
 
-        === "GROMACS"
-            ```
-            xbfree gmx_MMPBSA --create_input gb
-            ```
-        === "AMBER"
-            ```
-            xbfree amber_MMPBSA --create_input gb
-            ```
-        === "NAMD"
-            ```
-            xbfree namd_MMPBSA --create_input gb
-            ```
-        === "CHARMM"
-            ```
-            xbfree charmm_MMPBSA --create_input gb
-            ```
+    === "GROMACS"
+        ```
+        xbfree gmx_MMPBSA --create_input gb
+        ```
+    === "AMBER"
+        ```
+        xbfree amber_MMPBSA --create_input gb
+        ```
+    === "NAMD"
+        ```
+        xbfree namd_MMPBSA --create_input gb
+        ```
+    === "CHARMM"
+        ```
+        xbfree charmm_MMPBSA --create_input gb
+        ```
             
 
     * A sample GB input file is shown [here](input_file.md#gb)
@@ -809,29 +808,29 @@ on the very first step to a file named qmmm_region.pdb.
 
 !!! note "Keep in mind"
     * GBNSR6 is an implementation of the Generalized Born (GB) model in which the effective Born radii are computed 
-    numerically, via the so-called "R6" integration ([ref.][222]) over molecular surface of the solute. In contrast to 
-    most GB practical models, GBNSR6 model is parameter free in the same sense as the numerical PB framework is. Thus, 
-    accuracy of GBNSR6 relative to the PB standard is virtually unaffected by the choice of input atomic radii. Check
+    numerically, via the so-called "R6" integration ([ref.][222]) over the molecular surface of the solute. In contrast to 
+    most GB practical models, GBNSR6 model is parameter-free in the same sense as the numerical PB framework is. Thus, 
+    the accuracy of GBNSR6 relative to the PB standard is virtually unaffected by the choice of input atomic radii. Check
     Chapter [§5](https://ambermd.org/doc12/Amber21.pdf#chapter.5) in Amber manual for a more thorough description 
     of the GBNSR6 model and its parameters.
     * A default GBNSR6 input file can be created as follows:
 
-        === "GROMACS"
-            ```
-            xbfree gmx_MMPBSA --create_input gbnsr6
-            ```
-        === "AMBER"
-            ```
-            xbfree amber_MMPBSA --create_input gbnsr6
-            ```
-        === "NAMD"
-            ```
-            xbfree namd_MMPBSA --create_input gbnsr6
-            ```
-        === "CHARMM"
-            ```
-            xbfree charmm_MMPBSA --create_input gbnsr6
-            ```
+    === "GROMACS"
+        ```
+        xbfree gmx_MMPBSA --create_input gbnsr6
+        ```
+    === "AMBER"
+        ```
+        xbfree amber_MMPBSA --create_input gbnsr6
+        ```
+    === "NAMD"
+        ```
+        xbfree namd_MMPBSA --create_input gbnsr6
+        ```
+    === "CHARMM"
+        ```
+        xbfree charmm_MMPBSA --create_input gbnsr6
+        ```
 
     * A sample GBNSR6 input file is shown [here](input_file.md#gbnsr6)
     * A tutorial on binding free energy calculation with GBNSR6 model is available 
@@ -871,8 +870,8 @@ on the very first step to a file named qmmm_region.pdb.
 :   Arc resolution used for numerical integration over molecular surface.
 
 [`b`](#mmpbsa_ifv_b){#mmpbsa_ifv_b} (Default = 0.028)
-:   Specifies the value of uniform offset to the (inverse) effective radii, the default value 0.028 gives 
-better agreement with the PB model, regardless of the structure size. For best agreement with the explicit solvent 
+:   Specifies the value of uniform offset to the (inverse) effective radii; the default value 0.028 gives 
+better agreement with the PB model, regardless of the structure size. For the best agreement with the explicit solvent 
 (TIP3P) solvation energies, optimal value of B depends on the structure size: for small molecules (number of atoms 
 less than 50), B=0 is recommended. With -chagb option, B is calculated automatically based on the solute size.
 
@@ -929,22 +928,22 @@ charges (_j_) affecting the CHA of atom (_i_), see ([ref.][215]) for details.
     the quality of the MM/PB(GB)SA calculations, please check this [publication][6].
     * A default PB input file can be created as follows:
 
-        === "GROMACS"
-            ```
-            xbfree gmx_MMPBSA --create_input pb
-            ```
-        === "AMBER"
-            ```
-            xbfree amber_MMPBSA --create_input pb
-            ```
-        === "NAMD"
-            ```
-            xbfree namd_MMPBSA --create_input pb
-            ```
-        === "CHARMM"
-            ```
-            xbfree charmm_MMPBSA --create_input pb
-            ```
+    === "GROMACS"
+        ```
+        xbfree gmx_MMPBSA --create_input pb
+        ```
+    === "AMBER"
+        ```
+        xbfree amber_MMPBSA --create_input pb
+        ```
+    === "NAMD"
+        ```
+        xbfree namd_MMPBSA --create_input pb
+        ```
+    === "CHARMM"
+        ```
+        xbfree charmm_MMPBSA --create_input pb
+        ```
     
     * A sample PB input file is shown [here](input_file.md#pb)
     * A tutorial on binding free energy calculation with PB model is available 
@@ -1281,7 +1280,6 @@ TIP3P. ([ref.][227])
     * 0: Use atomic van der Waals _σ_ values.
     * 1: Use atomic van der Waals _rmin_ values.
 
-
 [`sprob`](#mmpbsa_ifv_sprob){#mmpbsa_ifv_sprob} (Default = 0.557)
 :   Solvent probe radius (in Å) for solvent accessible surface area (SASA) used to compute the dispersion term,
 default to 0.557 Å in the _σ_ decomposition scheme as optimized in ([ref.][227]) with respect to the
@@ -1296,18 +1294,15 @@ repulsive terms in previous releases in Amber. However, it was found in the more
 that it was impossible to use the same probe radii for all three terms after each term was calibrated
 and validated with respect to the TIP3P solvent. ([ref.][227])
 
-
 [`vprob`](#mmpbsa_ifv_vprob){#mmpbsa_ifv_vprob} (Default = 1.300)
 :   Solvent probe radius (in Å) for molecular volume (the volume enclosed by SASA) used to compute non-polar cavity 
 solvation free energy, default to 1.300 Å, the value optimized in ([ref.][227]) with respect to the TIP3P solvent. 
 Recommended values for other decomposition schemes can be found in Tables 1-3 of ([ref.][227]).
 
-
 [`rhow_effect`](#mmpbsa_ifv_rhow_effect){#mmpbsa_ifv_rhow_effect} (Default = 1.129)
 :   Effective water density used in the non-polar dispersion term calculation, default to 1.129 for `decompopt = 2`, the 
 _σ_ scheme. This was optimized in ([ref.][227]) with respect to the TIP3P solvent in PME. Optimized values for other 
 decomposition schemes can be found in Table 4 of ([ref.][227]).
-
 
 [`use_sav`](#mmpbsa_ifv_use_sav){#mmpbsa_ifv_use_sav} (Default = 1)
 :   The option to use molecular volume (the volume enclosed by SASA) or to use molecular surface (SASA) for cavity term 
@@ -1316,7 +1311,6 @@ biomacromolecules.
 
     * 0: Use SASA to estimate cavity free energy
     * 1: Use the molecular volume enclosed by SASA
-
 
 [`cavity_surften`](#mmpbsa_ifv_cavity_surften-1){#mmpbsa_ifv_cavity_surften-1} (Default = 0.0378)
 :   The regression coefficient for the linear relation between the total non-polar solvation free energy (`inp` = 1), or 
@@ -1341,7 +1335,6 @@ summation of the atomic SASA’s. A molecular SASA is used for both PB dielectri
   [5]: https://ambermd.org/doc12/Amber21.pdf#chapter.6
   [6]: https://onlinelibrary.wiley.com/doi/10.1002/jcc.24467
 
-
 [`maxarcdot`](#mmpbsa_ifv_maxarcdot){#mmpbsa_ifv_maxarcdot} (Default = 1500)
 :   Number of dots used to store arc dots per atom.
 
@@ -1353,28 +1346,27 @@ summation of the atomic SASA’s. A molecular SASA is used for both PB dielectri
     * 0: Off
     * 1: On
 
-
 ### **`&rism` namelist variables**
 
 !!! note "Keep in mind"
     * A default 3drism input file can be created as follows:
 
-        === "GROMACS"
-            ```
-            xbfree gmx_MMPBSA --create_input rism
-            ```
-        === "AMBER"
-            ```
-            xbfree amber_MMPBSA --create_input rism
-            ```
-        === "NAMD"
-            ```
-            xbfree namd_MMPBSA --create_input rism
-            ```
-        === "CHARMM"
-            ```
-            xbfree charmm_MMPBSA --create_input rism
-            ```
+    === "GROMACS"
+        ```
+        xbfree gmx_MMPBSA --create_input rism
+        ```
+    === "AMBER"
+        ```
+        xbfree amber_MMPBSA --create_input rism
+        ```
+    === "NAMD"
+        ```
+        xbfree namd_MMPBSA --create_input rism
+        ```
+    === "CHARMM"
+        ```
+        xbfree charmm_MMPBSA --create_input rism
+        ```
     
     * `3D-RISM` calculations are performed with the `rism3d.snglpnt` program built with AmberTools, written by Tyler 
     Luchko. It is the most expensive, yet most statistical mechanically rigorous solvation model. See 
@@ -1390,7 +1382,7 @@ summation of the atomic SASA’s. A molecular SASA is used for both PB dielectri
     * We have included more variables in 3D-RISM calculations than the ones available in the MMPBSA.py original code. 
     That way, users can be more in control and tackle various issues (_e.g._, convergence issues).
     * One advantage of `3D-RISM` is that an arbitrary solvent can be chosen; you just need to change the `xvvfile` 
-    specified on the command line (see `-xvvfile` flag in [gmx_MMPBSA command line](gmx_MMPBSA_command-line.md). The 
+    specified on the command line (see `-xvvfile` flag in [gmx_MMPBSA command line](mmpbsa/command-line.md). The 
     default solvent is `$AMBERHOME/AmberTools/test/rism1d/tip3p-kh/tip3p.xvv.save`. In case this file 
     doesn't exist, a copy `path_to_GMXMMPBSA/data/xvv_files/tip3p.xvv` is used. You can find examples of precomputed 
     `.xvv` files for SPC/E and TIP3P water in `$AMBERHOME/AmberTools/test/rism1d` or 
@@ -1407,7 +1399,6 @@ new one simply adding the file path.
     * spc
     * spc-nacl-3
     * spc_mmpbsa_py
-
 
 #### **Closure approximations**
 
@@ -1457,7 +1448,6 @@ See [§7.2.4](https://ambermd.org/doc12/Amber21.pdf#subsection.7.2.4)
     * 0: Do not use long-range corrections
     * 1: Use the long-range corrections
 
-
 [`treeDCF`](#mmpbsa_ifv_treeDCF){#mmpbsa_ifv_treeDCF} (Default = 1)
 :   Use direct sum, or the treecode approximation to calculate the direct correlation function long-range asymptotic 
 correction.
@@ -1478,18 +1468,14 @@ correction.
     * 0: Use direct sum
     * 1: Use treecode approximation
 
-
 [`treeDCFMAC`](#mmpbsa_ifv_treeDCFMAC){#mmpbsa_ifv_treeDCFMAC} (Default = 0.1)
 :   Treecode multipole acceptance criterion for the direct correlation function long-range asymptotic correction.
-
 
 [`treeTCFMAC`](#mmpbsa_ifv_treeTCFMAC){#mmpbsa_ifv_treeTCFMAC} (Default = 0.1)
 :   Treecode multipole acceptance criterion for the total correlation function long-range asymptotic correction.
 
-
 [`treeCoulombMAC`](#mmpbsa_ifv_treeCoulombMAC){#mmpbsa_ifv_treeCoulombMAC} (Default = 0.1)
 :   Treecode multipole acceptance criterion for the Coulomb potential energy.
-
 
 [`treeDCFOrder`](#mmpbsa_ifv_treeDCFOrder){#mmpbsa_ifv_treeDCFOrder} (Default = 2)
 :   Treecode Taylor series order for the direct correlation function long-range asymptotic correction.
@@ -1636,24 +1622,19 @@ accuracy. Possible values are:
     * `when = 0`: no cutoff
     * `when > 0`: given value determines the maximum error in the reciprocal-space long range asymptotics calculations
 
-
 [`mdiis_del`](#mmpbsa_ifv_mdiis_del){#mmpbsa_ifv_mdiis_del} (Default = 0.7)
 :   MDIIS step size.
 
-
 [`mdiis_nvec`](#mmpbsa_ifv_mdiis_nvec){#mmpbsa_ifv_mdiis_nvec} (Default = 5)
 :   Number of previous iterations MDIIS uses to predict a new solution.
-
 
 [`mdiis_restart`](#mmpbsa_ifv_mdiis_restart){#mmpbsa_ifv_mdiis_restart} (Default = 10)
 :   If the current residual is mdiis_restart times larger than the smallest residual in memory, then the MDIIS 
 procedure is restarted using the lowest residual solution stored in memory. Increasing this number can sometimes 
 help convergence.
 
-
 [`maxstep`](#mmpbsa_ifv_maxstep){#mmpbsa_ifv_maxstep} (Default = 10000)
 :   Maximum number of iterations allowed to converge on a solution.
-
 
 [`npropagate`](#mmpbsa_ifv_npropagate){#mmpbsa_ifv_npropagate} (Default = 5)
 :   Number of previous solutions propagated forward to create an initial guess for this solute atom configuration.
@@ -1661,7 +1642,6 @@ help convergence.
     * =0: Do not use any previous solutions
     * = 1..5: Values greater than 0 but less than 4 or 5 will use less system memory but may introduce artifacts to 
     the solution (_e.g._, energy drift).
-
 
 #### **Output**
 
@@ -1693,35 +1673,25 @@ See [§7.1.3](https://ambermd.org/doc12/Amber21.pdf#subsection.7.1.3) and
 ### **`&alanine_scanning` namelist variables**
 
 !!! note "Keep in mind"
-    * A default alanine scanning input file can be created as follows:
+    * When creating an input file for alanine-scanning, it's also mandatory to define a calculation type (_e.g._ gb, pb).
+    A default alanine scanning input file with gb, for example, can be created as follows:
 
-        === "GROMACS"
-            ```bash
-            xbfree gmx_MMPBSA --create_input ala                # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
-
-        === "AMBER"
-            ```bash
-            xbfree amber_MMPBSA --create_input ala              # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
-
-        === "NAMD"
-            ```bash
-            xbfree namd_MMPBSA --create_input ala               # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
-
-        === "CHARMM"
-            ```bash
-            xbfree charmm_MMPBSA --create_input ala             # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
+    === "GROMACS"
+        ```
+        xbfree gmx_MMPBSA --create_input gb ala
+        ```
+    === "AMBER"
+        ```
+        xbfree amber_MMPBSA --create_input gb ala
+        ```
+    === "NAMD"
+        ```
+        xbfree namd_MMPBSA --create_input gb ala
+        ```
+    === "CHARMM"
+        ```
+        xbfree charmm_MMPBSA --create_input gb ala
+        ```
 
     * A sample alanine scanning input file is shown [here](input_file.md#alanine-scanning)
     * A tutorial on alanine scanning is available [here](examples/Alanine_scanning/README.md)
@@ -1735,8 +1705,8 @@ CHAIN/RESNUM INSERTION_CODE if applicable (_e.g._: A/27B).
         * For GROMACS, we recommend using the reference structure (-cr) to ensure the perfect match between the 
         selected residue in the defined structure or topology. For AMBER, NAMD and CHARMM we recommend check 
         carefully the structure provided (-cs). 
-        * When this varibale is defined, **xBFreE** performs the mutation. This way the user does not have to 
-        provide the mutant topology
+        * When this variable is defined, **xBFreE** performs the mutation automatically. This way the user does not 
+        have to provide the mutant topology
     
 
 [`mutant`](#mmpbsa_ifv_mutant){#mmpbsa_ifv_mutant} (Default = ALA) 
@@ -1748,8 +1718,8 @@ CHAIN/RESNUM INSERTION_CODE if applicable (_e.g._: A/27B).
 [`mutant_only`](#mmpbsa_ifv_mutant_only){#mmpbsa_ifv_mutant_only}  (Default = 0)
 :   Option to perform specified calculations only for the mutants. 
 
-    * 0: Perform calcultion on mutant and original
-    * 1: Perform calcultion on mutant only
+    * 0: Perform calculation on the mutant and native system
+    * 1: Perform calculation on the mutant system only
     
     !!! note
         Note that all calculation details are controlled in the other namelists, though for alanine scanning to be 
@@ -1795,35 +1765,24 @@ mutated.
 ### **`&decomp` namelist variables**
 
 !!! note "Keep in mind"
-    * A default decomp input file can be created as follows:
+    * When creating an input file for decomposition analysis, it's also mandatory to define a calculation type (_e.g._ gb, pb).
+    A default decomposition analysis input file with gb, for example, can be created as follows:
 
-        === "GROMACS"
-            ```bash
-            xbfree gmx_MMPBSA --create_input decomp         # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
-
-        === "AMBER"
-            ```bash
-            xbfree amber_MMPBSA --create_input decomp           # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
-
-        === "NAMD"
-            ```bash
-            xbfree namd_MMPBSA --create_input decomp            # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
-
-        === "CHARMM"
-            ```bash
-            xbfree charmm_MMPBSA --create_input decomp          # (1)! 
-            ```
-            
-            1.  Remember to define an energy method, for example `GB`, `PB`, etc.
+    === "GROMACS"
+        ```
+        xbfree gmx_MMPBSA --create_input gb decomp
+        ```
+    === "AMBER"
+        ```
+        xbfree amber_MMPBSA --create_input gb decomp
+        ```
+    === "NAMD"
+        ```
+        xbfree namd_MMPBSA --create_input gb decomp
+        ```
+    === "CHARMM"
+        ```
+        xbfree charmm_MMPBSA --create_input gb decomp
 
     
     * A sample decomp input file is shown [here](input_file.md#decomposition-analysis)
@@ -1851,7 +1810,7 @@ mutated.
 
 [`print_res`](#mmpbsa_ifv_print_res){#mmpbsa_ifv_print_res} (Default = "within 6")
 :   Select residues whose information is going to be printed in the output file. The default selection should be 
-sufficient in most cases, however we have added several additional notations
+sufficient in most cases; however, we have added several additional selection schemes:
     
     !!! example "Selection schemes"
 
@@ -1925,21 +1884,21 @@ spreadsheets.
 !!! note "Keep in mind"
     * A default nmode input file can be created as follows:
 
-        === "GROMACS"
-            ```
-            xbfree gmx_MMPBSA --create_input nmode
-            ```
-        === "AMBER"
-            ```
-            xbfree amber_MMPBSA --create_input nmode
-            ```
-        === "NAMD"
-            ```
-            xbfree namd_MMPBSA --create_input nmode
-            ```
-        === "CHARMM"
-            ```
-            xbfree charmm_MMPBSA --create_input nmode
+    === "GROMACS"
+        ```
+        xbfree gmx_MMPBSA --create_input nmode
+        ```
+    === "AMBER"
+        ```
+        xbfree amber_MMPBSA --create_input nmode
+        ```
+    === "NAMD"
+        ```
+        xbfree namd_MMPBSA --create_input nmode
+        ```
+    === "CHARMM"
+        ```
+        xbfree charmm_MMPBSA --create_input nmode
             ```
     
     * A sample nmode input file is shown [here](input_file.md#entropy-with-nmode)
@@ -1999,7 +1958,7 @@ is 0 above.
 
 !!! warning
     These are illustrative examples, please, don't use it for production. Create a new one using 
-    the instructions provides above in the section [Generation of input files with **xBFreE**](#generation-of-input-files-with-xbfree)
+    the instructions provided above in the section [Generation of input files with **xBFreE**](#generation-of-input-files-with-xbfree)
 
 ### GB
 
@@ -2008,11 +1967,15 @@ Sample input file for GB calculation building the Amber topologies
 from structures. Please refer to the section "How gmx_MMPBSA works"
 
 &general
-startframe=5, endframe=100, interval=5, verbose=2, 
+startframe=5, 
+endframe=100, 
+interval=5, 
+verbose=2, 
 /
 
 &gb
-igb=5, saltcon=0.150,
+igb=5, 
+saltcon=0.150,
 /
 ```
 
@@ -2023,11 +1986,15 @@ Sample input file for GBNSR6 calculation building the Amber topologies
 from structures. Please refer to the section "How gmx_MMPBSA works"
 
 &general
-startframe=5, endframe=100, interval=5, verbose=2, 
+startframe=5, 
+endframe=100, 
+interval=5, 
+verbose=2, 
 /
 
 &gbnsr6
-epsin=1.0, istrng=0.150,
+epsin=1.0, 
+istrng=0.150,
 /
 ```
 
@@ -2037,12 +2004,17 @@ epsin=1.0, istrng=0.150,
 Sample input file for QM/MMGBSA
 
 &general
-startframe=5, endframe=100, interval=5,
+startframe=5, 
+endframe=100, 
+interval=5,
 /
 
 &gb
-igb=5, saltcon=0.100, ifqnt=1,
-qm_residues="A/240-251 B/297", qm_theory="PM3"
+igb=5, 
+saltcon=0.100, 
+ifqnt=1,
+qm_residues="A/240-251 B/297", 
+qm_theory="PM3"
 /
 ```
 
@@ -2053,11 +2025,14 @@ Sample input file for PB calculation building the Amber topologies
 from structures. Please refer to the section "How gmx_MMPBSA works"
 
 &general
-startframe=5, endframe=100, interval=5,
+startframe=5, 
+endframe=100, 
+interval=5,
 /
 
 &pb
-istrng=0.15, fillratio=4.0
+istrng=0.15, 
+fillratio=4.0
 /
 ```
 
@@ -2067,15 +2042,32 @@ istrng=0.15, fillratio=4.0
 Sample input file for MMPBSA with membrane proteins
 
 &general
-startframe=1, endframe=100, interval=1,
+startframe=1, 
+endframe=100, 
+interval=1,
 /
 
 &pb
-memopt=1, emem=7.0, indi=4.0,
-mctrdz=-10.383, mthick=36.086, poretype=1,
-radiopt=0, indi=4.0, istrng=0.150, fillratio=1.25, inp=2,
-sasopt=0, solvopt=2, ipb=1, bcopt=10, nfocus=1, linit=1000,
-eneopt=1, cutfd=7.0, cutnb=99.0,
+memopt=1, 
+emem=7.0, 
+indi=4.0,
+mctrdz=-10.383, 
+mthick=36.086, 
+poretype=1,
+radiopt=0, 
+indi=4.0, 
+istrng=0.150, 
+fillratio=1.25, 
+inp=2,
+sasopt=0, 
+solvopt=2, 
+ipb=1, 
+bcopt=10, 
+nfocus=1, 
+linit=1000,
+eneopt=1, 
+cutfd=7.0, 
+cutnb=99.0,
 maxarcdot=1500,
 /
 ```
@@ -2086,11 +2078,14 @@ maxarcdot=1500,
 Sample input file for 3D-RISM
 
 &general
-startframe=20, endframe=100, interval=5,
+startframe=20, 
+endframe=100, 
+interval=5,
 /
 
 &rism
-polardecomp=1, thermo="gf"
+polardecomp=1, 
+thermo="gf"
 /
 ```
 
@@ -2100,15 +2095,20 @@ polardecomp=1, thermo="gf"
 Sample input file for Alanine scanning
 
 &general
-startframe=5, endframe=21, interval=1,
+startframe=5, 
+endframe=21, 
+interval=1,
 /
 
 &gb
-igb=8, saltcon=0.150, intdiel=10
+igb=8, 
+saltcon=0.150, 
+intdiel=10
 /
 
 &alanine_scanning
-mutant='ALA', mutant_res='B:12'
+mutant='ALA', 
+mutant_res='B:12'
 /
 ```
 
@@ -2122,15 +2122,19 @@ http://archive.ambermd.org/201308/0075.html. This is automally
 guaranteed when using "within" keyword.
 
 &general
-startframe=5, endframe=21, interval=1,
+startframe=5, 
+endframe=21, 
+interval=1,
 /
 
 &gb
-igb=5, saltcon=0.150,
+igb=5, 
+saltcon=0.150,
 /
 
 &decomp
-idecomp=2, dec_verbose=3,
+idecomp=2, 
+dec_verbose=3,
 # This will print all residues that are less than 4 Å between
 # the receptor and the ligand
 print_res="within 4"
@@ -2143,17 +2147,23 @@ print_res="within 4"
 Sample input file for entropy calculations
 
 &general
-startframe=5, endframe=21, interval=1,
+startframe=5, 
+endframe=21, 
+interval=1,
 temperature=298
 /
 
 &gb
-igb=2, saltcon=0.150,
+igb=2, 
+saltcon=0.150,
 /
 
 &nmode
-nmstartframe=10, nmendframe=21, nminterval=2,
-maxcyc=50000, drms=0.0001,
+nmstartframe=10, 
+nmendframe=21, 
+nminterval=2,
+maxcyc=50000, 
+drms=0.0001,
 /
 ```
 
@@ -2163,20 +2173,23 @@ maxcyc=50000, drms=0.0001,
 Sample input file for entropy calculations
 
 &general
-startframe=5, endframe=21, interval=1,
+startframe=5, 
+endframe=21, 
+interval=1,
 # Interaction Entropy (IE)
 # (https://pubs.acs.org/doi/abs/10.1021/jacs.6b02682) approximation
 temperature=298
 /
 
 &gb
-igb=2, saltcon=0.150,
+igb=2, 
+saltcon=0.150,
 /
 ```
 
 !!! info
-    Comments are allowed by placing a # at the beginning of the line (whites-space are ignored). Variable 
+    Comments are allowed by placing a # at the beginning of the line (whites-spaces are ignored). Variable 
     initialization may span multiple lines. In-line comments (_i.e._, putting a # for a comment after a variable is 
     initialized in the same line) is not allowed and will result in an input error. Variable declarations must be 
-    comma-delimited, though all whitespace is ignored. Finally, all lines between namelists are ignored, so comments can
+    comma-delimited, though all whitespaces are ignored. Finally, all lines between namelists are ignored, so comments can
     be added before each namelist without using #.
