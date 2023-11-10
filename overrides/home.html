@@ -1,0 +1,87 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{% extends "main.html" %}
+{% block tabs %}
+  {{ super() }}
+<style>
+/* Important: required to stretch home */
+.md-grid {
+    max-width: 61rem
+}
+
+</style>
+  <section class="mdx-container">
+    <div class="md-grid md-typeset">
+      <div class="mdx-hero">
+        <div class="mdx-hero__image">
+            <div  class="animated_logo">
+              <object type="image/svg+xml" data="assets/animated_logo.svg"></object>
+            </div>
+          <div class="wrapper">
+
+            <div class="carousel">
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/1.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/2.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/3.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/4.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/5.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/6.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/7.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/8.jpg.png" alt="song">
+              </label>
+              </div>
+              <div class="carousel__item">
+              <label class="card">
+                <img class="carousel__img" src="assets/images/9.jpg.png" alt="song">
+              </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mdx-hero__content">
+          <h1>Welcome to xBFreE documentation!</h1>
+          <p>{{ config.site_description }}.</p>
+          <a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | e }}" class="md-button md-button--primary">
+            Quick start
+          </a>
+          <a href="{{ 'Q%26A/' | url }}" title="Need help?" class="md-button">
+            Help
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}
