@@ -130,6 +130,7 @@ extra:
       usage statistics to apply for financing. Thank you.
     actions:
       - accept
+
 # Extensions
 markdown_extensions:
   - admonition
