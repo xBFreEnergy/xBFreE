@@ -60,7 +60,7 @@ You can carry out the installation of **xBFreE** in three ways:
         === "`*.yml file`"    
             Installing **xBFreE** using a requierement yml file. 
     
-            :material-file-download-outline:{:.heart } Download **[env.yml](env.yml)** file
+            :material-file-download-outline:{:.heart } Download **[env.yml](../env.yml)** file
     
             <div class="termy">
     
