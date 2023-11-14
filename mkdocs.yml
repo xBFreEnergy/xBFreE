@@ -1,14 +1,14 @@
 
 # Project information
 site_name: xBFreE Documentation
-site_url: https://xBFreEnergy.github.io/dev/
+site_url: https://xbfreenergy.github.io/xBFreE/dev
 site_author: Mario S. and Mario E. Valdés-Tresanco
 site_description: >-
   xBFreE is a tool for Binding Free Energy calculations
 
 # Repository
-repo_name: xBFreEnergy.github.io
-repo_url: https://github.com/xBFreEnergy/
+repo_name: xBFreE
+repo_url: https://github.com/xBFreEnergy/xBFreE
 edit_uri: ""
 
 # Copyright
@@ -49,7 +49,7 @@ theme:
     - navigation.footer
     - navigation.indexes
     # - navigation.instant
-    - navigation.expand
+#    - navigation.expand
     - navigation.sections
     - navigation.tabs
     - navigation.top
@@ -63,30 +63,18 @@ theme:
 
   palette:
     - scheme: default
-      primary: black
-      accent: black
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
     - scheme: slate
-      primary: black
-      accent: black
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/weather-night
         name: Switch to light mode
 
-#    - scheme: default
-#      primary: black
-#      accent: black
-#      toggle:
-#        icon: material/weather-sunny
-#        name: Switch to dark mode
-#    - scheme: slate
-#      primary: black
-#      accent: black
-#      toggle:
-#        icon: material/weather-night
-#        name: Switch to light mode
   font:
     text: Roboto
     code: Roboto Mono
@@ -102,6 +90,9 @@ plugins:
   - git-revision-date-localized:
       type: timeago
       enable_creation_date: true
+  - git-committers:
+      repository: xBFreEnergy/xBFreE
+      branch: master
   - minify:
       minify_html: true
 
@@ -123,7 +114,7 @@ extra:
           data: 0
           note: >-
             Thanks for your feedback! Help us improve this page by
-            using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+            using our <a href="https://github.com/xBFreEnergy/xBFreE/issues/new" target="_blank" rel="noopener">feedback form</a>.
 
   social:
     - icon: fontawesome/brands/github
@@ -134,10 +125,12 @@ extra:
     title: Cookie consent
     description: >-
       We use Google Analytics as a third party tracking service. We do not share, sell, rent, or trade this information 
-      with third parties for their commercial purposes; and we only use it as this Privacy Policy describes. This helps
-      us improve documentation and have usage statistics to apply for financing. Thank you.
+      with third parties for their commercial purposes; and we only use it as this 
+      <a href="/help/private_policy/">Privacy Policy</a> describes. This helps us improve documentation and have 
+      usage statistics to apply for financing. Thank you.
     actions:
       - accept
+
 # Extensions
 markdown_extensions:
   - admonition
@@ -191,12 +184,23 @@ nav:
     - xBFreE in a nutshell: getting-started/summary.md
     - Installation: getting-started/installation.md
   - MMPBSA:
-      - Introduction: mmpbsa/introduction.md
+      - MMPBSA: mmpbsa/index.md
       - xBFreE vs other programs: mmpbsa/versus.md
       - How it works: mmpbsa/howworks.md
       - Command-line: mmpbsa/command-line.md
       - Running MMPBSA calculations: mmpbsa/running_mmpbsa.md
-      - The input file: mmpbsa/input_file.md
+      - The input file:
+          - Input file: mmpbsa/input_file/index.md
+          - Name List:
+              - General: mmpbsa/input_file/general.md
+              - GB: mmpbsa/input_file/gb.md
+              - GBNSR6: mmpbsa/input_file/gbnsr6.md
+              - PB: mmpbsa/input_file/pb.md
+#              - DelPhi: mmpbsa/input_file/delphi.md
+              - 3D-RISM: mmpbsa/input_file/rism.md
+              - Decomposition: mmpbsa/input_file/decomp.md
+              - Alanine Scanning: mmpbsa/input_file/cas.md
+              - Nmodes: mmpbsa/input_file/nmodes.md
       - PBRadii: mmpbsa/pbradii.md
       - The output file: mmpbsa/output.md
 #  - LIE:
@@ -267,16 +271,19 @@ nav:
         - QM/MMGBSA: examples/QM_MMGBSA/README.md
         - Correlation: examples/Correlation/README.md
 
-  - Help:
-    - Help: Q&A/README.md
-    - Installation: Q&A/installation.md
-    - OS issues: Q&A/OS_issues.md
-    - Calculations: Q&A/calculations.md
+  - More Info:
+    - Help:
+      - Help: Q&A/README.md
+      - Installation: Q&A/installation.md
+      - OS issues: Q&A/OS_issues.md
+      - Calculations: Q&A/calculations.md
     - Info:
       - Changelog: changelog.md
       - Compatibility: compatibility.md
       - Private Policy: private_policy.md
       - Tags: tags.md
+    - Support: support.md
+
   - Cite xBFreE: cite_us.md
 
 extra_css:
@@ -286,5 +293,6 @@ extra_javascript:
   - assets/js/termynal.js
   - assets/js/custom.js
   - assets/js/mathjax.js
+  - assets/js/news.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

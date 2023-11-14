@@ -4,19 +4,20 @@ title: Examples
 ---
 
 Here you can find a representation of almost all the types of calculations and analyses that you can perform 
-with xBFreE. Although each example focuses on specific cases, you can use xBFreE on systems that combine 
+with `xBFreE`. Although each example focuses on specific cases, you can use `xBFreE` on systems that combine 
 a number of different components (_i.e._ metalloprotein-ligand complex, Protein-DNA-ligand, etc.). In addition, 
 several types of calculations (_e.g._ GB, Alanine scanning and Per-residue decomposition; PB, Interaction Entropy, 
 and Per-wise decomposition) can be also performed in the same run for a specific system.
 
 ## Systems
 
-This is a representation of the systems that can be processed and analyzed with xBFreE. Our program employs a robust 
+This is a representation of the systems that can be processed and analyzed with `xBFreE`. Our program has a robust 
 method to process input structures. Even if your system is not represented here, still have a go, you won't 
 be disappointed! 😀
 
 * [Protein-protein](Protein_protein/README.md)[^1][^2][^3]
-* [Protein-ligand](Protein_ligand/ST/README.md)[^1][^2]  
+
+[//]: # (* [Protein-ligand]&#40;Protein_ligand/ST/README.md&#41;[^1][^2]  )
 
 [//]: # (* [Protein-DNA]&#40;Protein_DNA/README.md&#41;[^1][^2][^3])
 
@@ -68,27 +69,41 @@ be disappointed! 😀
 
 ## Analysis
 
-This section focuses on the analysis that can be performed with xBFreE. Although each example focuses on specific 
-cases, you can use xBFreE to perform several types of calculations (_e.g._ GB, Alanine scanning and Per-residue 
+This section focuses on the analysis that can be performed with `xBFreE`. Although each example focuses on specific 
+cases, you can use `xBFreE` to perform several types of calculations (_e.g._ GB, Alanine scanning and Per-residue 
 decomposition; PB, Interaction Entropy, and Per-residue decomposition) in the same run for a specific system.
 
-* [Single Trajectory Protocol](Protein_ligand/ST/README.md)[^1][^2][^3]
-* [Multiple Trajectory Protocol](Protein_ligand/MT/README.md)[^1]
+* [Single Trajectory Protocol](Protein_protein/README.md)[^1][^2][^3]
+
+[//]: # (* [Multiple Trajectory Protocol]&#40;Protein_ligand/MT/README.md&#41;[^1])
 * Binding free energy calculations
-    * [Binding free energy calculation with GB](Protein_ligand/ST/README.md)
-    * [Binding free energy calculation with GBNSR6](GBNSR6/README.md)
-    * [Binding free energy calculation with linear PB (LPBE)](Linear_PB_solver/README.md)
-    * [Binding free energy calculation with NonLinear PB (non-LPBE)](NonLinear_PB_solver/README.md)  
-    * [Binding free energy calculation with 3D-RISM model](3D-RISM/README.md)[^1]
-* [Alanine scanning](Alanine_scanning/README.md)[^1][^2][^3]
-* [Decomposition analysis](Decomposition_analysis/README.md)[^1][^2][^3]
-* Entropy
-    * [Interaction Entropy calculations](Entropy_calculations/Interaction_Entropy/README.md)[^1][^2][^3]
-    * [NMODE Entropy calculations](Entropy_calculations/nmode/README.md)[^1]
-    * [C2 Entropy calculations](Entropy_calculations/C2_Entropy/README.md)
-* [Stability calculations](Stability/README.md)[^1][^2][^3]
-* [QM/MMGBSA calculations](QM_MMGBSA/README.md)
-* [Correlation](Correlation/README.md)
+    * [Binding free energy calculation with GB](Protein_protein/README.md)
+
+[//]: # (    * [Binding free energy calculation with GBNSR6]&#40;GBNSR6/README.md&#41;)
+
+[//]: # (    * [Binding free energy calculation with linear PB &#40;LPBE&#41;]&#40;Linear_PB_solver/README.md&#41;)
+
+[//]: # (    * [Binding free energy calculation with NonLinear PB &#40;non-LPBE&#41;]&#40;NonLinear_PB_solver/README.md&#41;  )
+
+[//]: # (    * [Binding free energy calculation with 3D-RISM model]&#40;3D-RISM/README.md&#41;[^1])
+
+[//]: # (* [Alanine scanning]&#40;Alanine_scanning/README.md&#41;[^1][^2][^3])
+
+[//]: # (* [Decomposition analysis]&#40;Decomposition_analysis/README.md&#41;[^1][^2][^3])
+
+[//]: # (* Entropy)
+
+[//]: # (    * [Interaction Entropy calculations]&#40;Entropy_calculations/Interaction_Entropy/README.md&#41;[^1][^2][^3])
+
+[//]: # (    * [NMODE Entropy calculations]&#40;Entropy_calculations/nmode/README.md&#41;[^1])
+
+[//]: # (    * [C2 Entropy calculations]&#40;Entropy_calculations/C2_Entropy/README.md&#41;)
+
+[//]: # (* [Stability calculations]&#40;Stability/README.md&#41;[^1][^2][^3])
+
+[//]: # (* [QM/MMGBSA calculations]&#40;QM_MMGBSA/README.md&#41;)
+
+[//]: # (* [Correlation]&#40;Correlation/README.md&#41;)
 
 [//]: # (## Support for psf_dcd files)
 
@@ -104,6 +119,6 @@ decomposition; PB, Interaction Entropy, and Per-residue decomposition) in the sa
 
 [//]: # (* [Binding free energy calculations in multicomponent systems]&#40;psf_dcd/multicomponent_system/README.md&#41;)
 
- [^1]: It is part of the `All` set defined with `-t 0` in `gmx_MMPBSA_test`
- [^2]: It is part of the `Minimal` set defined with `-t 1` in `gmx_MMPBSA_test`
- [^3]: It is part of the `Fast` set defined with `-t 2` in `gmx_MMPBSA_test`
+ [^1]: It is part of the `All` set defined with `-t 0` in `xBFreE-Tester`
+ [^2]: It is part of the `Minimal` set defined with `-t 1` in `xBFreE-Tester`
+ [^3]: It is part of the `Fast` set defined with `-t 2` in `xBFreE-Tester`
