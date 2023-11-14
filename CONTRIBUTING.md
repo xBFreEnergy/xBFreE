@@ -4,38 +4,36 @@
 
 You can contribute in multiples ways:
 - Reporting an issue
-- Requiring a new feature
+- Requesting a new feature
 - Testing the code and the software in different PC configurations and OS
 - Improving the code
 - Checking the documentation content
 - Generating a new o improving the current BFE methods
 - and much more...
 
-For issues reporting we have created a templete, which contain almost everything needed to identify the problem. 
+For issues reporting we have created a template, which contains almost everything needed to identify the problem. 
 
 ## Step-by-step guide
 
-### Before reporting an issue, require for a new feature or make a question
+### Before reporting an issue, requesting a new feature or asking a question:
+
 Please ensure that you have read the following docs:
-- [documentation and FAQ]()
-- [minimal examples section]()
-- [Previous reported issues]()
-- [Previous discussions]()
+- [Documentation and FAQ](docs/Q&A/README.md)
+- [Examples section](docs/examples/README.md)
+- [Previous reported issues](https://github.com/xBFreEnergy/xBFreE/issues)
+- [Previous discussions](https://groups.google.com/g/xbfree-reports)
 
-### New feature
+### To implement a new feature
 
-1. Make an issue with your feature description;
-2. We shall discuss the design and its implementation details;
-3. Once we agree that the plan looks good, go ahead and implement it.
-
+1. Firstly, open an issue with your feature description, and we can discuss the design and its implementation details;
+2. Once we decide how to move forward, create a Pull Request with the new feature implemented.
 
 ### Bugfix
 
-1. Goto [GitHub issues]();
+1. Go to [GitHub issues](https://github.com/xBFreEnergy/xBFreE/issues);
 2. Pick an issue and comment on the task that you want to work on this feature;
 3. If you need more context on a specific issue, please ask, and we will discuss the details.
-
-Once you finish implementing a feature or bugfix, please send a Pull Request.
+4. Once we decide how to move forward, create a Pull Request with the code to solve the issue.
 
 If you are not familiar with creating a Pull Request, here are some guides:
 - http://stackoverflow.com/questions/14680711/how-to-do-a-github-pull-request
@@ -44,7 +42,6 @@ If you are not familiar with creating a Pull Request, here are some guides:
 
 ## Contribution best practices
 Coming soon! 
-
 
 ## Github CI
 
