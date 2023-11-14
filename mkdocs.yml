@@ -223,45 +223,47 @@ nav:
 
   - Examples:
     - Examples: examples/README.md
-    - gmx_MMPBSA_test: examples/gmx_MMPBSA_test.md
+    - xBFreE-Tester: examples/xBFreE_test.md
     - Systems:
-      - Protein-protein: examples/Protein_protein/README.md
-      - Protein-ligand: examples/Protein_ligand/ST/README.md
-      - Protein-DNA: examples/Protein_DNA/README.md
-      - Protein-glycan: examples/Protein_glycan/README.md
-      - Membrane proteins: examples/Protein_membrane/README.md
-      - Metalloprotein-ligand: examples/Metalloprotein_ligand/README.md
-      - Multicomponent system: examples/Comp_receptor/README.md
-      - COVID-19 related proteins:
-          - Info: examples/COVID-19_related_proteins/README.md
-          - Main protease: examples/COVID-19_related_proteins/Main_protease_7l5d/README.md
-          - Papain-like protease: examples/COVID-19_related_proteins/Papain-like_protease_7koj/README.md
-          - S1-ACE2 complex: examples/COVID-19_related_proteins/S1-ACE2_complex_7dmu/README.md
-          - S1 RBD with antibody: examples/COVID-19_related_proteins/S1_RBD_with_antibody_6zlr/README.md
-    - CHARMMff Support:
-        - Protein-ligand: examples/Protein_ligand_CHARMMff/README.md
-        - Protein-ligand complex embedded in membrane: examples/Protein_membrane_CHARMMff/README.md
-        - Protein-ligand with LPH particles (ST): examples/Protein_ligand_LPH_atoms_CHARMMff/README.md
-    - OPLSff Support:
-        - Protein-protein: examples/OPLS/protein_protein/README.md
+        - Systems: examples/Protein_protein/README.md
+        - Protein-protein: examples/Protein_protein/README.md
+#        - Protein-ligand: examples/Protein_ligand/ST/README.md
+#      - Protein-DNA: examples/Protein_DNA/README.md
+#      - Protein-glycan: examples/Protein_glycan/README.md
+#      - Membrane proteins: examples/Protein_membrane/README.md
+#      - Metalloprotein-ligand: examples/Metalloprotein_ligand/README.md
+#      - Multicomponent system: examples/Comp_receptor/README.md
+#      - COVID-19 related proteins:
+#          - Info: examples/COVID-19_related_proteins/README.md
+#          - Main protease: examples/COVID-19_related_proteins/Main_protease_7l5d/README.md
+#          - Papain-like protease: examples/COVID-19_related_proteins/Papain-like_protease_7koj/README.md
+#          - S1-ACE2 complex: examples/COVID-19_related_proteins/S1-ACE2_complex_7dmu/README.md
+#          - S1 RBD with antibody: examples/COVID-19_related_proteins/S1_RBD_with_antibody_6zlr/README.md
+#    - CHARMMff Support:
+#        - Protein-ligand: examples/Protein_ligand_CHARMMff/README.md
+#        - Protein-ligand complex embedded in membrane: examples/Protein_membrane_CHARMMff/README.md
+#        - Protein-ligand with LPH particles (ST): examples/Protein_ligand_LPH_atoms_CHARMMff/README.md
+#    - OPLSff Support:
+#        - Protein-protein: examples/OPLS/protein_protein/README.md
     - Analysis:
-        - Single Trajectory Protocol: examples/Protein_ligand/ST/README.md
-        - Multiple Trajectory Protocol: examples/Protein_ligand/MT/README.md
-        - BFE calculations:
-            - BFE calculation with GB: examples/Protein_ligand/ST/README.md
-            - BFE calculation with GBNSR6: examples/GBNSR6/README.md
-            - BFE calculation with Linear PB: examples/Linear_PB_solver/README.md
-            - BFE calculation with NonLinear PB : examples/NonLinear_PB_solver/README.md
-            - BFE calculation with 3D-RISM: examples/3D-RISM/README.md
-        - Alanine scanning: examples/Alanine_scanning/README.md
-        - Decomposition analysis: examples/Decomposition_analysis/README.md
-        - Entropy calculations:
-            - Interaction Entropy: examples/Entropy_calculations/Interaction_Entropy/README.md
-            - nmode Entropy: examples/Entropy_calculations/nmode/README.md
-            - C2 Entropy calculations: examples/Entropy_calculations/C2_Entropy/README.md
-        - Stability calculations: examples/Stability/README.md
-        - QM/MMGBSA: examples/QM_MMGBSA/README.md
-        - Correlation: examples/Correlation/README.md
+        - Analysis: examples/Protein_protein/README.md
+        - Single Trajectory Protocol: examples/Protein_protein/README.md
+#        - Multiple Trajectory Protocol: examples/Protein_ligand/MT/README.md
+#        - BFE calculations:
+#            - BFE calculation with GB: examples/Protein_ligand/ST/README.md
+#            - BFE calculation with GBNSR6: examples/GBNSR6/README.md
+#            - BFE calculation with Linear PB: examples/Linear_PB_solver/README.md
+#            - BFE calculation with NonLinear PB : examples/NonLinear_PB_solver/README.md
+#            - BFE calculation with 3D-RISM: examples/3D-RISM/README.md
+#        - Alanine scanning: examples/Alanine_scanning/README.md
+#        - Decomposition analysis: examples/Decomposition_analysis/README.md
+#        - Entropy calculations:
+#            - Interaction Entropy: examples/Entropy_calculations/Interaction_Entropy/README.md
+#            - nmode Entropy: examples/Entropy_calculations/nmode/README.md
+#            - C2 Entropy calculations: examples/Entropy_calculations/C2_Entropy/README.md
+#        - Stability calculations: examples/Stability/README.md
+#        - QM/MMGBSA: examples/QM_MMGBSA/README.md
+#        - Correlation: examples/Correlation/README.md
 
   - Help:
     - Help: Q&A/README.md

@@ -1,17 +1,17 @@
 ---
 template: main.html
-title: gmx_MMPBSA_test
+title: xBFreE-Tester
 ---
 
-## `gmx_MMPBSA_test` command-line
+## `xBFreE-Tester` command-line
 <div class="termy">
     ```bash
-    $ gmx_MMPBSA_test -h
-    usage: gmx_MMPBSA_test [-h] [-v] 
+    $ xBFreE-Tester -h
+    usage: xBFreE-Tester [-h] [-v] 
            [-t [{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18} [{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18} ...]]] 
            [-f FOLDER] [-r] [-ng] [-n NUM_PROCESSORS]
     
-    This program is part of gmx_MMPBSA and will allow you to run various gmx_MMPBSA examples easily.
+    This application is a component of xBFreE, enabling straightforward execution of diverse xBFreE examples.
     
     optional arguments:
       -h, --help            show this help message and exit
@@ -62,58 +62,58 @@ title: gmx_MMPBSA_test
     ```
 </div>
 
-## Running gmx_MMPBSA_test
-gmx_MMPBSA_test is designed to run a set of samples (all or minimal) or a specific example efficiently. 
-Additionally, gmx_MMPBSA_test can run in parallel, decreasing the execution time gmx_MMPBSA_test will download the 
+## Running xBFreE-Tester
+xBFreE-Tester is designed to run a set of samples (all or minimal) or a specific example efficiently. 
+Additionally, xBFreE-Tester can run in parallel, decreasing the execution time xBFreE-Tester will download the 
 most recent version of the repository in the specified folder and will perform the calculations.
 
-!!! info "Sets in gmx_MMPBSA_test"
+!!! info "Sets in xBFreE-Tester"
 
     === "Fast"
         
-            gmx_MMPBSA_test -f /home/user/Documents -n 10
+            xBFreE-Tester -f /home/user/Documents -n 10
         
         Through this command-line, gmxMMPBSA_test will:
         
-        * Download gmx_MMPBSA repository content in `/home/user/Documents`
+        * Download xBFreE repository content in `/home/user/Documents`
         * Works with `Fast` set of examples [-t 2 is the default]
         * Perform the calculation on 9 examples sequentially, using 10 cpus each time
     
     === "Minimal"
         
-            gmx_MMPBSA_test -f /home/user/Documents -n 10 -t 1
+            xBFreE-Tester -f /home/user/Documents -n 10 -t 1
         
-        Through this command-line, gmxMMPBSA_test will:
+        Through this command-line, xBFreE-Tester will:
         
-        * Download gmx_MMPBSA repository content in `/home/user/Documents`
+        * Download xBFreE repository content in `/home/user/Documents`
         * Works with `Minimal` set of examples [-t 1]
         * Perform the calculation on 13 examples sequentially, using 10 cpus each time
     
     === "All"
         
-            gmx_MMPBSA_test -f /home/user/Documents -t 0 -n 10
+            xBFreE-Tester -f /home/user/Documents -t 0 -n 10
         
-        Through this command-line, gmxMMPBSA_test will:
+        Through this command-line, xBFreE-Tester will:
         
-        * Download gmx_MMPBSA repository content in `/home/user/Documents`
+        * Download xBFreE repository content in `/home/user/Documents`
         * Works with `All` set of examples
         * Perform the calculation on 16 examples sequentially, using 10 cpus each time
         
     === "Multiple selection"
         
-            gmx_MMPBSA_test -f /home/user/Documents -t 3 5 7
+            xBFreE-Tester -f /home/user/Documents -t 3 5 7
         
-        Through this command-line, gmxMMPBSA_test will:
+        Through this command-line, xBFreE-Tester will:
         
-        * Download gmx_MMPBSA repository content in `/home/user/Documents`
+        * Download xBFreE repository content in `/home/user/Documents`
         * Execute `3` [Protein-Ligand (Single Trajectory approach)], `5` [Protein-DNA], and `7` [Protein-Glycan] 
         examples
 
     === "Single selection"
         
-            gmx_MMPBSA_test -f /home/user/Documents -t 3
+            xBFreE-Tester -f /home/user/Documents -t 3
         
-        Through this command-line, gmxMMPBSA_test will:
+        Through this command-line, xBFreE-Tester will:
         
-        * Download gmx_MMPBSA repository content in `/home/user/Documents`
+        * Download xBFreE repository content in `/home/user/Documents`
         * Execute `3` [Protein-Ligand (Single Trajectory approach)] example
